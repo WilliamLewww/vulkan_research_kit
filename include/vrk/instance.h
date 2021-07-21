@@ -14,11 +14,11 @@ class Instance {
 private:
   bool isActive;
 
+  VkInstance instanceHandle;
+
   uint32_t majorVersion;
   uint32_t minorVersion;
   uint32_t patchVersion;
-
-  VkInstance instance;
 
   std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatureList;
   std::vector<VkValidationFeatureDisableEXT> disabledValidationFeatureList;
@@ -27,16 +27,16 @@ private:
   VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo;
   VkApplicationInfo applicationInfo;
 
-  uint32_t layerPropertyCount;
-  std::vector<VkLayerProperties> layerPropertyList;
-  std::vector<std::string> enabledLayerNameList;
+  std::vector<VkLayerProperties> layerPropertiesList;
+  std::vector<VkExtensionProperties> extensionPropertiesList;
 
-  uint32_t extensionPropertyCount;
-  std::vector<VkExtensionProperties> extensionPropertyList;
+  std::vector<std::string> enabledLayerNameList;
   std::vector<std::string> enabledExtensionNameList;
 public:
   Instance();
   ~Instance();
+
+  std::string getVulkanVersionAPI();
 
   void addValidationFeatureEnable(
       VkValidationFeatureEnableEXT validationFeatureEnable);
@@ -45,20 +45,21 @@ public:
       VkValidationFeatureDisableEXT validationFeatureDisable);
 
   void setDebugUtilsMessageSeverityFlagBits(
-      VkDebugUtilsMessageSeverityFlagBitsEXT
-      debugUtilsMessageSeverityFlagBits);
+      VkDebugUtilsMessageSeverityFlagBitsEXT debugUtilsMessageSeverityFlagBits);
 
-  void setDebugUtilsMessageTypeFlagBits(VkDebugUtilsMessageTypeFlagBitsEXT
-      debugUtilsMessageTypeFlagBitsEXT);
+  void setDebugUtilsMessageTypeFlagBits(
+      VkDebugUtilsMessageTypeFlagBitsEXT debugUtilsMessageTypeFlagBitsEXT);
 
-  std::vector<VkLayerProperties> getAvailableLayers();
+  std::vector<VkLayerProperties> getAvailableLayerPropertiesList();
 
   bool addLayer(std::string layerName);
 
-  std::vector<VkExtensionProperties> getAvailableExtensions(
+  std::vector<VkExtensionProperties> getAvailableExtensionPropertiesList(
       std::string layerName = "");
 
   bool addExtension(std::string extensionName, std::string layerName = "");
 
   void activate();
+
+  VkInstance getInstanceHandle();
 };

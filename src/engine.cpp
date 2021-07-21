@@ -2,6 +2,7 @@
 
 Engine::Engine() {
   this->instance = new Instance();
+  printf("Vulkan API %s\n", this->instance->getVulkanVersionAPI().c_str());
 
   this->instance->addValidationFeatureEnable(
       VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
@@ -21,12 +22,21 @@ Engine::Engine() {
     (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT));
 
-  this->instance->getAvailableLayers();
   this->instance->addLayer("VK_LAYER_KHRONOS_validation");
 
   this->instance->activate();
+
+  std::vector<VkPhysicalDevice> deviceList =
+      Device::getPhysicalDevices(this->instance->getInstanceHandle());
+
+  this->device = new Device(this->instance->getInstanceHandle(), deviceList[0],
+      VK_QUEUE_GRAPHICS_BIT);
+  this->device->addDeviceQueue(VK_QUEUE_COMPUTE_BIT);
+
+  this->device->activate();
 }
 
 Engine::~Engine() {
+  delete this->device;
   delete this->instance;
 }
