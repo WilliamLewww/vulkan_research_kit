@@ -2,7 +2,8 @@
 
 Engine::Engine() {
   this->instance = new Instance();
-  printf("Vulkan API %s\n", this->instance->getVulkanVersionAPI().c_str());
+  std::cout << "Vulkan API " << this->instance->getVulkanVersionAPI().c_str() 
+      << std::endl;
 
   this->instance->addValidationFeatureEnable(
       VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
@@ -23,6 +24,7 @@ Engine::Engine() {
     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT));
 
   this->instance->addLayer("VK_LAYER_KHRONOS_validation");
+  this->instance->addExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
   this->instance->activate();
 

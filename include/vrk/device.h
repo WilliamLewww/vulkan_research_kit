@@ -4,10 +4,10 @@
 
 #include <vulkan/vulkan.h>
 
+#include <iostream>
 #include <map>
 #include <vector>
 #include <string>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

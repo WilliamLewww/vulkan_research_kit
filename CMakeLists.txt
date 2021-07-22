@@ -5,10 +5,6 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3)
 find_package(GTest)
 
-if(GTest_FOUND)
-  enable_testing()
-endif()
-
 file(GLOB SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
@@ -40,7 +36,22 @@ add_custom_target(copy_resources
 add_dependencies(vrk copy_resources)
 
 if(GTest_FOUND AND BUILD_TESTING)
+  enable_testing()
+
+  file(GLOB TEST_SOURCES "tests/*.cpp")
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+
+  foreach(TEST_SOURCE ${TEST_SOURCES})
+    get_filename_component(FILE_NAME ${TEST_SOURCE} NAME_WE)
+    string(TOUPPER ${FILE_NAME} UPPER_FILE_NAME)
+    add_executable(${UPPER_FILE_NAME} ${TEST_SOURCE})
+    include_directories(${UPPER_FILE_NAME} include)
+    include_directories(${UPPER_FILE_NAME} ${GTEST_INCLUDE_DIRS})
+    target_link_libraries(${UPPER_FILE_NAME} ${GTEST_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} vrk)
+    add_test(${UPPER_FILE_NAME} tests/${UPPER_FILE_NAME})
+  endforeach()
+
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 if(glfw3_FOUND)

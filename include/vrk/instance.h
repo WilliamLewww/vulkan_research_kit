@@ -4,9 +4,10 @@
 
 #include <vulkan/vulkan.h>
 
+#include <iostream>
 #include <vector>
 #include <string>
-#include <stdio.h>
+#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,6 +16,7 @@ private:
   bool isActive;
 
   VkInstance instanceHandle;
+  VkDebugUtilsMessengerEXT debugUtilsMessengerHandle;
 
   uint32_t majorVersion;
   uint32_t minorVersion;

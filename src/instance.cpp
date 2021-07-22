@@ -6,7 +6,22 @@ VkBool32 debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-  printf("validation layer: %s\n", pCallbackData->pMessage);
+  std::string message = pCallbackData->pMessage;
+
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    message = STRING_INFO + message + STRING_RESET;
+    PRINT_MESSAGE(std::cout, message.c_str());
+  }
+
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    message = STRING_WARNING + message + STRING_RESET;
+    PRINT_MESSAGE(std::cerr, message.c_str());
+  }
+
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+    message = STRING_ERROR + message + STRING_RESET;
+    PRINT_MESSAGE(std::cerr, message.c_str());
+  }
 
   return VK_FALSE;
 }
@@ -19,7 +34,7 @@ Instance::Instance() {
   uint32_t apiVersion;
   VkResult result = vkEnumerateInstanceVersion(&apiVersion);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceVersion");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
     exit(1);
   }
 
@@ -62,7 +77,7 @@ Instance::Instance() {
   uint32_t layerPropertiesCount = 0;
   result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceVersion");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
     exit(1);
   }
 
@@ -70,7 +85,7 @@ Instance::Instance() {
   result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount,
       this->layerPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceVersion");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
     exit(1);
   }
 
@@ -78,7 +93,7 @@ Instance::Instance() {
   result = vkEnumerateInstanceExtensionProperties(NULL, &extensionPropertiesCount,
       NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -86,7 +101,7 @@ Instance::Instance() {
   result = vkEnumerateInstanceExtensionProperties(NULL, &extensionPropertiesCount,
       this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -95,12 +110,23 @@ Instance::Instance() {
 }
 
 Instance::~Instance() {
+  if (std::find(std::begin(enabledExtensionNameList), 
+      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != 
+      std::end(enabledExtensionNameList)) {
+
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle, vkDestroyDebugUtilsMessengerEXT, 
+        pvkDestroyDebugUtilsMessengerEXT);
+
+    pvkDestroyDebugUtilsMessengerEXT(this->instanceHandle, 
+        this->debugUtilsMessengerHandle, NULL);
+  }
+
   vkDestroyInstance(this->instanceHandle, NULL);
 }
 
 std::string Instance::getVulkanVersionAPI() {
-  return std::to_string(this->majorVersion) + "." + 
-      std::to_string(this->minorVersion) + "." + 
+  return std::to_string(this->majorVersion) + "." +
+      std::to_string(this->minorVersion) + "." +
       std::to_string(this->patchVersion);
 }
 
@@ -158,7 +184,7 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -167,7 +193,7 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -191,7 +217,7 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
     VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
         &extensionPropertiesCount, NULL);
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(stderr, result,
+      PRINT_RETURN_CODE(std::cerr, result,
           "vkEnumerateInstanceExtensionProperties");
       exit(1);
     }
@@ -201,7 +227,7 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
     result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
         &extensionPropertiesCount, extensionPropertyList.data());
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(stderr, result,
+      PRINT_RETURN_CODE(std::cerr, result,
           "vkEnumerateInstanceExtensionProperties");
       exit(1);
     }
@@ -220,7 +246,7 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
 
 void Instance::activate() {
   if (this->isActive) {
-    PRINT_MESSAGE(stderr, "Instance is already active");
+    PRINT_MESSAGE(std::cerr, "Instance is already active");
     return;
   }
 
@@ -266,8 +292,27 @@ void Instance::activate() {
   free(enabledLayerNamesUnsafe);
 
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkCreateInstance");
+    PRINT_RETURN_CODE(std::cerr, result, "vkCreateInstance");
     exit(1);
+  }
+
+  if (std::find(std::begin(enabledExtensionNameList), 
+      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != 
+      std::end(enabledExtensionNameList)) {
+
+    this->debugUtilsMessengerCreateInfo.pNext = NULL;
+
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle, 
+        vkCreateDebugUtilsMessengerEXT, pvkCreateDebugUtilsMessengerEXT);
+
+    result = pvkCreateDebugUtilsMessengerEXT(this->instanceHandle,
+        &this->debugUtilsMessengerCreateInfo, NULL,
+        &this->debugUtilsMessengerHandle);
+
+    if (result != VK_SUCCESS) {
+      PRINT_RETURN_CODE(std::cerr, result, "vkCreateDebugUtilsMessengerEXT");
+      exit(1);
+    }
   }
 
   this->isActive = true;

@@ -6,7 +6,7 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
   VkResult result = vkEnumeratePhysicalDevices(instanceHandle, 
       &physicalDeviceCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumeratePhysicalDevices");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumeratePhysicalDevices");
     exit(1);
   }
 
@@ -14,7 +14,7 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
   result = vkEnumeratePhysicalDevices(instanceHandle, &physicalDeviceCount,
       physicalDeviceList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumeratePhysicalDevices");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumeratePhysicalDevices");
     exit(1);
   }
 
@@ -37,7 +37,7 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   VkResult result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL, &extensionPropertiesCount,
       NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
@@ -45,7 +45,7 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL, &extensionPropertiesCount,
       this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
@@ -87,7 +87,7 @@ std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
   VkResult result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
@@ -96,7 +96,7 @@ std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
   result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
       &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
@@ -120,7 +120,7 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
     VkResult result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
         &extensionPropertiesCount, NULL);
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(stderr, result,
+      PRINT_RETURN_CODE(std::cerr, result,
           "vkEnumerateDeviceExtensionProperties");
       exit(1);
     }
@@ -130,7 +130,7 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
     result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
         &extensionPropertiesCount, extensionPropertyList.data());
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(stderr, result,
+      PRINT_RETURN_CODE(std::cerr, result,
           "vkEnumerateDeviceExtensionProperties");
       exit(1);
     }
@@ -163,7 +163,7 @@ bool Device::addDeviceQueue(VkQueueFlagBits queueFlagBits) {
 
 void Device::activate() {
   if (this->isActive) {
-    PRINT_MESSAGE(stderr, "Device is already active");
+    PRINT_MESSAGE(std::cerr, "Device is already active");
     return;
   }
 
@@ -203,7 +203,7 @@ void Device::activate() {
   VkResult result = vkCreateDevice(this->physicalDeviceHandle, 
       &deviceCreateInfo, NULL, &this->deviceHandle);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(stderr, result, "vkCreateDevice");
+    PRINT_RETURN_CODE(std::cerr, result, "vkCreateDevice");
     exit(1);
   }
 
