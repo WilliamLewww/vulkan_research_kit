@@ -90,18 +90,20 @@ Instance::Instance() {
   }
 
   uint32_t extensionPropertiesCount = 0;
-  result = vkEnumerateInstanceExtensionProperties(NULL, &extensionPropertiesCount,
-      NULL);
+  result = vkEnumerateInstanceExtensionProperties(NULL,
+      &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
   this->extensionPropertiesList.resize(extensionPropertiesCount);
-  result = vkEnumerateInstanceExtensionProperties(NULL, &extensionPropertiesCount,
-      this->extensionPropertiesList.data());
+  result = vkEnumerateInstanceExtensionProperties(NULL,
+      &extensionPropertiesCount, this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -110,14 +112,14 @@ Instance::Instance() {
 }
 
 Instance::~Instance() {
-  if (std::find(std::begin(enabledExtensionNameList), 
-      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != 
+  if (std::find(std::begin(enabledExtensionNameList),
+      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) !=
       std::end(enabledExtensionNameList)) {
 
-    LOAD_INSTANCE_FUNCTION(this->instanceHandle, vkDestroyDebugUtilsMessengerEXT, 
-        pvkDestroyDebugUtilsMessengerEXT);
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle,
+        vkDestroyDebugUtilsMessengerEXT, pvkDestroyDebugUtilsMessengerEXT);
 
-    pvkDestroyDebugUtilsMessengerEXT(this->instanceHandle, 
+    pvkDestroyDebugUtilsMessengerEXT(this->instanceHandle,
         this->debugUtilsMessengerHandle, NULL);
   }
 
@@ -163,11 +165,14 @@ std::vector<VkLayerProperties> Instance::getAvailableLayerPropertiesList() {
 bool Instance::addLayer(std::string layerName) {
   bool foundLayer = false;
 
-  for (VkLayerProperties layerProperties : this->layerPropertiesList) {
-    if (layerProperties.layerName == layerName) {
-      this->enabledLayerNameList.push_back(layerName);
-      foundLayer = true;
-    }
+  if (std::find_if(
+      std::begin(this->layerPropertiesList),
+      std::end(this->layerPropertiesList),
+      [&](const VkLayerProperties& x) { return x.layerName == layerName; })
+      != std::end(this->layerPropertiesList)) {
+
+    this->enabledLayerNameList.push_back(layerName);
+    foundLayer = true;
   }
 
   return foundLayer;
@@ -184,7 +189,8 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -193,7 +199,8 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateInstanceExtensionProperties");
     exit(1);
   }
 
@@ -204,12 +211,15 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
   bool foundExtension = false;
 
   if (layerName == "") {
-    for (VkExtensionProperties extensionProperties :
-        this->extensionPropertiesList) {
-      if (extensionProperties.extensionName == extensionName) {
-        this->enabledExtensionNameList.push_back(extensionName);
-        foundExtension = true;
-      }
+    if (std::find_if(
+        std::begin(this->extensionPropertiesList),
+        std::end(this->extensionPropertiesList),
+        [&](const VkExtensionProperties& x)
+        { return x.extensionName == extensionName; })
+        != std::end(this->extensionPropertiesList)) {
+
+      this->enabledExtensionNameList.push_back(extensionName);
+      foundExtension = true;
     }
   }
   else {
@@ -232,12 +242,15 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
       exit(1);
     }
 
-    for (VkExtensionProperties extensionProperties :
-        extensionPropertyList) {
-      if (extensionProperties.extensionName == extensionName) {
-        this->enabledExtensionNameList.push_back(extensionName);
-        foundExtension = true;
-      }
+    if (std::find_if(
+        std::begin(extensionPropertyList),
+        std::end(extensionPropertyList),
+        [&](const VkExtensionProperties& x)
+        { return x.extensionName == extensionName; })
+        != std::end(extensionPropertyList)) {
+
+      this->enabledExtensionNameList.push_back(extensionName);
+      foundExtension = true;
     }
   }
 
@@ -296,13 +309,13 @@ void Instance::activate() {
     exit(1);
   }
 
-  if (std::find(std::begin(enabledExtensionNameList), 
-      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != 
+  if (std::find(std::begin(enabledExtensionNameList),
+      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) !=
       std::end(enabledExtensionNameList)) {
 
     this->debugUtilsMessengerCreateInfo.pNext = NULL;
 
-    LOAD_INSTANCE_FUNCTION(this->instanceHandle, 
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle,
         vkCreateDebugUtilsMessengerEXT, pvkCreateDebugUtilsMessengerEXT);
 
     result = pvkCreateDebugUtilsMessengerEXT(this->instanceHandle,

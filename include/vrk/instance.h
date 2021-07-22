@@ -22,12 +22,12 @@ private:
   uint32_t minorVersion;
   uint32_t patchVersion;
 
-  std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatureList;
-  std::vector<VkValidationFeatureDisableEXT> disabledValidationFeatureList;
-
   VkValidationFeaturesEXT validationFeatures;
   VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo;
   VkApplicationInfo applicationInfo;
+
+  std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatureList;
+  std::vector<VkValidationFeatureDisableEXT> disabledValidationFeatureList;
 
   std::vector<VkLayerProperties> layerPropertiesList;
   std::vector<VkExtensionProperties> extensionPropertiesList;
