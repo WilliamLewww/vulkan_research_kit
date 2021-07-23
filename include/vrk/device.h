@@ -20,19 +20,20 @@ private:
   VkInstance instanceHandle;
   VkPhysicalDevice physicalDeviceHandle;
 
-  VkPhysicalDeviceProperties physicalDeviceProperties;
-
   std::vector<VkExtensionProperties> extensionPropertiesList;
   std::vector<std::string> enabledExtensionNameList;
-
-  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList;
-  std::multimap<uint32_t, VkQueueFlagBits> queueFlagBitsMap;
-  std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList;
 public:
-  static std::vector<VkPhysicalDevice> getPhysicalDevices(VkInstance instanceHandle);
+  static std::vector<VkPhysicalDevice> getPhysicalDevices(
+      VkInstance instanceHandle);
+
+  static VkPhysicalDeviceProperties getPhysicalDeviceProperties(
+      VkPhysicalDevice physicalDeviceHandle);
+
+  static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
+      VkPhysicalDevice physicalDeviceHandle);
 
   Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
-      VkQueueFlagBits initialQueueFlagBits);
+      uint32_t initialQueueFamilyIndex, int queueCount);
 
   ~Device();
 
@@ -41,7 +42,7 @@ public:
 
   bool addExtension(std::string extensionName, std::string layerName = "");
 
-  bool addDeviceQueue(VkQueueFlagBits queueFlagBits);
-
   void activate();
+
+  VkDevice getDeviceHandle();
 };

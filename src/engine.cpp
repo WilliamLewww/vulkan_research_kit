@@ -31,9 +31,11 @@ Engine::Engine() {
   std::vector<VkPhysicalDevice> deviceList =
       Device::getPhysicalDevices(this->instance->getInstanceHandle());
 
+  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
+      Device::getQueueFamilyPropertiesList(deviceList[0]);
+
   this->device = new Device(this->instance->getInstanceHandle(), deviceList[0],
-      VK_QUEUE_GRAPHICS_BIT);
-  this->device->addDeviceQueue(VK_QUEUE_COMPUTE_BIT);
+      0, 1);
 
   this->device->activate();
 }

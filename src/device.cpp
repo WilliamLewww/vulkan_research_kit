@@ -3,7 +3,7 @@
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
     VkInstance instanceHandle) {
   uint32_t physicalDeviceCount = 0;
-  VkResult result = vkEnumeratePhysicalDevices(instanceHandle, 
+  VkResult result = vkEnumeratePhysicalDevices(instanceHandle,
       &physicalDeviceCount, NULL);
   if (result != VK_SUCCESS) {
     PRINT_RETURN_CODE(std::cerr, result, "vkEnumeratePhysicalDevices");
@@ -21,8 +21,35 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
   return physicalDeviceList;
 }
 
+VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
+    VkPhysicalDevice physicalDeviceHandle) {
+
+  VkPhysicalDeviceProperties physicalDeviceProperties;
+
+  vkGetPhysicalDeviceProperties(physicalDeviceHandle,
+      &physicalDeviceProperties);
+
+  return physicalDeviceProperties;
+}
+
+std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
+    VkPhysicalDevice physicalDeviceHandle) {
+
+  uint32_t queueFamilyPropertyCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
+      &queueFamilyPropertyCount, NULL);
+
+  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList(
+      queueFamilyPropertyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
+      &queueFamilyPropertyCount, queueFamilyPropertiesList.data());
+
+  return queueFamilyPropertiesList;
+}
+
 Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
-      VkQueueFlagBits initialQueueFlagBits) {
+    uint32_t initialQueueFamilyIndex, int queueCount) {
+
   this->isActive = false;
 
   this->deviceHandle = VK_NULL_HANDLE;
@@ -30,46 +57,25 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   this->instanceHandle = instanceHandle;
   this->physicalDeviceHandle = physicalDeviceHandle;
 
-  vkGetPhysicalDeviceProperties(physicalDeviceHandle,
-      &this->physicalDeviceProperties);
-
   uint32_t extensionPropertiesCount = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL, &extensionPropertiesCount,
-      NULL);
+  VkResult result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle,
+      NULL, &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
   this->extensionPropertiesList.resize(extensionPropertiesCount);
-  result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL, &extensionPropertiesCount,
-      this->extensionPropertiesList.data());
+  result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL,
+      &extensionPropertiesCount, this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
   this->enabledExtensionNameList = {};
-
-  uint32_t queueFamilyPropertyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
-      &queueFamilyPropertyCount, NULL);
-  this->queueFamilyPropertiesList.resize(queueFamilyPropertyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
-      &queueFamilyPropertyCount, this->queueFamilyPropertiesList.data());
-
-  this->queueFlagBitsMap = {};
-  for (uint32_t x = 0; x < this->queueFamilyPropertiesList.size(); x++) {
-    if (this->queueFamilyPropertiesList[x].queueFlags & initialQueueFlagBits) {
-      this->queueFlagBitsMap.insert(
-          std::pair<uint32_t, VkQueueFlagBits>(x, initialQueueFlagBits));
-
-      break;
-    }
-  }
-
-
-  this->deviceQueueCreateInfoList = {};
 }
 
 Device::~Device() {
@@ -84,19 +90,23 @@ std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
   }
 
   uint32_t extensionPropertiesCountLayer = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
+  VkResult result = vkEnumerateDeviceExtensionProperties(
+      this->physicalDeviceHandle, layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
   std::vector<VkExtensionProperties> extensionPropertiesListLayer(
       extensionPropertiesCountLayer);
-  result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
-      &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
+  result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle,
+      layerName.c_str(), &extensionPropertiesCountLayer,
+      extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateDeviceExtensionProperties");
+    PRINT_RETURN_CODE(std::cerr, result,
+        "vkEnumerateDeviceExtensionProperties");
     exit(1);
   }
 
@@ -117,7 +127,8 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
   }
   else {
     uint32_t extensionPropertiesCount = 0;
-    VkResult result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
+    VkResult result = vkEnumerateDeviceExtensionProperties(
+        this->physicalDeviceHandle, layerName.c_str(),
         &extensionPropertiesCount, NULL);
     if (result != VK_SUCCESS) {
       PRINT_RETURN_CODE(std::cerr, result,
@@ -127,8 +138,9 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
 
     std::vector<VkExtensionProperties> extensionPropertyList(
         extensionPropertiesCount);
-    result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle, layerName.c_str(),
-        &extensionPropertiesCount, extensionPropertyList.data());
+    result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle,
+        layerName.c_str(), &extensionPropertiesCount,
+        extensionPropertyList.data());
     if (result != VK_SUCCESS) {
       PRINT_RETURN_CODE(std::cerr, result,
           "vkEnumerateDeviceExtensionProperties");
@@ -147,37 +159,10 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
   return foundExtension;
 }
 
-bool Device::addDeviceQueue(VkQueueFlagBits queueFlagBits) {
-  for (uint32_t x = 0; x < this->queueFamilyPropertiesList.size(); x++) {
-    if (this->queueFamilyPropertiesList[x].queueFlags & queueFlagBits &&
-        this->queueFlagBitsMap.find(x) == this->queueFlagBitsMap.end()) {
-      this->queueFlagBitsMap.insert(
-          std::pair<uint32_t, VkQueueFlagBits>(x, queueFlagBits));
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
 void Device::activate() {
   if (this->isActive) {
     PRINT_MESSAGE(std::cerr, "Device is already active");
     return;
-  }
-
-  for (auto const& x : this->queueFlagBitsMap) {
-    float queuePriority = 1.0f;
-    VkDeviceQueueCreateInfo deviceQueueCreateInfo = {
-      .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .queueFamilyIndex = x.first,
-      .queueCount = 1,
-      .pQueuePriorities = &queuePriority,
-    };
-    this->deviceQueueCreateInfoList.push_back(deviceQueueCreateInfo);
   }
 
   const char** enabledExtensionNamesUnsafe = (const char**)malloc(
@@ -191,8 +176,8 @@ void Device::activate() {
     .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .queueCreateInfoCount = (uint32_t)this->deviceQueueCreateInfoList.size(),
-    .pQueueCreateInfos = this->deviceQueueCreateInfoList.data(),
+    .queueCreateInfoCount = 0,
+    .pQueueCreateInfos = NULL,
     .enabledLayerCount = 0,
     .ppEnabledLayerNames = NULL,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
@@ -200,7 +185,7 @@ void Device::activate() {
     .pEnabledFeatures = NULL,
   };
 
-  VkResult result = vkCreateDevice(this->physicalDeviceHandle, 
+  VkResult result = vkCreateDevice(this->physicalDeviceHandle,
       &deviceCreateInfo, NULL, &this->deviceHandle);
   if (result != VK_SUCCESS) {
     PRINT_RETURN_CODE(std::cerr, result, "vkCreateDevice");
@@ -210,4 +195,8 @@ void Device::activate() {
   free(enabledExtensionNamesUnsafe);
 
   this->isActive = true;
+}
+
+VkDevice Device::getDeviceHandle() {
+  return this->deviceHandle;
 }
