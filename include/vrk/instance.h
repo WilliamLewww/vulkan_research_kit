@@ -36,6 +36,7 @@ private:
   std::vector<std::string> enabledExtensionNameList;
 public:
   Instance();
+
   ~Instance();
 
   std::string getVulkanVersionAPI();

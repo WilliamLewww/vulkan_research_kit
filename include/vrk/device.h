@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/queue_family.h"
 
 #include <vulkan/vulkan.h>
 
@@ -16,6 +17,7 @@ private:
   bool isActive;
 
   VkDevice deviceHandle;
+  std::vector<QueueFamily> queueFamilyList;
 
   VkInstance instanceHandle;
   VkPhysicalDevice physicalDeviceHandle;
@@ -33,7 +35,8 @@ public:
       VkPhysicalDevice physicalDeviceHandle);
 
   Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
-      uint32_t initialQueueFamilyIndex, int queueCount);
+      uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+      float initialQueuePriority = 1.0f);
 
   ~Device();
 
@@ -41,6 +44,9 @@ public:
       std::string layerName = "");
 
   bool addExtension(std::string extensionName, std::string layerName = "");
+
+  void addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+      float initialQueuePriority = 1.0f);
 
   void activate();
 

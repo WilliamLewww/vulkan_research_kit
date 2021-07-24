@@ -48,7 +48,8 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
 }
 
 Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
-    uint32_t initialQueueFamilyIndex, int queueCount) {
+    uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+    float initialQueuePriority) {
 
   this->isActive = false;
 
@@ -76,6 +77,10 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   }
 
   this->enabledExtensionNameList = {};
+
+  this->queueFamilyList = {};
+  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex, 
+      initialQueueCount, initialQueuePriority));
 }
 
 Device::~Device() {
@@ -159,10 +164,24 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
   return foundExtension;
 }
 
+void Device::addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+    float initialQueuePriority) {
+
+  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex, 
+      initialQueueCount, initialQueuePriority));
+}
+
 void Device::activate() {
   if (this->isActive) {
     PRINT_MESSAGE(std::cerr, "Device is already active");
     return;
+  }
+
+  std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList(
+      queueFamilyList.size());
+
+  for (uint32_t x = 0; x < queueFamilyList.size(); x++) {
+    deviceQueueCreateInfoList[x] = queueFamilyList[x].getDeviceQueueCreateInfo();
   }
 
   const char** enabledExtensionNamesUnsafe = (const char**)malloc(
@@ -176,8 +195,8 @@ void Device::activate() {
     .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .queueCreateInfoCount = 0,
-    .pQueueCreateInfos = NULL,
+    .queueCreateInfoCount = (uint32_t)deviceQueueCreateInfoList.size(),
+    .pQueueCreateInfos = deviceQueueCreateInfoList.data(),
     .enabledLayerCount = 0,
     .ppEnabledLayerNames = NULL,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),

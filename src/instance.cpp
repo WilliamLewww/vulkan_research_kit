@@ -168,8 +168,8 @@ bool Instance::addLayer(std::string layerName) {
   if (std::find_if(
       std::begin(this->layerPropertiesList),
       std::end(this->layerPropertiesList),
-      [&](const VkLayerProperties& x) { return x.layerName == layerName; })
-      != std::end(this->layerPropertiesList)) {
+      [&](const VkLayerProperties& x) { return x.layerName == layerName; }) !=
+      std::end(this->layerPropertiesList)) {
 
     this->enabledLayerNameList.push_back(layerName);
     foundLayer = true;
@@ -215,8 +215,8 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
         std::begin(this->extensionPropertiesList),
         std::end(this->extensionPropertiesList),
         [&](const VkExtensionProperties& x)
-        { return x.extensionName == extensionName; })
-        != std::end(this->extensionPropertiesList)) {
+        { return x.extensionName == extensionName; }) != 
+        std::end(this->extensionPropertiesList)) {
 
       this->enabledExtensionNameList.push_back(extensionName);
       foundExtension = true;
@@ -246,8 +246,8 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
         std::begin(extensionPropertyList),
         std::end(extensionPropertyList),
         [&](const VkExtensionProperties& x)
-        { return x.extensionName == extensionName; })
-        != std::end(extensionPropertyList)) {
+        { return x.extensionName == extensionName; }) !=
+        std::end(extensionPropertyList)) {
 
       this->enabledExtensionNameList.push_back(extensionName);
       foundExtension = true;
