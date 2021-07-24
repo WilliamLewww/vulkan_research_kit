@@ -127,11 +127,11 @@ bool Device::addExtension(std::string extensionName) {
   return foundExtension;
 }
 
-void Device::addQueue(uint32_t initialQueueFamilyIndex,
-    uint32_t initialQueueCount, float initialQueuePriority) {
+void Device::addQueue(uint32_t queueFamilyIndex, uint32_t queueCount,
+    float queuePriority) {
 
-  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex,
-      initialQueueCount, initialQueuePriority));
+  this->queueFamilyList.push_back(QueueFamily(queueFamilyIndex,
+      queueCount, queuePriority));
 }
 
 void Device::activate() {
@@ -185,4 +185,10 @@ void Device::activate() {
 
 VkDevice* Device::getDeviceHandlePtr() {
   return &this->deviceHandle;
+}
+
+VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex, 
+    uint32_t queueIndex) {
+
+  return this->queueFamilyList[queueFamilyIndex].getQueueHandlePtr(queueIndex);
 }

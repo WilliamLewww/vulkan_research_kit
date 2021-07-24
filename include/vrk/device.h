@@ -45,10 +45,12 @@ public:
 
   bool addExtension(std::string extensionName);
 
-  void addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
-      float initialQueuePriority = 1.0f);
+  void addQueue(uint32_t queueFamilyIndex, uint32_t queueCount,
+      float queuePriority = 1.0f);
 
   void activate();
 
   VkDevice* getDeviceHandlePtr();
+
+  VkQueue* getQueueHandlePtr(uint32_t queueFamilyIndex, uint32_t queueIndex);
 };
