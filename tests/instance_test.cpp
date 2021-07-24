@@ -9,7 +9,7 @@ TEST (InstanceTest, Default) {
   std::string version = instance->getVulkanVersionAPI();
   EXPECT_FALSE(version == "");
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -27,7 +27,7 @@ TEST (InstanceTest, DoubleActivation) {
 
   std::cerr.rdbuf(sbuf);
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -56,7 +56,7 @@ TEST (InstanceTest, AddAllLayers) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -74,7 +74,7 @@ TEST (InstanceTest, AddAllExtensions) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -113,7 +113,7 @@ TEST (InstanceTest, AddAllExtensionsFromLayer) {
 
   std::cout.rdbuf(sbuf);
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -145,7 +145,7 @@ TEST (InstanceTest, ValidationLayer) {
 
   std::cout.rdbuf(sbuf);
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -158,7 +158,7 @@ TEST (InstanceTest, AddInvalidLayer) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -173,7 +173,7 @@ TEST (InstanceTest, GetExtensionsOnInvalidLayer) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -186,7 +186,7 @@ TEST (InstanceTest, AddInvalidExtension) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }
@@ -201,7 +201,7 @@ TEST (InstanceTest, AddExtensionOnInvalidLayer) {
 
   instance->activate();
 
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   delete instance;
 }

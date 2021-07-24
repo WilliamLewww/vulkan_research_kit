@@ -1,21 +1,21 @@
 #include "vrk/device.h"
 
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
-    VkInstance instanceHandle) {
+    VkInstance* instanceHandlePtr) {
 
-  if (instanceHandle == VK_NULL_HANDLE) {
+  if (*instanceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid instance handle");
   }
 
   uint32_t physicalDeviceCount = 0;
-  VkResult result = vkEnumeratePhysicalDevices(instanceHandle,
+  VkResult result = vkEnumeratePhysicalDevices(*instanceHandlePtr,
       &physicalDeviceCount, NULL);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
   }
 
   std::vector<VkPhysicalDevice> physicalDeviceList(physicalDeviceCount);
-  result = vkEnumeratePhysicalDevices(instanceHandle, &physicalDeviceCount,
+  result = vkEnumeratePhysicalDevices(*instanceHandlePtr, &physicalDeviceCount,
       physicalDeviceList.data());
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
@@ -25,48 +25,48 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
 }
 
 VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
-    VkPhysicalDevice physicalDeviceHandle) {
+    VkPhysicalDevice* physicalDeviceHandlePtr) {
 
-  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid physical device handle");
   }
 
   VkPhysicalDeviceProperties physicalDeviceProperties;
 
-  vkGetPhysicalDeviceProperties(physicalDeviceHandle,
+  vkGetPhysicalDeviceProperties(*physicalDeviceHandlePtr,
       &physicalDeviceProperties);
 
   return physicalDeviceProperties;
 }
 
 std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
-    VkPhysicalDevice physicalDeviceHandle) {
+    VkPhysicalDevice* physicalDeviceHandlePtr) {
 
-  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid physical device handle");
   }
 
   uint32_t queueFamilyPropertyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
+  vkGetPhysicalDeviceQueueFamilyProperties(*physicalDeviceHandlePtr,
       &queueFamilyPropertyCount, NULL);
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList(
       queueFamilyPropertyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
+  vkGetPhysicalDeviceQueueFamilyProperties(*physicalDeviceHandlePtr,
       &queueFamilyPropertyCount, queueFamilyPropertiesList.data());
 
   return queueFamilyPropertiesList;
 }
 
-Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
+Device::Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHandlePtr,
     uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
     float initialQueuePriority) {
 
-  if (instanceHandle == VK_NULL_HANDLE) {
+  if (*instanceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid instance handle");
   }
 
-  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid physical device handle");
   }
 
@@ -74,11 +74,11 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
 
   this->deviceHandle = VK_NULL_HANDLE;
 
-  this->instanceHandle = instanceHandle;
-  this->physicalDeviceHandle = physicalDeviceHandle;
+  this->instanceHandlePtr = instanceHandlePtr;
+  this->physicalDeviceHandlePtr = physicalDeviceHandlePtr;
 
   uint32_t extensionPropertiesCount = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle,
+  VkResult result = vkEnumerateDeviceExtensionProperties(*physicalDeviceHandlePtr,
       NULL, &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result,
@@ -86,7 +86,7 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   }
 
   this->extensionPropertiesList.resize(extensionPropertiesCount);
-  result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL,
+  result = vkEnumerateDeviceExtensionProperties(*physicalDeviceHandlePtr, NULL,
       &extensionPropertiesCount, this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result,
@@ -168,7 +168,7 @@ void Device::activate() {
     .pEnabledFeatures = NULL,
   };
 
-  VkResult result = vkCreateDevice(this->physicalDeviceHandle,
+  VkResult result = vkCreateDevice(*this->physicalDeviceHandlePtr,
       &deviceCreateInfo, NULL, &this->deviceHandle);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateDevice");
@@ -176,9 +176,13 @@ void Device::activate() {
 
   free(enabledExtensionNamesUnsafe);
 
+  for (QueueFamily& queueFamily : this->queueFamilyList) {
+    queueFamily.activate(&this->deviceHandle);
+  }
+
   this->isActive = true;
 }
 
-VkDevice Device::getDeviceHandle() {
-  return this->deviceHandle;
+VkDevice* Device::getDeviceHandlePtr() {
+  return &this->deviceHandle;
 }

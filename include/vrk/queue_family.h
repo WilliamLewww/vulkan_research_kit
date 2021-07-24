@@ -8,17 +8,26 @@
 
 class QueueFamily {
 private:
+  bool isActive;
+
   std::vector<VkQueue> queueHandleList;
 
-  uint32_t queueFamilyIndex;
   float queuePriority;
 
   VkDeviceQueueCreateInfo deviceQueueCreateInfo;
 public:
-  QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
+  QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount, 
       float queuePriority = 1.0f);
 
   ~QueueFamily();
 
+  uint32_t getFamilyIndex();
+
+  uint32_t getQueueCount();
+
   VkDeviceQueueCreateInfo getDeviceQueueCreateInfo();
+
+  void activate(VkDevice* deviceHandlePtr);
+
+  VkQueue* getQueueHandlePtr(uint32_t index);
 };

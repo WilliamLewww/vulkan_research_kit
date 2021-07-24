@@ -20,22 +20,22 @@ private:
   VkDevice deviceHandle;
   std::vector<QueueFamily> queueFamilyList;
 
-  VkInstance instanceHandle;
-  VkPhysicalDevice physicalDeviceHandle;
+  VkInstance* instanceHandlePtr;
+  VkPhysicalDevice* physicalDeviceHandlePtr;
 
   std::vector<VkExtensionProperties> extensionPropertiesList;
   std::vector<std::string> enabledExtensionNameList;
 public:
   static std::vector<VkPhysicalDevice> getPhysicalDevices(
-      VkInstance instanceHandle);
+      VkInstance* instanceHandlePtr);
 
   static VkPhysicalDeviceProperties getPhysicalDeviceProperties(
-      VkPhysicalDevice physicalDeviceHandle);
+      VkPhysicalDevice* physicalDeviceHandlePtr);
 
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
-      VkPhysicalDevice physicalDeviceHandle);
+      VkPhysicalDevice* physicalDeviceHandlePtr);
 
-  Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
+  Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHandlePtr,
       uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
       float initialQueuePriority = 1.0f);
 
@@ -50,5 +50,5 @@ public:
 
   void activate();
 
-  VkDevice getDeviceHandle();
+  VkDevice* getDeviceHandlePtr();
 };

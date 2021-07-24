@@ -64,5 +64,5 @@ public:
 
   void activate();
 
-  VkInstance getInstanceHandle();
+  VkInstance* getInstanceHandlePtr();
 };

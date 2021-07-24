@@ -6,10 +6,10 @@
 TEST (DeviceTest, GetPhysicalDevices) {
   Instance* instance = new Instance();
   instance->activate();
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandle());
+      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   EXPECT_GT(deviceHandleList.size(), 0);
 
@@ -19,14 +19,14 @@ TEST (DeviceTest, GetPhysicalDevices) {
 TEST (DeviceTest, GetPhysicalDeviceProperties) {
   Instance* instance = new Instance();
   instance->activate();
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandle());
+      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties = 
-        Device::getPhysicalDeviceProperties(deviceHandle);
+        Device::getPhysicalDeviceProperties(&deviceHandle);
   }
 
  delete instance;
@@ -35,17 +35,17 @@ TEST (DeviceTest, GetPhysicalDeviceProperties) {
 TEST (DeviceTest, GetQueueFamilyPropertiesList) {
   Instance* instance = new Instance();
   instance->activate();
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandle());
+      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties = 
-        Device::getPhysicalDeviceProperties(deviceHandle);
+        Device::getPhysicalDeviceProperties(&deviceHandle);
 
     std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
-        Device::getQueueFamilyPropertiesList(deviceHandle);
+        Device::getQueueFamilyPropertiesList(&deviceHandle);
 
     EXPECT_GT(queueFamilyPropertiesList.size(), 0);
   }
@@ -56,15 +56,15 @@ TEST (DeviceTest, GetQueueFamilyPropertiesList) {
 TEST (DeviceTest, Default) {
   Instance* instance = new Instance();
   instance->activate();
-  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*instance->getInstanceHandlePtr(), VK_NULL_HANDLE);
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandle());
+      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   VkPhysicalDevice activePhysicalDevice;
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties = 
-        Device::getPhysicalDeviceProperties(deviceHandle);
+        Device::getPhysicalDeviceProperties(&deviceHandle);
 
     if (physicalDeviceProperties.deviceType ==
         VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -74,7 +74,7 @@ TEST (DeviceTest, Default) {
   }
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
-      Device::getQueueFamilyPropertiesList(activePhysicalDevice);
+      Device::getQueueFamilyPropertiesList(&activePhysicalDevice);
 
   uint32_t queueFamilyIndex = -1;
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
@@ -83,24 +83,25 @@ TEST (DeviceTest, Default) {
     }
   }
 
-  Device* device = new Device(instance->getInstanceHandle(), 
-      activePhysicalDevice, queueFamilyIndex, 1);
+  Device* device = new Device(instance->getInstanceHandlePtr(), 
+      &activePhysicalDevice, queueFamilyIndex, 1);
 
   device->activate();
 
-  EXPECT_NE(device->getDeviceHandle(), VK_NULL_HANDLE);
+  EXPECT_NE(*device->getDeviceHandlePtr(), VK_NULL_HANDLE);
 
   delete device;
   delete instance;
 }
 
 TEST (DeviceTest, InvalidInstanceHandle) {
-  VkPhysicalDevice activePhysicalDevice;
+  VkInstance instanceHandle = VK_NULL_HANDLE;
+  VkPhysicalDevice activePhysicalDevice = VK_NULL_HANDLE;
 
   Device* device = nullptr;
   try {
-    device = new Device(VK_NULL_HANDLE, 
-        activePhysicalDevice, 0, 1);
+    device = new Device(&instanceHandle, 
+        &activePhysicalDevice, 0, 1);
   }
   catch(std::exception& e) {
     std::stringstream buffer;
@@ -122,10 +123,12 @@ TEST (DeviceTest, InvalidPhysicalDeviceHandle) {
   Instance* instance = new Instance();
   instance->activate();
 
+  VkPhysicalDevice activePhysicalDevice = VK_NULL_HANDLE;
+
   Device* device = nullptr;
 
   try {
-    device = new Device(instance->getInstanceHandle(), VK_NULL_HANDLE, 0, 1);
+    device = new Device(instance->getInstanceHandlePtr(), &activePhysicalDevice, 0, 1);
   }
   catch(std::exception& e) {
     std::stringstream buffer;

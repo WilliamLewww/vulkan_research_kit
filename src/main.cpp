@@ -30,12 +30,12 @@ int main() {
   instance->activate();
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandle());
+      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   VkPhysicalDevice activePhysicalDevice;
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties = 
-        Device::getPhysicalDeviceProperties(deviceHandle);
+        Device::getPhysicalDeviceProperties(&deviceHandle);
 
     if (physicalDeviceProperties.deviceType ==
         VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -45,7 +45,7 @@ int main() {
   }
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
-      Device::getQueueFamilyPropertiesList(activePhysicalDevice);
+      Device::getQueueFamilyPropertiesList(&activePhysicalDevice);
 
   uint32_t queueFamilyIndex = -1;
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
@@ -54,8 +54,8 @@ int main() {
     }
   }
 
-  Device* device = new Device(instance->getInstanceHandle(), 
-      activePhysicalDevice, queueFamilyIndex, 1);
+  Device* device = new Device(instance->getInstanceHandlePtr(), 
+      &activePhysicalDevice, queueFamilyIndex, 1);
 
   device->activate();
 

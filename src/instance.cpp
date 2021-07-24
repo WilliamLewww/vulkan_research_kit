@@ -336,6 +336,6 @@ void Instance::activate() {
   this->isActive = true;
 }
 
-VkInstance Instance::getInstanceHandle() {
-  return this->instanceHandle;
+VkInstance* Instance::getInstanceHandlePtr() {
+  return &this->instanceHandle;
 }
