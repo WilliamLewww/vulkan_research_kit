@@ -49,7 +49,8 @@ TEST (InstanceTest, AddAllLayers) {
         [&](const std::string& x) { return x == layerProperties.layerName; })
         == std::end(ignoredLayerNameList)) {
 
-      instance->addLayer(layerProperties.layerName);
+      int result = instance->addLayer(layerProperties.layerName);
+      EXPECT_EQ(result, true);
     }
   }
 
@@ -67,7 +68,8 @@ TEST (InstanceTest, AddAllExtensions) {
       instance->getAvailableExtensionPropertiesList();
 
   for (VkExtensionProperties extensionProperties : extensionPropertiesList) {
-    instance->addExtension(extensionProperties.extensionName);
+    int result = instance->addExtension(extensionProperties.extensionName);
+    EXPECT_EQ(result, true);
   }
 
   instance->activate();
@@ -80,15 +82,36 @@ TEST (InstanceTest, AddAllExtensions) {
 TEST (InstanceTest, AddAllExtensionsFromLayer) {
   Instance* instance = new Instance();
 
+  instance->setDebugUtilsMessageSeverityFlagBits(
+      (VkDebugUtilsMessageSeverityFlagBitsEXT)
+      (VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT));
+
+  instance->setDebugUtilsMessageTypeFlagBits(
+      (VkDebugUtilsMessageTypeFlagBitsEXT)
+      (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT));
+
+  int result = instance->addLayer("VK_LAYER_KHRONOS_validation");
+  EXPECT_EQ(result, true);
+
   std::vector<VkExtensionProperties> extensionPropertiesList =
       instance->getAvailableExtensionPropertiesList(
       "VK_LAYER_KHRONOS_validation");
 
   for (VkExtensionProperties extensionProperties : extensionPropertiesList) {
-    instance->addExtension(extensionProperties.extensionName);
+    int result = instance->addExtension(extensionProperties.extensionName,
+        "VK_LAYER_KHRONOS_validation");
+    EXPECT_EQ(result, true);
   }
 
+  std::stringstream buffer;
+  std::streambuf *sbuf = std::cout.rdbuf();
+  std::cout.rdbuf(buffer.rdbuf());
+
   instance->activate();
+
+  std::cout.rdbuf(sbuf);
 
   EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
 
@@ -143,20 +166,10 @@ TEST (InstanceTest, AddInvalidLayer) {
 TEST (InstanceTest, GetExtensionsOnInvalidLayer) {
   Instance* instance = new Instance();
 
-  try {
-    instance->getAvailableExtensionPropertiesList("NOT_A_REAL_LAYER");
-  }
-  catch(std::exception& e) {
-    std::stringstream buffer;
-    std::streambuf *sbuf = std::cerr.rdbuf();
-    std::cerr.rdbuf(buffer.rdbuf());
+  std::vector<VkExtensionProperties> extensionPropertiesList =
+      instance->getAvailableExtensionPropertiesList("NOT_A_REAL_LAYER");
 
-    std::cerr << e.what() << std::endl;
-    std::string output = buffer.str();
-    EXPECT_STREQ("Vulkan API exception", output.substr(0, 20).c_str());
-
-    std::cerr.rdbuf(sbuf);
-  }
+  EXPECT_EQ(extensionPropertiesList.size(), 0);
 
   instance->activate();
 
@@ -169,6 +182,21 @@ TEST (InstanceTest, AddInvalidExtension) {
   Instance* instance = new Instance();
 
   bool result = instance->addExtension("NOT_A_REAL_EXTENSION");
+  EXPECT_EQ(result, false);
+
+  instance->activate();
+
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  delete instance;
+}
+
+TEST (InstanceTest, AddExtensionOnInvalidLayer) {
+  Instance* instance = new Instance();
+
+  bool result = instance->addExtension("NOT_A_REAL_EXTENSION",
+      "NOT_A_REAL_LAYER");
+
   EXPECT_EQ(result, false);
 
   instance->activate();

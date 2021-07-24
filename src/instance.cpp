@@ -178,6 +178,17 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
     return this->extensionPropertiesList;
   }
 
+  std::vector<VkExtensionProperties> extensionPropertiesListLayer = {};
+
+  if (std::find_if(
+      std::begin(this->layerPropertiesList),
+      std::end(this->layerPropertiesList),
+      [&](const VkLayerProperties& x) { return x.layerName == layerName; }) ==
+      std::end(this->layerPropertiesList)) {
+
+    return extensionPropertiesListLayer;
+  }
+
   uint32_t extensionPropertiesCountLayer = 0;
   VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
@@ -185,8 +196,7 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
     throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
   }
 
-  std::vector<VkExtensionProperties> extensionPropertiesListLayer(
-      extensionPropertiesCountLayer);
+  extensionPropertiesListLayer.resize(extensionPropertiesCountLayer);
   result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
@@ -212,6 +222,15 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
     }
   }
   else {
+    if (std::find_if(
+        std::begin(this->layerPropertiesList),
+        std::end(this->layerPropertiesList),
+        [&](const VkLayerProperties& x) { return x.layerName == layerName; }) ==
+        std::end(this->layerPropertiesList)) {
+
+      return false;
+    }
+
     uint32_t extensionPropertiesCount = 0;
     VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
         &extensionPropertiesCount, NULL);
