@@ -3,6 +3,56 @@
 #include <vrk/instance.h>
 #include <vrk/device.h>
 
+TEST (DeviceTest, GetPhysicalDevices) {
+  Instance* instance = new Instance();
+  instance->activate();
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  std::vector<VkPhysicalDevice> deviceHandleList =
+      Device::getPhysicalDevices(instance->getInstanceHandle());
+
+  EXPECT_GT(deviceHandleList.size(), 0);
+
+  delete instance;
+}
+
+TEST (DeviceTest, GetPhysicalDeviceProperties) {
+  Instance* instance = new Instance();
+  instance->activate();
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  std::vector<VkPhysicalDevice> deviceHandleList =
+      Device::getPhysicalDevices(instance->getInstanceHandle());
+
+  for (VkPhysicalDevice deviceHandle : deviceHandleList) {
+    VkPhysicalDeviceProperties physicalDeviceProperties = 
+        Device::getPhysicalDeviceProperties(deviceHandle);
+  }
+
+ delete instance;
+}
+
+TEST (DeviceTest, GetQueueFamilyPropertiesList) {
+  Instance* instance = new Instance();
+  instance->activate();
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  std::vector<VkPhysicalDevice> deviceHandleList =
+      Device::getPhysicalDevices(instance->getInstanceHandle());
+
+  for (VkPhysicalDevice deviceHandle : deviceHandleList) {
+    VkPhysicalDeviceProperties physicalDeviceProperties = 
+        Device::getPhysicalDeviceProperties(deviceHandle);
+
+    std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
+        Device::getQueueFamilyPropertiesList(deviceHandle);
+
+    EXPECT_GT(queueFamilyPropertiesList.size(), 0);
+  }
+
+ delete instance;
+}
+
 TEST (DeviceTest, Default) {
   Instance* instance = new Instance();
   instance->activate();

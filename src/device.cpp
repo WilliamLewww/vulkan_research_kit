@@ -3,6 +3,10 @@
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
     VkInstance instanceHandle) {
 
+  if (instanceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid instance handle");
+  }
+
   uint32_t physicalDeviceCount = 0;
   VkResult result = vkEnumeratePhysicalDevices(instanceHandle,
       &physicalDeviceCount, NULL);
@@ -23,6 +27,10 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
 VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
     VkPhysicalDevice physicalDeviceHandle) {
 
+  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid physical device handle");
+  }
+
   VkPhysicalDeviceProperties physicalDeviceProperties;
 
   vkGetPhysicalDeviceProperties(physicalDeviceHandle,
@@ -33,6 +41,10 @@ VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
 
 std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
     VkPhysicalDevice physicalDeviceHandle) {
+
+  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid physical device handle");
+  }
 
   uint32_t queueFamilyPropertyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandle,
@@ -53,6 +65,7 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   if (instanceHandle == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid instance handle");
   }
+
   if (physicalDeviceHandle == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid physical device handle");
   }
@@ -92,82 +105,30 @@ Device::~Device() {
 }
 
 std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
-    (std::string layerName) {
+    () {
 
-  if (layerName == "") {
-    return this->extensionPropertiesList;
-  }
-
-  uint32_t extensionPropertiesCountLayer = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(
-      this->physicalDeviceHandle, layerName.c_str(),
-      &extensionPropertiesCountLayer, NULL);
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result,
-        "vkEnumerateDeviceExtensionProperties");
-  }
-
-  std::vector<VkExtensionProperties> extensionPropertiesListLayer(
-      extensionPropertiesCountLayer);
-  result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle,
-      layerName.c_str(), &extensionPropertiesCountLayer,
-      extensionPropertiesListLayer.data());
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result,
-        "vkEnumerateDeviceExtensionProperties");
-  }
-
-  return extensionPropertiesListLayer;
+  return this->extensionPropertiesList;
 }
 
-bool Device::addExtension(std::string extensionName, std::string layerName) {
+bool Device::addExtension(std::string extensionName) {
   bool foundExtension = false;
 
-  if (layerName == "") {
-    for (VkExtensionProperties extensionProperties :
-        this->extensionPropertiesList) {
-      if (extensionProperties.extensionName == extensionName) {
-        this->enabledExtensionNameList.push_back(extensionName);
-        foundExtension = true;
-      }
-    }
-  }
-  else {
-    uint32_t extensionPropertiesCount = 0;
-    VkResult result = vkEnumerateDeviceExtensionProperties(
-        this->physicalDeviceHandle, layerName.c_str(),
-        &extensionPropertiesCount, NULL);
-    if (result != VK_SUCCESS) {
-      throwExceptionVulkanAPI(result,
-          "vkEnumerateDeviceExtensionProperties");
+  if (std::find_if(
+      std::begin(this->extensionPropertiesList),
+      std::end(this->extensionPropertiesList),
+      [&](const VkExtensionProperties& x)
+      { return x.extensionName == extensionName; }) != 
+      std::end(this->extensionPropertiesList)) {
 
-    }
-
-    std::vector<VkExtensionProperties> extensionPropertyList(
-        extensionPropertiesCount);
-    result = vkEnumerateDeviceExtensionProperties(this->physicalDeviceHandle,
-        layerName.c_str(), &extensionPropertiesCount,
-        extensionPropertyList.data());
-    if (result != VK_SUCCESS) {
-      throwExceptionVulkanAPI(result,
-          "vkEnumerateDeviceExtensionProperties");
-
-    }
-
-    for (VkExtensionProperties extensionProperties :
-        extensionPropertyList) {
-      if (extensionProperties.extensionName == extensionName) {
-        this->enabledExtensionNameList.push_back(extensionName);
-        foundExtension = true;
-      }
-    }
+    this->enabledExtensionNameList.push_back(extensionName);
+    foundExtension = true;
   }
 
   return foundExtension;
 }
 
-void Device::addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
-    float initialQueuePriority) {
+void Device::addQueue(uint32_t initialQueueFamilyIndex, 
+    uint32_t initialQueueCount, float initialQueuePriority) {
 
   this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex, 
       initialQueueCount, initialQueuePriority));
@@ -183,7 +144,8 @@ void Device::activate() {
       queueFamilyList.size());
 
   for (uint32_t x = 0; x < queueFamilyList.size(); x++) {
-    deviceQueueCreateInfoList[x] = queueFamilyList[x].getDeviceQueueCreateInfo();
+    deviceQueueCreateInfoList[x] = 
+        queueFamilyList[x].getDeviceQueueCreateInfo();
   }
 
   const char** enabledExtensionNamesUnsafe = (const char**)malloc(

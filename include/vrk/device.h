@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,10 +41,9 @@ public:
 
   ~Device();
 
-  std::vector<VkExtensionProperties> getAvailableExtensionPropertiesList(
-      std::string layerName = "");
+  std::vector<VkExtensionProperties> getAvailableExtensionPropertiesList();
 
-  bool addExtension(std::string extensionName, std::string layerName = "");
+  bool addExtension(std::string extensionName);
 
   void addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
       float initialQueuePriority = 1.0f);
