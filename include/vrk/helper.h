@@ -2,14 +2,14 @@
 
 #include <vulkan/vulkan.h>
 
+#include <iostream>
+#include <exception>
+#include <string>
+
 #define STRING_RESET    "\033[0m"
 #define STRING_INFO     "\033[37m"
 #define STRING_WARNING  "\033[33m"
 #define STRING_ERROR    "\033[36m"
-
-#define PRINT_RETURN_CODE(stream, code, functionName)                   \
-  stream << "Return code " << code <<                                   \
-      " (" << functionName << ")" << std::endl
 
 #define PRINT_MESSAGE(stream, message)                                  \
   stream << message << std::endl;
@@ -22,3 +22,5 @@
   if (functionLocalName == NULL)                                        \
     std::cerr << "Instance funtion not found: " <<                      \
         #functionName << std::endl;
+
+void throwExceptionVulkanAPI(VkResult result, std::string functionName);

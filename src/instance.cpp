@@ -34,8 +34,7 @@ Instance::Instance() {
   uint32_t apiVersion;
   VkResult result = vkEnumerateInstanceVersion(&apiVersion);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceVersion");
   }
 
   this->majorVersion = VK_API_VERSION_MAJOR(apiVersion);
@@ -77,34 +76,28 @@ Instance::Instance() {
   uint32_t layerPropertiesCount = 0;
   result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceVersion");
   }
 
   this->layerPropertiesList.resize(layerPropertiesCount);
   result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount,
       this->layerPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumerateInstanceVersion");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceVersion");
   }
 
   uint32_t extensionPropertiesCount = 0;
   result = vkEnumerateInstanceExtensionProperties(NULL,
       &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
-        "vkEnumerateInstanceExtensionProperties");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
   }
 
   this->extensionPropertiesList.resize(extensionPropertiesCount);
   result = vkEnumerateInstanceExtensionProperties(NULL,
       &extensionPropertiesCount, this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
-        "vkEnumerateInstanceExtensionProperties");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
   }
 
   this->enabledLayerNameList = {};
@@ -189,9 +182,7 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
-        "vkEnumerateInstanceExtensionProperties");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
   }
 
   std::vector<VkExtensionProperties> extensionPropertiesListLayer(
@@ -199,9 +190,7 @@ std::vector<VkExtensionProperties> Instance::getAvailableExtensionPropertiesList
   result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
       &extensionPropertiesCountLayer, extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
-        "vkEnumerateInstanceExtensionProperties");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
   }
 
   return extensionPropertiesListLayer;
@@ -227,9 +216,8 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
     VkResult result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
         &extensionPropertiesCount, NULL);
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(std::cerr, result,
-          "vkEnumerateInstanceExtensionProperties");
-      exit(1);
+      throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
+
     }
 
     std::vector<VkExtensionProperties> extensionPropertyList(
@@ -237,9 +225,8 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
     result = vkEnumerateInstanceExtensionProperties(layerName.c_str(),
         &extensionPropertiesCount, extensionPropertyList.data());
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(std::cerr, result,
-          "vkEnumerateInstanceExtensionProperties");
-      exit(1);
+      throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
+
     }
 
     if (std::find_if(
@@ -305,8 +292,7 @@ void Instance::activate() {
   free(enabledLayerNamesUnsafe);
 
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkCreateInstance");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkCreateInstance");
   }
 
   if (std::find(std::begin(enabledExtensionNameList),
@@ -323,8 +309,8 @@ void Instance::activate() {
         &this->debugUtilsMessengerHandle);
 
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(std::cerr, result, "vkCreateDebugUtilsMessengerEXT");
-      exit(1);
+      throwExceptionVulkanAPI(result, "vkCreateDebugUtilsMessengerEXT");
+
     }
   }
 

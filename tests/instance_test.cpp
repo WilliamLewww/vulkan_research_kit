@@ -127,6 +127,57 @@ TEST (InstanceTest, ValidationLayer) {
   delete instance;
 }
 
+TEST (InstanceTest, AddInvalidLayer) {
+  Instance* instance = new Instance();
+
+  bool result = instance->addLayer("NOT_A_REAL_LAYER");
+  EXPECT_EQ(result, false);
+
+  instance->activate();
+
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  delete instance;
+}
+
+TEST (InstanceTest, GetExtensionsOnInvalidLayer) {
+  Instance* instance = new Instance();
+
+  try {
+    instance->getAvailableExtensionPropertiesList("NOT_A_REAL_LAYER");
+  }
+  catch(std::exception& e) {
+    std::stringstream buffer;
+    std::streambuf *sbuf = std::cerr.rdbuf();
+    std::cerr.rdbuf(buffer.rdbuf());
+
+    std::cerr << e.what() << std::endl;
+    std::string output = buffer.str();
+    EXPECT_STREQ("Vulkan API exception", output.substr(0, 20).c_str());
+
+    std::cerr.rdbuf(sbuf);
+  }
+
+  instance->activate();
+
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  delete instance;
+}
+
+TEST (InstanceTest, AddInvalidExtension) {
+  Instance* instance = new Instance();
+
+  bool result = instance->addExtension("NOT_A_REAL_EXTENSION");
+  EXPECT_EQ(result, false);
+
+  instance->activate();
+
+  EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
+
+  delete instance;
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

@@ -6,16 +6,14 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
   VkResult result = vkEnumeratePhysicalDevices(instanceHandle,
       &physicalDeviceCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumeratePhysicalDevices");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
   }
 
   std::vector<VkPhysicalDevice> physicalDeviceList(physicalDeviceCount);
   result = vkEnumeratePhysicalDevices(instanceHandle, &physicalDeviceCount,
       physicalDeviceList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkEnumeratePhysicalDevices");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
   }
 
   return physicalDeviceList;
@@ -62,18 +60,16 @@ Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
   VkResult result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle,
       NULL, &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
+    throwExceptionVulkanAPI(result,
         "vkEnumerateDeviceExtensionProperties");
-    exit(1);
   }
 
   this->extensionPropertiesList.resize(extensionPropertiesCount);
   result = vkEnumerateDeviceExtensionProperties(physicalDeviceHandle, NULL,
       &extensionPropertiesCount, this->extensionPropertiesList.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
+    throwExceptionVulkanAPI(result,
         "vkEnumerateDeviceExtensionProperties");
-    exit(1);
   }
 
   this->enabledExtensionNameList = {};
@@ -99,9 +95,8 @@ std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
       this->physicalDeviceHandle, layerName.c_str(),
       &extensionPropertiesCountLayer, NULL);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
+    throwExceptionVulkanAPI(result,
         "vkEnumerateDeviceExtensionProperties");
-    exit(1);
   }
 
   std::vector<VkExtensionProperties> extensionPropertiesListLayer(
@@ -110,9 +105,8 @@ std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
       layerName.c_str(), &extensionPropertiesCountLayer,
       extensionPropertiesListLayer.data());
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result,
+    throwExceptionVulkanAPI(result,
         "vkEnumerateDeviceExtensionProperties");
-    exit(1);
   }
 
   return extensionPropertiesListLayer;
@@ -136,9 +130,9 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
         this->physicalDeviceHandle, layerName.c_str(),
         &extensionPropertiesCount, NULL);
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(std::cerr, result,
+      throwExceptionVulkanAPI(result,
           "vkEnumerateDeviceExtensionProperties");
-      exit(1);
+
     }
 
     std::vector<VkExtensionProperties> extensionPropertyList(
@@ -147,9 +141,9 @@ bool Device::addExtension(std::string extensionName, std::string layerName) {
         layerName.c_str(), &extensionPropertiesCount,
         extensionPropertyList.data());
     if (result != VK_SUCCESS) {
-      PRINT_RETURN_CODE(std::cerr, result,
+      throwExceptionVulkanAPI(result,
           "vkEnumerateDeviceExtensionProperties");
-      exit(1);
+
     }
 
     for (VkExtensionProperties extensionProperties :
@@ -207,8 +201,7 @@ void Device::activate() {
   VkResult result = vkCreateDevice(this->physicalDeviceHandle,
       &deviceCreateInfo, NULL, &this->deviceHandle);
   if (result != VK_SUCCESS) {
-    PRINT_RETURN_CODE(std::cerr, result, "vkCreateDevice");
-    exit(1);
+    throwExceptionVulkanAPI(result, "vkCreateDevice");
   }
 
   free(enabledExtensionNamesUnsafe);
