@@ -35,7 +35,8 @@ public:
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
       VkPhysicalDevice* physicalDeviceHandlePtr);
 
-  Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHandlePtr,
+  Device(VkInstance* instanceHandlePtr, 
+      VkPhysicalDevice* physicalDeviceHandlePtr,
       uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
       float initialQueuePriority = 1.0f);
 
@@ -53,4 +54,6 @@ public:
   VkDevice* getDeviceHandlePtr();
 
   VkQueue* getQueueHandlePtr(uint32_t queueFamilyIndex, uint32_t queueIndex);
+
+  friend std::ostream& operator<<(std::ostream& os, const Device& device);
 };

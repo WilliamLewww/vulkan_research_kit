@@ -192,3 +192,19 @@ VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex,
 
   return this->queueFamilyList[queueFamilyIndex].getQueueHandlePtr(queueIndex);
 }
+
+std::ostream& operator<<(std::ostream& os, const Device& device)
+{
+  os << "Device: " << &device << std::endl;
+  os << "  device handle: " << device.deviceHandle << std::endl;
+  os << "  instance handle (ptr): " << *device.instanceHandlePtr << std::endl;
+  os << "  physical device handle (ptr): " << 
+      *device.physicalDeviceHandlePtr;
+
+  for (QueueFamily queueFamily : device.queueFamilyList) {
+    os << std::endl;
+    os << queueFamily;
+  }
+
+  return os;
+}

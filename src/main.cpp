@@ -59,6 +59,10 @@ int main() {
 
   device->activate();
 
+  std::cout << *instance << std::endl;
+  std::cout << std::endl;
+  std::cout << *device << std::endl;
+
   delete device;
   delete instance;
 

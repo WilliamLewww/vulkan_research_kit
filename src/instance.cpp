@@ -339,3 +339,13 @@ void Instance::activate() {
 VkInstance* Instance::getInstanceHandlePtr() {
   return &this->instanceHandle;
 }
+
+std::ostream& operator<<(std::ostream& os, const Instance& instance)
+{
+  os << "Instance: " << &instance << std::endl;
+  os << "  Instance handle: " << instance.instanceHandle << std::endl;
+  os << "  Debug utils messenger handle: " << 
+      instance.debugUtilsMessengerHandle;
+
+  return os;
+}

@@ -53,3 +53,15 @@ void QueueFamily::activate(VkDevice* deviceHandlePtr) {
 VkQueue* QueueFamily::getQueueHandlePtr(uint32_t index) {
   return &this->queueHandleList[index];
 }
+
+std::ostream& operator<<(std::ostream& os, const QueueFamily& queueFamily)
+{
+  os << "Queue family: " << &queueFamily;
+
+  for (VkQueue queueHandle : queueFamily.queueHandleList) {
+    os << std::endl;
+    os << "  Queue handle: " << queueHandle;
+  }
+
+  return os;
+}
