@@ -3,7 +3,7 @@
 
 int main() {
   Instance* instance = new Instance();
-  std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str() 
+  std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str()
       << std::endl;
 
   instance->addValidationFeatureEnable(
@@ -34,7 +34,7 @@ int main() {
 
   VkPhysicalDevice activePhysicalDevice;
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
-    VkPhysicalDeviceProperties physicalDeviceProperties = 
+    VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(&deviceHandle);
 
     if (physicalDeviceProperties.deviceType ==
@@ -44,7 +44,7 @@ int main() {
     }
   }
 
-  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
+  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList =
       Device::getQueueFamilyPropertiesList(&activePhysicalDevice);
 
   uint32_t queueFamilyIndex = -1;
@@ -54,7 +54,7 @@ int main() {
     }
   }
 
-  Device* device = new Device(instance->getInstanceHandlePtr(), 
+  Device* device = new Device(instance->getInstanceHandlePtr(),
       &activePhysicalDevice, queueFamilyIndex, 1);
 
   device->activate();

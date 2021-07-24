@@ -214,7 +214,7 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
         std::begin(this->extensionPropertiesList),
         std::end(this->extensionPropertiesList),
         [&](const VkExtensionProperties& x)
-        { return x.extensionName == extensionName; }) != 
+        { return x.extensionName == extensionName; }) !=
         std::end(this->extensionPropertiesList)) {
 
       this->enabledExtensionNameList.push_back(extensionName);

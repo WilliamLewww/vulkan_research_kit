@@ -25,7 +25,7 @@ TEST (DeviceTest, GetPhysicalDeviceProperties) {
       Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
-    VkPhysicalDeviceProperties physicalDeviceProperties = 
+    VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(&deviceHandle);
   }
 
@@ -41,10 +41,10 @@ TEST (DeviceTest, GetQueueFamilyPropertiesList) {
       Device::getPhysicalDevices(instance->getInstanceHandlePtr());
 
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
-    VkPhysicalDeviceProperties physicalDeviceProperties = 
+    VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(&deviceHandle);
 
-    std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
+    std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList =
         Device::getQueueFamilyPropertiesList(&deviceHandle);
 
     EXPECT_GT(queueFamilyPropertiesList.size(), 0);
@@ -63,7 +63,7 @@ TEST (DeviceTest, Default) {
 
   VkPhysicalDevice activePhysicalDevice;
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
-    VkPhysicalDeviceProperties physicalDeviceProperties = 
+    VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(&deviceHandle);
 
     if (physicalDeviceProperties.deviceType ==
@@ -73,7 +73,7 @@ TEST (DeviceTest, Default) {
     }
   }
 
-  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList = 
+  std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList =
       Device::getQueueFamilyPropertiesList(&activePhysicalDevice);
 
   uint32_t queueFamilyIndex = -1;
@@ -83,7 +83,7 @@ TEST (DeviceTest, Default) {
     }
   }
 
-  Device* device = new Device(instance->getInstanceHandlePtr(), 
+  Device* device = new Device(instance->getInstanceHandlePtr(),
       &activePhysicalDevice, queueFamilyIndex, 1);
 
   device->activate();
@@ -100,7 +100,7 @@ TEST (DeviceTest, InvalidInstanceHandle) {
 
   Device* device = nullptr;
   try {
-    device = new Device(&instanceHandle, 
+    device = new Device(&instanceHandle,
         &activePhysicalDevice, 0, 1);
   }
   catch(std::exception& e) {

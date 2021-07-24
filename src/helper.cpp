@@ -1,7 +1,7 @@
 #include "vrk/helper.h"
 
 void throwExceptionVulkanAPI(VkResult result, std::string functionName) {
-  std::string message = "Vulkan API exception: return code " + 
+  std::string message = "Vulkan API exception: return code " +
       std::to_string(result) + " (" + functionName + ")";
 
   throw std::runtime_error(message);

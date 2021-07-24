@@ -1,6 +1,6 @@
 #include "vrk/queue_family.h"
 
-QueueFamily::QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount, 
+QueueFamily::QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
     float queuePriority) {
 
   this->isActive = false;
@@ -42,8 +42,8 @@ void QueueFamily::activate(VkDevice* deviceHandlePtr) {
   }
 
   for (uint32_t x = 0; x < this->deviceQueueCreateInfo.queueCount; x++) {
-    vkGetDeviceQueue(*deviceHandlePtr, 
-        this->deviceQueueCreateInfo.queueFamilyIndex, x, 
+    vkGetDeviceQueue(*deviceHandlePtr,
+        this->deviceQueueCreateInfo.queueFamilyIndex, x,
         &this->queueHandleList[x]);
   }
 

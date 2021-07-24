@@ -16,7 +16,7 @@ private:
 
   VkDeviceQueueCreateInfo deviceQueueCreateInfo;
 public:
-  QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount, 
+  QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
       float queuePriority = 1.0f);
 
   ~QueueFamily();

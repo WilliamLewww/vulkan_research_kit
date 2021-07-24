@@ -58,9 +58,9 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
   return queueFamilyPropertiesList;
 }
 
-Device::Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHandlePtr,
-    uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
-    float initialQueuePriority) {
+Device::Device(VkInstance* instanceHandlePtr,
+    VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
+    uint32_t initialQueueCount, float initialQueuePriority) {
 
   if (*instanceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid instance handle");
@@ -78,8 +78,8 @@ Device::Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHa
   this->physicalDeviceHandlePtr = physicalDeviceHandlePtr;
 
   uint32_t extensionPropertiesCount = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(*physicalDeviceHandlePtr,
-      NULL, &extensionPropertiesCount, NULL);
+  VkResult result = vkEnumerateDeviceExtensionProperties(
+      *physicalDeviceHandlePtr, NULL, &extensionPropertiesCount, NULL);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result,
         "vkEnumerateDeviceExtensionProperties");
@@ -96,7 +96,7 @@ Device::Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHa
   this->enabledExtensionNameList = {};
 
   this->queueFamilyList = {};
-  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex, 
+  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex,
       initialQueueCount, initialQueuePriority));
 }
 
@@ -117,7 +117,7 @@ bool Device::addExtension(std::string extensionName) {
       std::begin(this->extensionPropertiesList),
       std::end(this->extensionPropertiesList),
       [&](const VkExtensionProperties& x)
-      { return x.extensionName == extensionName; }) != 
+      { return x.extensionName == extensionName; }) !=
       std::end(this->extensionPropertiesList)) {
 
     this->enabledExtensionNameList.push_back(extensionName);
@@ -127,10 +127,10 @@ bool Device::addExtension(std::string extensionName) {
   return foundExtension;
 }
 
-void Device::addQueue(uint32_t initialQueueFamilyIndex, 
+void Device::addQueue(uint32_t initialQueueFamilyIndex,
     uint32_t initialQueueCount, float initialQueuePriority) {
 
-  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex, 
+  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex,
       initialQueueCount, initialQueuePriority));
 }
 
@@ -144,7 +144,7 @@ void Device::activate() {
       queueFamilyList.size());
 
   for (uint32_t x = 0; x < queueFamilyList.size(); x++) {
-    deviceQueueCreateInfoList[x] = 
+    deviceQueueCreateInfoList[x] =
         queueFamilyList[x].getDeviceQueueCreateInfo();
   }
 

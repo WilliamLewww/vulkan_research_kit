@@ -36,7 +36,7 @@ public:
       VkPhysicalDevice* physicalDeviceHandlePtr);
 
   Device(VkInstance* instanceHandlePtr, VkPhysicalDevice* physicalDeviceHandlePtr,
-      uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+      uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
       float initialQueuePriority = 1.0f);
 
   ~Device();
@@ -45,7 +45,7 @@ public:
 
   bool addExtension(std::string extensionName);
 
-  void addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
+  void addQueue(uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
       float initialQueuePriority = 1.0f);
 
   void activate();
