@@ -2,6 +2,7 @@
 
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
     VkInstance instanceHandle) {
+
   uint32_t physicalDeviceCount = 0;
   VkResult result = vkEnumeratePhysicalDevices(instanceHandle,
       &physicalDeviceCount, NULL);
@@ -48,6 +49,13 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
 Device::Device(VkInstance instanceHandle, VkPhysicalDevice physicalDeviceHandle,
     uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount, 
     float initialQueuePriority) {
+
+  if (instanceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid instance handle");
+  }
+  if (physicalDeviceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid physical device handle");
+  }
 
   this->isActive = false;
 

@@ -6,3 +6,7 @@ void throwExceptionVulkanAPI(VkResult result, std::string functionName) {
 
   throw std::runtime_error(message);
 }
+
+void throwExceptionMessage(std::string message) {
+  throw std::runtime_error(message);
+}

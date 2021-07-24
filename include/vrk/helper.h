@@ -24,3 +24,4 @@
         #functionName << std::endl;
 
 void throwExceptionVulkanAPI(VkResult result, std::string functionName);
+void throwExceptionMessage(std::string message);

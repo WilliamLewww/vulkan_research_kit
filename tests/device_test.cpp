@@ -6,10 +6,6 @@
 TEST (DeviceTest, Default) {
   Instance* instance = new Instance();
   instance->activate();
-
-  std::string version = instance->getVulkanVersionAPI();
-  EXPECT_FALSE(version == "");
-
   EXPECT_NE(instance->getInstanceHandle(), VK_NULL_HANDLE);
 
   std::vector<VkPhysicalDevice> deviceHandleList =
@@ -49,11 +45,53 @@ TEST (DeviceTest, Default) {
 }
 
 TEST (DeviceTest, InvalidInstanceHandle) {
+  VkPhysicalDevice activePhysicalDevice;
+
   Device* device = nullptr;
+  try {
+    device = new Device(VK_NULL_HANDLE, 
+        activePhysicalDevice, 0, 1);
+  }
+  catch(std::exception& e) {
+    std::stringstream buffer;
+    std::streambuf *sbuf = std::cerr.rdbuf();
+    std::cerr.rdbuf(buffer.rdbuf());
+
+    std::cerr << e.what() << std::endl;
+    EXPECT_STREQ("Invalid instance handle\n", buffer.str().c_str());
+
+    std::cerr.rdbuf(sbuf);
+  }
 
   EXPECT_EQ(device, nullptr);
 
   delete device;
+}
+
+TEST (DeviceTest, InvalidPhysicalDeviceHandle) {
+  Instance* instance = new Instance();
+  instance->activate();
+
+  Device* device = nullptr;
+
+  try {
+    device = new Device(instance->getInstanceHandle(), VK_NULL_HANDLE, 0, 1);
+  }
+  catch(std::exception& e) {
+    std::stringstream buffer;
+    std::streambuf *sbuf = std::cerr.rdbuf();
+    std::cerr.rdbuf(buffer.rdbuf());
+
+    std::cerr << e.what() << std::endl;
+    EXPECT_STREQ("Invalid physical device handle\n", buffer.str().c_str());
+
+    std::cerr.rdbuf(sbuf);
+  }
+
+  EXPECT_EQ(device, nullptr);
+
+  delete device;
+  delete instance;
 }
 
 int main(int argc, char** argv) {
