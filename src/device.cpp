@@ -198,8 +198,7 @@ std::ostream& operator<<(std::ostream& os, const Device& device)
   os << "device: " << &device << std::endl;
   os << "  device handle: " << device.deviceHandle << std::endl;
   os << "  instance handle (ptr): " << *device.instanceHandlePtr << std::endl;
-  os << "  physical device handle (ptr): " << 
-      *device.physicalDeviceHandlePtr;
+  os << "  physical device handle (ptr): " << *device.physicalDeviceHandlePtr;
 
   for (QueueFamily queueFamily : device.queueFamilyList) {
     os << std::endl;

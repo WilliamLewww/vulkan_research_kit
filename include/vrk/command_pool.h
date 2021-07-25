@@ -20,6 +20,10 @@ public:
 
   void activate();
 
+  void reset(VkCommandPoolResetFlags commandPoolResetFlags = 0);
+
+  VkCommandPool* getCommandPoolHandlePtr();
+
   friend std::ostream& operator<<(std::ostream& os,
       const CommandPool& commandPool);
 };

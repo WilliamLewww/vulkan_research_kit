@@ -36,13 +36,21 @@ void CommandPool::activate() {
   this->isActive = true;
 }
 
+void CommandPool::reset(VkCommandPoolResetFlags commandPoolResetFlags) {
+  VkResult result = vkResetCommandPool(*this->deviceHandlePtr, 
+      this->commandPoolHandle, commandPoolResetFlags);
+}
+
+VkCommandPool* CommandPool::getCommandPoolHandlePtr() {
+  return &this->commandPoolHandle;
+}
+
 std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool)
 {
   os << "command pool: " << &commandPool << std::endl;
   os << "  command pool handle: " << commandPool.commandPoolHandle << std::endl;
   os << "  device handle (ptr): " << *commandPool.deviceHandlePtr << std::endl;
-  os << "  queue family index: " << 
-      commandPool.queueFamilyIndex;
+  os << "  queue family index: " << commandPool.queueFamilyIndex;
 
   return os;
 }
