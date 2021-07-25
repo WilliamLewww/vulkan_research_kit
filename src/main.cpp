@@ -1,5 +1,6 @@
 #include "vrk/instance.h"
 #include "vrk/device.h"
+#include "vrk/command_pool.h"
 
 int main() {
   Instance* instance = new Instance();
@@ -59,10 +60,17 @@ int main() {
 
   device->activate();
 
+  CommandPool* commandPool = new CommandPool(device->getDeviceHandlePtr(),
+      queueFamilyIndex);
+  commandPool->activate();
+
   std::cout << *instance << std::endl;
   std::cout << std::endl;
   std::cout << *device << std::endl;
+  std::cout << std::endl;
+  std::cout << *commandPool << std::endl;
 
+  delete commandPool;
   delete device;
   delete instance;
 

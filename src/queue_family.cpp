@@ -56,11 +56,13 @@ VkQueue* QueueFamily::getQueueHandlePtr(uint32_t index) {
 
 std::ostream& operator<<(std::ostream& os, const QueueFamily& queueFamily)
 {
-  os << "Queue family: " << &queueFamily;
+  os << "queue family: " << &queueFamily << std::endl;
+  os << "  queue family index: " << 
+      queueFamily.deviceQueueCreateInfo.queueFamilyIndex;
 
   for (VkQueue queueHandle : queueFamily.queueHandleList) {
     os << std::endl;
-    os << "  Queue handle: " << queueHandle;
+    os << "  queue handle: " << queueHandle;
   }
 
   return os;
