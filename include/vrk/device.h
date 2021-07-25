@@ -35,6 +35,10 @@ public:
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
       VkPhysicalDevice* physicalDeviceHandlePtr);
 
+  static VkBool32 checkQueueFamilyPresentSupported(
+      VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
+      VkSurfaceKHR* surfaceHandle);
+
   Device(VkInstance* instanceHandlePtr, 
       VkPhysicalDevice* physicalDeviceHandlePtr,
       uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,

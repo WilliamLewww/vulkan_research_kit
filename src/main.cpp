@@ -1,6 +1,7 @@
 #include "vrk/instance.h"
 #include "vrk/device.h"
 #include "vrk/command_pool.h"
+#include "vrk/command_buffer_group.h"
 
 int main() {
   Instance* instance = new Instance();
@@ -64,11 +65,18 @@ int main() {
       queueFamilyIndex);
   commandPool->activate();
 
+  CommandBufferGroup* commandBufferGroup = new CommandBufferGroup(
+      device->getDeviceHandlePtr(), commandPool->getCommandPoolHandlePtr(),
+      VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1);
+  commandBufferGroup->activate();
+
   std::cout << *instance << std::endl;
   std::cout << std::endl;
   std::cout << *device << std::endl;
   std::cout << std::endl;
   std::cout << *commandPool << std::endl;
+  std::cout << std::endl;
+  std::cout << *commandBufferGroup << std::endl;
 
   delete commandPool;
   delete device;

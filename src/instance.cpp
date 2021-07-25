@@ -340,8 +340,7 @@ VkInstance* Instance::getInstanceHandlePtr() {
   return &this->instanceHandle;
 }
 
-std::ostream& operator<<(std::ostream& os, const Instance& instance)
-{
+std::ostream& operator<<(std::ostream& os, const Instance& instance) {
   os << "instance: " << &instance << std::endl;
   os << "  instance handle: " << instance.instanceHandle << std::endl;
   os << "  debug utils messenger handle: " << 

@@ -14,7 +14,6 @@ CommandPool::~CommandPool() {
 }
 
 void CommandPool::activate() {
-
   if (this->isActive) {
     PRINT_MESSAGE(std::cerr, "Command pool is already active");
     return;
@@ -45,8 +44,7 @@ VkCommandPool* CommandPool::getCommandPoolHandlePtr() {
   return &this->commandPoolHandle;
 }
 
-std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool)
-{
+std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool) {
   os << "command pool: " << &commandPool << std::endl;
   os << "  command pool handle: " << commandPool.commandPoolHandle << std::endl;
   os << "  device handle (ptr): " << *commandPool.deviceHandlePtr << std::endl;
