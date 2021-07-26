@@ -50,7 +50,7 @@ public:
 
   bool addExtension(std::string extensionName);
 
-  void addQueue(uint32_t queueFamilyIndex, uint32_t queueCount,
+  void addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
       float queuePriority = 1.0f);
 
   void activate();

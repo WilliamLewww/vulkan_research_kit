@@ -120,8 +120,8 @@ Device::~Device() {
   vkDestroyDevice(this->deviceHandle, NULL);
 }
 
-std::vector<VkExtensionProperties> Device::getAvailableExtensionPropertiesList
-    () {
+std::vector<VkExtensionProperties> 
+    Device::getAvailableExtensionPropertiesList() {
 
   return this->extensionPropertiesList;
 }
@@ -143,7 +143,7 @@ bool Device::addExtension(std::string extensionName) {
   return foundExtension;
 }
 
-void Device::addQueue(uint32_t queueFamilyIndex, uint32_t queueCount,
+void Device::addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
     float queuePriority) {
 
   this->queueFamilyList.push_back(QueueFamily(queueFamilyIndex,

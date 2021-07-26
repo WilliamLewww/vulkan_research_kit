@@ -175,7 +175,7 @@ TEST (DeviceTest, AddAllQueues) {
       &activePhysicalDevice, 0, queueFamilyPropertiesList[0].queueCount);
 
   for (uint32_t x = 1; x < queueFamilyPropertiesList.size(); x++) {
-    device->addQueue(x, queueFamilyPropertiesList[x].queueCount);
+    device->addQueueFamily(x, queueFamilyPropertiesList[x].queueCount);
   }
 
   device->activate();
@@ -228,8 +228,21 @@ TEST (DeviceTest, AddAllExtensions) {
   std::vector<VkExtensionProperties> extensionPropertiesList =
       device->getAvailableExtensionPropertiesList();
 
+  std::vector<std::string> ignoredExtensionNameList = {
+    "VK_KHR_acceleration_structure",
+    "VK_KHR_ray_tracing_pipeline",
+    "VK_NV_ray_tracing"
+  };
+
   for (VkExtensionProperties extensionProperties : extensionPropertiesList) {
-    device->addExtension(extensionProperties.extensionName);
+    if (std::find_if(std::begin(ignoredExtensionNameList),
+        std::end(ignoredExtensionNameList),
+        [&](const std::string& x) { return x == extensionProperties.extensionName; })
+        == std::end(ignoredExtensionNameList)) {
+
+      int result = device->addExtension(extensionProperties.extensionName);
+      EXPECT_EQ(result, true);
+    }
   }
 
   device->activate();
