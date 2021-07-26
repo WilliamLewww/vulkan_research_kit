@@ -78,6 +78,7 @@ int main() {
   std::cout << std::endl;
   std::cout << *commandBufferGroup << std::endl;
 
+  delete commandBufferGroup;
   delete commandPool;
   delete device;
   delete instance;

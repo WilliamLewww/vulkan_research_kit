@@ -1,7 +1,7 @@
 #include "vrk/command_buffer_group.h"
 
-CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr, 
-    VkCommandPool* commandPoolHandlePtr, 
+CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
+    VkCommandPool* commandPoolHandlePtr,
     VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) {
 
   this->isActive = false;
@@ -15,7 +15,13 @@ CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
 }
 
 CommandBufferGroup::~CommandBufferGroup() {
+  vkFreeCommandBuffers(*this->deviceHandlePtr, *this->commandPoolHandlePtr,
+      this->commandBufferHandleList.size(),
+      this->commandBufferHandleList.data());
+}
 
+uint32_t CommandBufferGroup::getCommandBufferCount() {
+  return this->commandBufferHandleList.size();
 }
 
 void CommandBufferGroup::activate() {
@@ -32,13 +38,62 @@ void CommandBufferGroup::activate() {
     .commandBufferCount = (uint32_t)this->commandBufferHandleList.size()
   };
 
-  VkResult result = vkAllocateCommandBuffers(*this->deviceHandlePtr, 
+  VkResult result = vkAllocateCommandBuffers(*this->deviceHandlePtr,
       &commandBufferAllocateInfo, this->commandBufferHandleList.data());
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkAllocateCommandBuffers");
   }
 
   this->isActive = true;
+}
+
+void CommandBufferGroup::beginRecording(uint32_t commandBufferIndex,
+    VkCommandBufferUsageFlagBits commandBufferUsageFlagBits) {
+
+  VkCommandBufferBeginInfo commandBufferBeginInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    .pNext = NULL,
+    .flags = commandBufferUsageFlagBits,
+    .pInheritanceInfo = NULL
+  };
+
+  VkResult result = vkBeginCommandBuffer(
+      this->commandBufferHandleList[commandBufferIndex],
+      &commandBufferBeginInfo);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkBeginCommandBuffer");
+  }
+}
+
+void CommandBufferGroup::endRecording(uint32_t commandBufferIndex) {
+  VkResult result = vkEndCommandBuffer(
+      this->commandBufferHandleList[commandBufferIndex]);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkEndCommandBuffer");
+  }
+}
+
+void CommandBufferGroup::submit(uint32_t commandBufferIndex, 
+    VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
+    std::vector<VkPipelineStageFlags> pipelineStageFlagsList,
+    std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
+
+  VkSubmitInfo submitInfo = {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    .pNext = NULL,
+    .waitSemaphoreCount = (uint32_t)waitSemaphoreHandleList.size(),
+    .pWaitSemaphores = waitSemaphoreHandleList.data(),
+    .pWaitDstStageMask = pipelineStageFlagsList.data(),
+    .commandBufferCount = 1,
+    .pCommandBuffers = &this->commandBufferHandleList[commandBufferIndex],
+    .signalSemaphoreCount = (uint32_t)signalSemaphoreHandleList.size(),
+    .pSignalSemaphores = signalSemaphoreHandleList.data()
+  };
+
+  VkResult result = vkQueueSubmit(*queueHandlePtr, 1, &submitInfo, fenceHandle);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkQueueSubmit");
+  }
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -49,14 +104,14 @@ std::ostream& operator<<(std::ostream& os,
   for (uint32_t x = 0; x < commandBufferGroup.commandBufferHandleList.size();
       x++) {
 
-    os << "  command buffer handle " << x << ": " << 
+    os << "  command buffer handle " << x << ": " <<
         commandBufferGroup.commandBufferHandleList[x] << std::endl;
   }
 
-  os << "  device handle (ptr): " << *commandBufferGroup.deviceHandlePtr << 
+  os << "  device handle (ptr): " << *commandBufferGroup.deviceHandlePtr <<
       std::endl;
 
-  os << "  command pool handle (ptr): " << 
+  os << "  command pool handle (ptr): " <<
       *commandBufferGroup.commandPoolHandlePtr;
 
   return os;
