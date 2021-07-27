@@ -75,7 +75,7 @@ void CommandBufferGroup::endRecording(uint32_t commandBufferIndex) {
 
 void CommandBufferGroup::submit(uint32_t commandBufferIndex, 
     VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
-    std::vector<VkPipelineStageFlags> pipelineStageFlagsList,
+    std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
     std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
 
   VkSubmitInfo submitInfo = {
@@ -83,7 +83,7 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
     .pNext = NULL,
     .waitSemaphoreCount = (uint32_t)waitSemaphoreHandleList.size(),
     .pWaitSemaphores = waitSemaphoreHandleList.data(),
-    .pWaitDstStageMask = pipelineStageFlagsList.data(),
+    .pWaitDstStageMask = waitPipelineStageFlagsList.data(),
     .commandBufferCount = 1,
     .pCommandBuffers = &this->commandBufferHandleList[commandBufferIndex],
     .signalSemaphoreCount = (uint32_t)signalSemaphoreHandleList.size(),

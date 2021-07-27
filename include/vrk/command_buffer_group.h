@@ -33,7 +33,7 @@ public:
 
   void submit(uint32_t commandBufferIndex, 
       VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
-      std::vector<VkPipelineStageFlags> pipelineStageFlagsList,
+      std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
       std::vector<VkSemaphore> signalSemaphoreHandleList,
       VkFence fenceHandle = VK_NULL_HANDLE);
 
