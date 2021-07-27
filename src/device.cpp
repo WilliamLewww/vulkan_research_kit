@@ -73,7 +73,7 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
   VkBool32 isPresentSupported = false;
 
   VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
-      *physicalDeviceHandlePtr, queueFamilyIndex, *surfaceHandle, 
+      *physicalDeviceHandlePtr, queueFamilyIndex, *surfaceHandle,
       &isPresentSupported);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceSurfaceSupportKHR");
@@ -128,7 +128,7 @@ Device::~Device() {
   vkDestroyDevice(this->deviceHandle, NULL);
 }
 
-std::vector<VkExtensionProperties> 
+std::vector<VkExtensionProperties>
     Device::getAvailableExtensionPropertiesList() {
 
   return this->extensionPropertiesList;
@@ -211,14 +211,16 @@ VkDevice* Device::getDeviceHandlePtr() {
   return &this->deviceHandle;
 }
 
-VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex, 
+VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex,
     uint32_t queueIndex) {
 
   return this->queueFamilyList[queueFamilyIndex].getQueueHandlePtr(queueIndex);
 }
 
 std::ostream& operator<<(std::ostream& os, const Device& device) {
-  os << "device: " << &device << std::endl;
+  std::string activeMessage = (device.isActive) ? "active" : "inactive";
+
+  os << "device " << "(" << activeMessage << "): " << &device << std::endl;
   os << "  device handle: " << device.deviceHandle << std::endl;
   os << "  instance handle (ptr): " << *device.instanceHandlePtr << std::endl;
   os << "  physical device handle (ptr): " << *device.physicalDeviceHandlePtr;

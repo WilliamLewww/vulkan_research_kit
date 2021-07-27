@@ -39,7 +39,7 @@ public:
       VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
       VkSurfaceKHR* surfaceHandle);
 
-  Device(VkInstance* instanceHandlePtr, 
+  Device(VkInstance* instanceHandlePtr,
       VkPhysicalDevice* physicalDeviceHandlePtr,
       uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
       float initialQueuePriority = 1.0f);

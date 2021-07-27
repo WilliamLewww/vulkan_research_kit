@@ -46,7 +46,9 @@ VkFence* Fence::getFenceHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Fence& fence) {
-  os << "fence: " << &fence << std::endl;
+  std::string activeMessage = (fence.isActive) ? "active" : "inactive";
+
+  os << "fence " << "(" << activeMessage << "): " << &fence << std::endl;
   os << "  fence handle: " << fence.fenceHandle << std::endl;
   os << "  device handle (ptr): " << *fence.deviceHandlePtr;
 

@@ -31,6 +31,6 @@ public:
 
   VkQueue* getQueueHandlePtr(uint32_t index);
 
-  friend std::ostream& operator<<(std::ostream& os, 
+  friend std::ostream& operator<<(std::ostream& os,
       const QueueFamily& queueFamily);
 };

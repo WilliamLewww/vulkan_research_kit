@@ -81,7 +81,7 @@ void CommandBufferGroup::endRecording(uint32_t commandBufferIndex) {
   }
 }
 
-void CommandBufferGroup::submit(uint32_t commandBufferIndex, 
+void CommandBufferGroup::submit(uint32_t commandBufferIndex,
     VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
     std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
     std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
@@ -123,7 +123,11 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
 std::ostream& operator<<(std::ostream& os,
     const CommandBufferGroup& commandBufferGroup) {
 
-  os << "command buffer group: " << &commandBufferGroup << std::endl;
+  std::string activeMessage = (commandBufferGroup.isActive) ?
+      "active" : "inactive";
+
+  os << "command buffer group " << "(" << activeMessage << "): " <<
+      &commandBufferGroup << std::endl;
 
   for (uint32_t x = 0; x < commandBufferGroup.commandBufferHandleList.size();
       x++) {

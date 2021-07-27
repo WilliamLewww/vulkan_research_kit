@@ -31,7 +31,7 @@ public:
 
   void endRecording(uint32_t commandBufferIndex);
 
-  void submit(uint32_t commandBufferIndex, 
+  void submit(uint32_t commandBufferIndex,
       VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
       std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
       std::vector<VkSemaphore> signalSemaphoreHandleList,

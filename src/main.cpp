@@ -58,7 +58,6 @@ int main() {
 
   Device* device = new Device(instance->getInstanceHandlePtr(),
       &activePhysicalDevice, queueFamilyIndex, 1);
-
   device->activate();
 
   CommandPool* commandPool = new CommandPool(device->getDeviceHandlePtr(),

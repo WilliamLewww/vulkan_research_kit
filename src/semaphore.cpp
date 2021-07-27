@@ -42,7 +42,10 @@ VkSemaphore* Semaphore::getSemaphoreHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Semaphore& semaphore) {
-  os << "semaphore: " << &semaphore << std::endl;
+  std::string activeMessage = (semaphore.isActive) ? "active" : "inactive";
+
+  os << "semaphore " << "(" << activeMessage << "): " << &semaphore <<
+      std::endl;
   os << "  semaphore handle: " << semaphore.semaphoreHandle << std::endl;
   os << "  device handle (ptr): " << *semaphore.deviceHandlePtr;
 

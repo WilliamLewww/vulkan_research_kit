@@ -55,9 +55,11 @@ VkQueue* QueueFamily::getQueueHandlePtr(uint32_t index) {
 }
 
 std::ostream& operator<<(std::ostream& os, const QueueFamily& queueFamily) {
-  os << "queue family " << 
-      queueFamily.deviceQueueCreateInfo.queueFamilyIndex << 
-      ": " << &queueFamily;
+  std::string activeMessage = (queueFamily.isActive) ? "active" : "inactive";
+
+  os << "queue family " <<
+      queueFamily.deviceQueueCreateInfo.queueFamilyIndex <<
+      " " << "(" << activeMessage << "): " << &queueFamily;
 
   for (uint32_t x = 0; x < queueFamily.queueHandleList.size(); x++) {
     os << std::endl;

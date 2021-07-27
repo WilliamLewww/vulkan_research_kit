@@ -341,9 +341,11 @@ VkInstance* Instance::getInstanceHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Instance& instance) {
-  os << "instance: " << &instance << std::endl;
+  std::string activeMessage = (instance.isActive) ? "active" : "inactive";
+
+  os << "instance " << "(" << activeMessage << "): " << &instance << std::endl;
   os << "  instance handle: " << instance.instanceHandle << std::endl;
-  os << "  debug utils messenger handle: " << 
+  os << "  debug utils messenger handle: " <<
       instance.debugUtilsMessengerHandle;
 
   return os;
