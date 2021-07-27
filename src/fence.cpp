@@ -3,6 +3,10 @@
 Fence::Fence(VkDevice* deviceHandlePtr,
     VkFenceCreateFlags fenceCreateFlags) {
 
+  if (*deviceHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid device handle");
+  }
+
   this->isActive = false;
 
   this->fenceHandle = VK_NULL_HANDLE;
@@ -13,7 +17,7 @@ Fence::Fence(VkDevice* deviceHandlePtr,
 }
 
 Fence::~Fence() {
-
+  vkDestroyFence(*this->deviceHandlePtr, this->fenceHandle, NULL);
 }
 
 void Fence::activate() {

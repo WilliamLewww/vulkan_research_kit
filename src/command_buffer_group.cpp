@@ -4,6 +4,14 @@ CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
     VkCommandPool* commandPoolHandlePtr,
     VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) {
 
+  if (*deviceHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid device handle");
+  }
+
+  if (*commandPoolHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid command pool handle");
+  }
+
   this->isActive = false;
 
   this->commandBufferHandleList =
@@ -77,6 +85,22 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
     VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
     std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
     std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
+
+  if (*queueHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid queue handle");
+  }
+
+  for (VkSemaphore semaphoreHandle : waitSemaphoreHandleList) {
+    if (semaphoreHandle == VK_NULL_HANDLE) {
+      throwExceptionMessage("Invalid semaphore handle");
+    }
+  }
+
+  for (VkSemaphore semaphoreHandle : signalSemaphoreHandleList) {
+    if (semaphoreHandle == VK_NULL_HANDLE) {
+      throwExceptionMessage("Invalid semaphore handle");
+    }
+  }
 
   VkSubmitInfo submitInfo = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

@@ -62,6 +62,14 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
     VkSurfaceKHR* surfaceHandle) {
 
+  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid physical device handle");
+  }
+
+  if (*surfaceHandle == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid surface handle");
+  }
+
   VkBool32 isPresentSupported = false;
 
   VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(

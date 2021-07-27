@@ -1,6 +1,9 @@
 #include "vrk/semaphore.h"
 
 Semaphore::Semaphore(VkDevice* deviceHandlePtr) {
+  if (*deviceHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid device handle");
+  }
 
   this->isActive = false;
 
@@ -10,7 +13,7 @@ Semaphore::Semaphore(VkDevice* deviceHandlePtr) {
 }
 
 Semaphore::~Semaphore() {
-
+  vkDestroySemaphore(*this->deviceHandlePtr, this->semaphoreHandle, NULL);
 }
 
 void Semaphore::activate() {

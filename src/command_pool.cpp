@@ -1,6 +1,10 @@
 #include "vrk/command_pool.h"
 
 CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) {
+  if (*deviceHandlePtr == VK_NULL_HANDLE) {
+    throwExceptionMessage("Invalid device handle");
+  }
+
   this->isActive = false;
 
   this->commandPoolHandle = VK_NULL_HANDLE;
