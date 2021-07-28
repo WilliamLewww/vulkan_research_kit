@@ -1,15 +1,14 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-class CommandBufferGroup {
+class CommandBufferGroup : public Component {
 private:
-  bool isActive;
-
   std::vector<VkCommandBuffer> commandBufferHandleList;
 
   VkDevice* deviceHandlePtr;
@@ -24,7 +23,7 @@ public:
 
   uint32_t getCommandBufferCount();
 
-  void activate();
+  bool activate();
 
   void beginRecording(uint32_t commandBufferIndex,
       VkCommandBufferUsageFlagBits commandBufferUsageFlagBits);

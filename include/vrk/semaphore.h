@@ -1,13 +1,12 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
-class Semaphore {
+class Semaphore : public Component {
 private:
-  bool isActive;
-
   VkSemaphore semaphoreHandle;
 
   VkDevice* deviceHandlePtr;
@@ -16,7 +15,7 @@ public:
 
   ~Semaphore();
 
-  void activate();
+  bool activate();
 
   VkSemaphore* getSemaphoreHandlePtr();
 

@@ -1,13 +1,12 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
-class Fence {
+class Fence : public Component {
 private:
-  bool isActive;
-
   VkFence fenceHandle;
 
   VkDevice* deviceHandlePtr;
@@ -18,7 +17,7 @@ public:
 
   ~Fence();
 
-  void activate();
+  bool activate();
 
   VkFence* getFenceHandlePtr();
 

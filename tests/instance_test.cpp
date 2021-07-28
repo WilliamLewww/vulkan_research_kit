@@ -23,7 +23,7 @@ TEST (InstanceTest, DoubleActivation) {
   std::cerr.rdbuf(buffer.rdbuf());
 
   instance->activate();
-  EXPECT_STREQ("Instance is already active\n", buffer.str().c_str());
+  EXPECT_STREQ("instance is already active\n", buffer.str().c_str());
 
   std::cerr.rdbuf(sbuf);
 

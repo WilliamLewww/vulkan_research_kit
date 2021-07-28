@@ -1,9 +1,7 @@
 #include "vrk/queue_family.h"
 
 QueueFamily::QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
-    float queuePriority) {
-
-  this->isActive = false;
+    float queuePriority) : Component("queue family") {
 
   this->queueHandleList = std::vector<VkQueue>(queueCount, VK_NULL_HANDLE);
 
@@ -35,10 +33,9 @@ VkDeviceQueueCreateInfo QueueFamily::getDeviceQueueCreateInfo() {
   return this->deviceQueueCreateInfo;
 }
 
-void QueueFamily::activate(VkDevice* deviceHandlePtr) {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Queue family is already active");
-    return;
+bool QueueFamily::activate(VkDevice* deviceHandlePtr) {
+  if (!Component::activate()) {
+    return false;
   }
 
   for (uint32_t x = 0; x < this->deviceQueueCreateInfo.queueCount; x++) {
@@ -47,7 +44,7 @@ void QueueFamily::activate(VkDevice* deviceHandlePtr) {
         &this->queueHandleList[x]);
   }
 
-  this->isActive = true;
+  return true;
 }
 
 VkQueue* QueueFamily::getQueueHandlePtr(uint32_t index) {
@@ -55,11 +52,9 @@ VkQueue* QueueFamily::getQueueHandlePtr(uint32_t index) {
 }
 
 std::ostream& operator<<(std::ostream& os, const QueueFamily& queueFamily) {
-  std::string activeMessage = (queueFamily.isActive) ? "active" : "inactive";
-
-  os << "queue family " <<
-      queueFamily.deviceQueueCreateInfo.queueFamilyIndex <<
-      " " << "(" << activeMessage << "): " << &queueFamily;
+  os << static_cast<const Component&>(queueFamily) << std::endl;
+  os << "  queue family index: " << 
+      queueFamily.deviceQueueCreateInfo.queueFamilyIndex;
 
   for (uint32_t x = 0; x < queueFamily.queueHandleList.size(); x++) {
     os << std::endl;

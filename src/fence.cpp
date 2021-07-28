@@ -1,13 +1,11 @@
 #include "vrk/fence.h"
 
-Fence::Fence(VkDevice* deviceHandlePtr,
-    VkFenceCreateFlags fenceCreateFlags) {
+Fence::Fence(VkDevice* deviceHandlePtr, VkFenceCreateFlags fenceCreateFlags) :
+    Component("Fence") {
 
   if (*deviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid device handle");
   }
-
-  this->isActive = false;
 
   this->fenceHandle = VK_NULL_HANDLE;
 
@@ -20,10 +18,9 @@ Fence::~Fence() {
   vkDestroyFence(*this->deviceHandlePtr, this->fenceHandle, NULL);
 }
 
-void Fence::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Fence is already active");
-    return;
+bool Fence::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   VkFenceCreateInfo fenceCreateInfo = {
@@ -38,7 +35,7 @@ void Fence::activate() {
     throwExceptionVulkanAPI(result, "vkCreateFence");
   }
 
-  this->isActive = true;
+  return true;
 }
 
 VkFence* Fence::getFenceHandlePtr() {
@@ -46,9 +43,7 @@ VkFence* Fence::getFenceHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Fence& fence) {
-  std::string activeMessage = (fence.isActive) ? "active" : "inactive";
-
-  os << "fence " << "(" << activeMessage << "): " << &fence << std::endl;
+  os << static_cast<const Component&>(fence) << std::endl;
   os << "  fence handle: " << fence.fenceHandle << std::endl;
   os << "  device handle (ptr): " << *fence.deviceHandlePtr;
 

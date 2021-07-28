@@ -1,13 +1,12 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
-class CommandPool {
+class CommandPool : public Component {
 private:
-  bool isActive;
-
   VkCommandPool commandPoolHandle;
 
   VkDevice* deviceHandlePtr;
@@ -18,7 +17,7 @@ public:
 
   ~CommandPool();
 
-  void activate();
+  bool activate();
 
   void reset(VkCommandPoolResetFlags commandPoolResetFlags = 0);
 

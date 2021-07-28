@@ -2,7 +2,8 @@
 
 CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
     VkCommandPool* commandPoolHandlePtr,
-    VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) {
+    VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) :
+    Component("command buffer group") {
 
   if (*deviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid device handle");
@@ -11,8 +12,6 @@ CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
   if (*commandPoolHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid command pool handle");
   }
-
-  this->isActive = false;
 
   this->commandBufferHandleList =
       std::vector<VkCommandBuffer>(commandBufferCount, VK_NULL_HANDLE);
@@ -32,10 +31,9 @@ uint32_t CommandBufferGroup::getCommandBufferCount() {
   return this->commandBufferHandleList.size();
 }
 
-void CommandBufferGroup::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Command buffer group is already active");
-    return;
+bool CommandBufferGroup::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   VkCommandBufferAllocateInfo commandBufferAllocateInfo = {
@@ -52,7 +50,7 @@ void CommandBufferGroup::activate() {
     throwExceptionVulkanAPI(result, "vkAllocateCommandBuffers");
   }
 
-  this->isActive = true;
+  return true;
 }
 
 void CommandBufferGroup::beginRecording(uint32_t commandBufferIndex,
@@ -123,11 +121,7 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
 std::ostream& operator<<(std::ostream& os,
     const CommandBufferGroup& commandBufferGroup) {
 
-  std::string activeMessage = (commandBufferGroup.isActive) ?
-      "active" : "inactive";
-
-  os << "command buffer group " << "(" << activeMessage << "): " <<
-      &commandBufferGroup << std::endl;
+  os << static_cast<const Component&>(commandBufferGroup) << std::endl;
 
   for (uint32_t x = 0; x < commandBufferGroup.commandBufferHandleList.size();
       x++) {

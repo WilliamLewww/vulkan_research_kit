@@ -26,9 +26,7 @@ VkBool32 debugCallback(
   return VK_FALSE;
 }
 
-Instance::Instance() {
-  this->isActive = false;
-
+Instance::Instance() : Component("instance") {
   this->instanceHandle = VK_NULL_HANDLE;
 
   uint32_t apiVersion;
@@ -263,10 +261,9 @@ bool Instance::addExtension(std::string extensionName, std::string layerName) {
   return foundExtension;
 }
 
-void Instance::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Instance is already active");
-    return;
+bool Instance::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   this->validationFeatures.enabledValidationFeatureCount =
@@ -333,7 +330,7 @@ void Instance::activate() {
     }
   }
 
-  this->isActive = true;
+  return true;
 }
 
 VkInstance* Instance::getInstanceHandlePtr() {
@@ -341,9 +338,7 @@ VkInstance* Instance::getInstanceHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Instance& instance) {
-  std::string activeMessage = (instance.isActive) ? "active" : "inactive";
-
-  os << "instance " << "(" << activeMessage << "): " << &instance << std::endl;
+  os << static_cast<const Component&>(instance) << std::endl;
   os << "  instance handle: " << instance.instanceHandle << std::endl;
   os << "  debug utils messenger handle: " <<
       instance.debugUtilsMessengerHandle;

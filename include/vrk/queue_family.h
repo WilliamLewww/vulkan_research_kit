@@ -1,15 +1,14 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-class QueueFamily {
+class QueueFamily : public Component {
 private:
-  bool isActive;
-
   std::vector<VkQueue> queueHandleList;
 
   float queuePriority;
@@ -27,7 +26,7 @@ public:
 
   VkDeviceQueueCreateInfo getDeviceQueueCreateInfo();
 
-  void activate(VkDevice* deviceHandlePtr);
+  bool activate(VkDevice* deviceHandlePtr);
 
   VkQueue* getQueueHandlePtr(uint32_t index);
 

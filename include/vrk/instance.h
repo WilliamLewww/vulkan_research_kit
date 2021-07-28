@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vrk/helper.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
@@ -11,10 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-class Instance {
+class Instance : public Component {
 private:
-  bool isActive;
-
   VkInstance instanceHandle;
   VkDebugUtilsMessengerEXT debugUtilsMessengerHandle;
 
@@ -62,7 +61,7 @@ public:
 
   bool addExtension(std::string extensionName, std::string layerName = "");
 
-  void activate();
+  bool activate();
 
   VkInstance* getInstanceHandlePtr();
 

@@ -1,11 +1,11 @@
 #include "vrk/command_pool.h"
 
-CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) {
+CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) :
+    Component("command pool") {
+
   if (*deviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid device handle");
   }
-
-  this->isActive = false;
 
   this->commandPoolHandle = VK_NULL_HANDLE;
   this->deviceHandlePtr = deviceHandlePtr;
@@ -17,10 +17,9 @@ CommandPool::~CommandPool() {
   vkDestroyCommandPool(*this->deviceHandlePtr, this->commandPoolHandle, NULL);
 }
 
-void CommandPool::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Command pool is already active");
-    return;
+bool CommandPool::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   VkCommandPoolCreateInfo commandPoolCreateInfo = {
@@ -36,7 +35,7 @@ void CommandPool::activate() {
     throwExceptionVulkanAPI(result, "vkCreateCommandPool");
   }
 
-  this->isActive = true;
+  return true;
 }
 
 void CommandPool::reset(VkCommandPoolResetFlags commandPoolResetFlags) {
@@ -49,10 +48,7 @@ VkCommandPool* CommandPool::getCommandPoolHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool) {
-  std::string activeMessage = (commandPool.isActive) ? "active" : "inactive";
-
-  os << "command pool " << "(" << activeMessage << "): " << &commandPool <<
-      std::endl;
+  os << static_cast<const Component&>(commandPool) << std::endl;
   os << "  command pool handle: " << commandPool.commandPoolHandle << std::endl;
   os << "  device handle (ptr): " << *commandPool.deviceHandlePtr << std::endl;
   os << "  queue family index: " << commandPool.queueFamilyIndex;

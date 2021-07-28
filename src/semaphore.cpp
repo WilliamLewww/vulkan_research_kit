@@ -1,11 +1,9 @@
 #include "vrk/semaphore.h"
 
-Semaphore::Semaphore(VkDevice* deviceHandlePtr) {
+Semaphore::Semaphore(VkDevice* deviceHandlePtr) : Component("Semaphore") {
   if (*deviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid device handle");
   }
-
-  this->isActive = false;
 
   this->semaphoreHandle = VK_NULL_HANDLE;
 
@@ -16,10 +14,9 @@ Semaphore::~Semaphore() {
   vkDestroySemaphore(*this->deviceHandlePtr, this->semaphoreHandle, NULL);
 }
 
-void Semaphore::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Semaphore is already active");
-    return;
+bool Semaphore::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   VkSemaphoreCreateInfo semaphoreCreateInfo = {
@@ -34,7 +31,7 @@ void Semaphore::activate() {
     throwExceptionVulkanAPI(result, "vkCreateSemaphore");
   }
 
-  this->isActive = true;
+  return true;
 }
 
 VkSemaphore* Semaphore::getSemaphoreHandlePtr() {
@@ -42,10 +39,7 @@ VkSemaphore* Semaphore::getSemaphoreHandlePtr() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Semaphore& semaphore) {
-  std::string activeMessage = (semaphore.isActive) ? "active" : "inactive";
-
-  os << "semaphore " << "(" << activeMessage << "): " << &semaphore <<
-      std::endl;
+  os << static_cast<const Component&>(semaphore) << std::endl;
   os << "  semaphore handle: " << semaphore.semaphoreHandle << std::endl;
   os << "  device handle (ptr): " << *semaphore.deviceHandlePtr;
 

@@ -2,6 +2,7 @@
 
 #include "vrk/helper.h"
 #include "vrk/queue_family.h"
+#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
@@ -13,10 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-class Device {
+class Device : public Component {
 private:
-  bool isActive;
-
   VkDevice deviceHandle;
   std::vector<QueueFamily> queueFamilyList;
 
@@ -53,7 +52,7 @@ public:
   void addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
       float queuePriority = 1.0f);
 
-  void activate();
+  bool activate();
 
   VkDevice* getDeviceHandlePtr();
 

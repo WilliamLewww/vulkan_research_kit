@@ -84,7 +84,8 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
 
 Device::Device(VkInstance* instanceHandlePtr,
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
-    uint32_t initialQueueCount, float initialQueuePriority) {
+    uint32_t initialQueueCount, float initialQueuePriority) : 
+    Component("device") {
 
   if (*instanceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid instance handle");
@@ -93,8 +94,6 @@ Device::Device(VkInstance* instanceHandlePtr,
   if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
     throwExceptionMessage("Invalid physical device handle");
   }
-
-  this->isActive = false;
 
   this->deviceHandle = VK_NULL_HANDLE;
 
@@ -158,10 +157,9 @@ void Device::addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
       queueCount, queuePriority));
 }
 
-void Device::activate() {
-  if (this->isActive) {
-    PRINT_MESSAGE(std::cerr, "Device is already active");
-    return;
+bool Device::activate() {
+  if (!Component::activate()) {
+    return false;
   }
 
   std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList(
@@ -204,7 +202,7 @@ void Device::activate() {
     queueFamily.activate(&this->deviceHandle);
   }
 
-  this->isActive = true;
+  return true;
 }
 
 VkDevice* Device::getDeviceHandlePtr() {
@@ -218,9 +216,7 @@ VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex,
 }
 
 std::ostream& operator<<(std::ostream& os, const Device& device) {
-  std::string activeMessage = (device.isActive) ? "active" : "inactive";
-
-  os << "device " << "(" << activeMessage << "): " << &device << std::endl;
+  os << static_cast<const Component&>(device) << std::endl;
   os << "  device handle: " << device.deviceHandle << std::endl;
   os << "  instance handle (ptr): " << *device.instanceHandlePtr << std::endl;
   os << "  physical device handle (ptr): " << *device.physicalDeviceHandlePtr;
