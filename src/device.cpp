@@ -84,7 +84,7 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
 
 Device::Device(VkInstance* instanceHandlePtr,
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
-    uint32_t initialQueueCount, float initialQueuePriority) : 
+    uint32_t initialQueueCount, float initialQueuePriority) :
     Component("device") {
 
   if (*instanceHandlePtr == VK_NULL_HANDLE) {

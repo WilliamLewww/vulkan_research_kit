@@ -19,6 +19,5 @@ public:
 
   VkSemaphore* getSemaphoreHandlePtr();
 
-  friend std::ostream& operator<<(std::ostream& os,
-      const Semaphore& semaphore);
+  friend std::ostream& operator<<(std::ostream& os, const Semaphore& semaphore);
 };

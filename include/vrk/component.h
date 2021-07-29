@@ -16,6 +16,5 @@ public:
 
   virtual bool activate();
 
-  friend std::ostream& operator<<(std::ostream& os,
-      const Component& component);
+  friend std::ostream& operator<<(std::ostream& os, const Component& component);
 };

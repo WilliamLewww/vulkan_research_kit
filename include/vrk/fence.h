@@ -21,6 +21,5 @@ public:
 
   VkFence* getFenceHandlePtr();
 
-  friend std::ostream& operator<<(std::ostream& os,
-      const Fence& fence);
+  friend std::ostream& operator<<(std::ostream& os, const Fence& fence);
 };
