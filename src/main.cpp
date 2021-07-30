@@ -2,6 +2,8 @@
 #include "vrk/device.h"
 #include "vrk/command_pool.h"
 #include "vrk/command_buffer_group.h"
+#include "vrk/render_pass.h"
+#include "vrk/attachment.h"
 
 int main() {
   Instance* instance = new Instance();
@@ -69,6 +71,29 @@ int main() {
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1);
   commandBufferGroup->activate();
 
+  Attachment colorAttachment(VK_FORMAT_R8G8B8A8_UINT, VK_SAMPLE_COUNT_1_BIT,
+    VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+    VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+  Attachment depthAttachment(VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
+    VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+    VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+    VK_IMAGE_LAYOUT_UNDEFINED,
+    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+  std::vector<Attachment> colorAttachmentList = { colorAttachment };
+  std::vector<VkImageLayout> colorImageLayoutList = {
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+  VkImageLayout depthImageLayout =
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  RenderPass* renderPass = new RenderPass(device->getDeviceHandlePtr(),
+      VK_PIPELINE_BIND_POINT_GRAPHICS, colorAttachmentList,
+      colorImageLayoutList, &depthAttachment, &depthImageLayout);
+  renderPass->activate();
+
   std::cout << *instance << std::endl;
   std::cout << std::endl;
   std::cout << *device << std::endl;
@@ -77,6 +102,7 @@ int main() {
   std::cout << std::endl;
   std::cout << *commandBufferGroup << std::endl;
 
+  delete renderPass;
   delete commandBufferGroup;
   delete commandPool;
   delete device;

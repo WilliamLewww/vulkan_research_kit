@@ -6,8 +6,7 @@ class Attachment {
 private:
   VkAttachmentDescription attachmentDescription;
 public:
-  Attachment(VkAttachmentDescriptionFlags attachmentDescriptionFlags,
-      VkFormat format, VkSampleCountFlagBits sampleCountFlagBits,
+  Attachment(VkFormat format, VkSampleCountFlagBits sampleCountFlagBits,
       VkAttachmentLoadOp attachmentLoadOp,
       VkAttachmentStoreOp attachmentStoreOp,
       VkAttachmentLoadOp stencilAttachmentLoadOp,

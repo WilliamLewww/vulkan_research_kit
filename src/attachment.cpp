@@ -1,7 +1,7 @@
 #include "vrk/attachment.h"
 
-Attachment::Attachment(VkAttachmentDescriptionFlags attachmentDescriptionFlags,
-    VkFormat format, VkSampleCountFlagBits sampleCountFlagBits,
+Attachment::Attachment(VkFormat format,
+    VkSampleCountFlagBits sampleCountFlagBits,
     VkAttachmentLoadOp attachmentLoadOp,
     VkAttachmentStoreOp attachmentStoreOp,
     VkAttachmentLoadOp stencilAttachmentLoadOp,
@@ -9,7 +9,7 @@ Attachment::Attachment(VkAttachmentDescriptionFlags attachmentDescriptionFlags,
     VkImageLayout initialImageLayout, VkImageLayout finalImageLayout) {
 
   this->attachmentDescription = {
-    .flags = attachmentDescriptionFlags,
+    .flags = 0,
     .format = format,
     .samples = sampleCountFlagBits,
     .loadOp = attachmentLoadOp,
