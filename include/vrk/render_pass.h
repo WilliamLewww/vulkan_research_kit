@@ -47,4 +47,7 @@ public:
       VkDependencyFlags dependencyFlags);
 
   bool activate();
+
+  friend std::ostream& operator<<(std::ostream& os,
+      const RenderPass& renderPass);
 };

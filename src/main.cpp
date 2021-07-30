@@ -101,6 +101,8 @@ int main() {
   std::cout << *commandPool << std::endl;
   std::cout << std::endl;
   std::cout << *commandBufferGroup << std::endl;
+  std::cout << std::endl;
+  std::cout << *renderPass << std::endl;
 
   delete renderPass;
   delete commandBufferGroup;

@@ -174,3 +174,11 @@ bool RenderPass::activate() {
 
   return true;
 }
+
+std::ostream& operator<<(std::ostream& os, const RenderPass& renderPass) {
+  os << static_cast<const Component&>(renderPass) << std::endl;
+  os << "  fence handle: " << renderPass.renderPassHandle << std::endl;
+  os << "  device handle (ptr): " << *renderPass.deviceHandlePtr;
+
+  return os;
+}
