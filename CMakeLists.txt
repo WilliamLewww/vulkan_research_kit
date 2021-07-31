@@ -19,6 +19,7 @@ include_directories(vrk ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(vrk ${Vulkan_LIBRARIES})
 target_link_libraries(vrk m)
 
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
 foreach(SHADER ${SHADERS})
   get_filename_component(SHADER_NAME ${SHADER} NAME)
 

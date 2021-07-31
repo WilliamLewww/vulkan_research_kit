@@ -4,6 +4,9 @@
 #include "vrk/command_buffer_group.h"
 #include "vrk/render_pass.h"
 #include "vrk/attachment.h"
+#include "vrk/shader_module.h"
+
+#include <fstream>
 
 int main() {
   Instance* instance = new Instance();
@@ -94,6 +97,18 @@ int main() {
       colorImageLayoutList, &depthAttachment, &depthImageLayout);
   renderPass->activate();
 
+  std::ifstream vertexFile("resources/shaders/default.vert.spv",
+      std::ios::binary | std::ios::ate);
+  std::streamsize vertexFileSize = vertexFile.tellg();
+  vertexFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
+  vertexFile.read((char*)vertexShaderSource.data(), vertexFileSize);
+  vertexFile.close();
+
+  ShaderModule* vertexShaderModule = new ShaderModule(
+      device->getDeviceHandlePtr(), vertexShaderSource);
+  vertexShaderModule->activate();
+
   std::cout << *instance << std::endl;
   std::cout << std::endl;
   std::cout << *device << std::endl;
@@ -103,7 +118,10 @@ int main() {
   std::cout << *commandBufferGroup << std::endl;
   std::cout << std::endl;
   std::cout << *renderPass << std::endl;
+  std::cout << std::endl;
+  std::cout << *vertexShaderModule << std::endl;
 
+  delete vertexShaderModule;
   delete renderPass;
   delete commandBufferGroup;
   delete commandPool;
