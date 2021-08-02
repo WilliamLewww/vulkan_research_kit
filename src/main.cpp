@@ -109,6 +109,19 @@ int main() {
       device->getDeviceHandlePtr(), vertexShaderSource);
   vertexShaderModule->activate();
 
+  std::ifstream fragmentFile("resources/shaders/default.vert.spv",
+      std::ios::binary | std::ios::ate);
+  std::streamsize fragmentFileSize = fragmentFile.tellg();
+  fragmentFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> fragmentShaderSource(
+      fragmentFileSize / sizeof(uint32_t));
+  fragmentFile.read((char*)fragmentShaderSource.data(), fragmentFileSize);
+  fragmentFile.close();
+
+  ShaderModule* fragmentShaderModule = new ShaderModule(
+      device->getDeviceHandlePtr(), fragmentShaderSource);
+  fragmentShaderModule->activate();
+
   std::cout << *instance << std::endl;
   std::cout << std::endl;
   std::cout << *device << std::endl;
@@ -120,7 +133,10 @@ int main() {
   std::cout << *renderPass << std::endl;
   std::cout << std::endl;
   std::cout << *vertexShaderModule << std::endl;
+  std::cout << std::endl;
+  std::cout << *fragmentShaderModule << std::endl;
 
+  delete fragmentShaderModule;
   delete vertexShaderModule;
   delete renderPass;
   delete commandBufferGroup;
