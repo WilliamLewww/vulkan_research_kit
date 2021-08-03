@@ -95,59 +95,6 @@ TEST (DeviceTest, Default) {
   delete instance;
 }
 
-TEST (DeviceTest, InvalidInstanceHandle) {
-  VkInstance instanceHandle = VK_NULL_HANDLE;
-  VkPhysicalDevice activePhysicalDevice = VK_NULL_HANDLE;
-
-  Device* device = nullptr;
-  try {
-    device = new Device(&instanceHandle,
-        &activePhysicalDevice, 0, 1);
-  }
-  catch(std::exception& e) {
-    std::stringstream buffer;
-    std::streambuf *sbuf = std::cerr.rdbuf();
-    std::cerr.rdbuf(buffer.rdbuf());
-
-    std::cerr << e.what() << std::endl;
-    EXPECT_STREQ("Invalid instance handle\n", buffer.str().c_str());
-
-    std::cerr.rdbuf(sbuf);
-  }
-
-  EXPECT_EQ(device, nullptr);
-
-  delete device;
-}
-
-TEST (DeviceTest, InvalidPhysicalDeviceHandle) {
-  Instance* instance = new Instance();
-  instance->activate();
-
-  VkPhysicalDevice activePhysicalDevice = VK_NULL_HANDLE;
-
-  Device* device = nullptr;
-
-  try {
-    device = new Device(instance->getInstanceHandlePtr(), &activePhysicalDevice, 0, 1);
-  }
-  catch(std::exception& e) {
-    std::stringstream buffer;
-    std::streambuf *sbuf = std::cerr.rdbuf();
-    std::cerr.rdbuf(buffer.rdbuf());
-
-    std::cerr << e.what() << std::endl;
-    EXPECT_STREQ("Invalid physical device handle\n", buffer.str().c_str());
-
-    std::cerr.rdbuf(sbuf);
-  }
-
-  EXPECT_EQ(device, nullptr);
-
-  delete device;
-  delete instance;
-}
-
 TEST (DeviceTest, AddAllQueues) {
   Instance* instance = new Instance();
   instance->activate();

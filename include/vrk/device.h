@@ -38,6 +38,11 @@ public:
       VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
       VkSurfaceKHR* surfaceHandle);
 
+  static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
+    VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
+    VkImageType imageType, VkImageTiling imageTiling,
+    VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags);
+
   Device(VkInstance* instanceHandlePtr,
       VkPhysicalDevice* physicalDeviceHandlePtr,
       uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,

@@ -3,10 +3,6 @@
 CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) :
     Component("command pool") {
 
-  if (*deviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid device handle");
-  }
-
   this->commandPoolHandle = VK_NULL_HANDLE;
 
   this->deviceHandlePtr = deviceHandlePtr;

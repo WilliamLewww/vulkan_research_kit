@@ -5,6 +5,8 @@
 #include "vrk/render_pass.h"
 #include "vrk/attachment.h"
 #include "vrk/shader_module.h"
+#include "vrk/image.h"
+#include "vrk/image_view.h"
 
 #include <fstream>
 
@@ -58,6 +60,7 @@ int main() {
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
     if (queueFamilyPropertiesList[x].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
       queueFamilyIndex = x;
+      break;
     }
   }
 
@@ -96,6 +99,22 @@ int main() {
       VK_PIPELINE_BIND_POINT_GRAPHICS, colorAttachmentList,
       colorImageLayoutList, &depthAttachment, &depthImageLayout);
   renderPass->activate();
+
+  std::vector<uint32_t> imageQueueFamilyIndexList = { queueFamilyIndex };
+
+  Image* image = new Image(device->getDeviceHandlePtr(),
+    &imageQueueFamilyIndexList, 0, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UINT,
+    800, 600, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+    VK_IMAGE_LAYOUT_UNDEFINED);
+  image->activate();
+
+  ImageView* imageView = new ImageView(device->getDeviceHandlePtr(), 
+      image->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
+      VK_FORMAT_R8G8B8A8_UINT, VK_COMPONENT_SWIZZLE_IDENTITY,
+      VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+      VK_COMPONENT_SWIZZLE_IDENTITY, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
+  imageView->activate();
 
   std::ifstream vertexFile("resources/shaders/default.vert.spv",
       std::ios::binary | std::ios::ate);
@@ -138,6 +157,8 @@ int main() {
 
   delete fragmentShaderModule;
   delete vertexShaderModule;
+  delete imageView;
+  delete image;
   delete renderPass;
   delete commandBufferGroup;
   delete commandPool;

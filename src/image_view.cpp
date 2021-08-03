@@ -40,7 +40,7 @@ ImageView::ImageView(VkDevice* deviceHandlePtr, VkImage* imageHandlePtr,
 }
 
 ImageView::~ImageView() {
-
+  vkDestroyImageView(*this->deviceHandlePtr, this->imageViewHandle, NULL);
 }
 
 bool ImageView::activate() {

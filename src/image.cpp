@@ -3,8 +3,8 @@
 Image::Image(VkDevice* deviceHandlePtr,
     std::vector<uint32_t>* queueFamilyIndexListPtr,
     VkImageCreateFlags imageCreateFlags,
-    VkImageType imageType, VkFormat format, VkExtent3D extent3D,
-    uint32_t mipLevels, uint32_t arrayLayers,
+    VkImageType imageType, VkFormat format, uint32_t width, uint32_t height,
+    uint32_t depth, uint32_t mipLevels, uint32_t arrayLayers,
     VkSampleCountFlagBits sampleCountFlagBits, VkImageTiling imageTiling,
     VkImageUsageFlags imageUsageFlags, VkSharingMode sharingMode,
     VkImageLayout initialImageLayout) : Component("image") {
@@ -12,6 +12,12 @@ Image::Image(VkDevice* deviceHandlePtr,
   this->imageHandle = VK_NULL_HANDLE;
 
   this->deviceHandlePtr = deviceHandlePtr;
+
+  VkExtent3D extent3D = {
+    .width = width,
+    .height = height,
+    .depth = depth
+  };
 
   this->imageCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -48,4 +54,8 @@ bool Image::activate() {
   }
 
   return true;
+}
+
+VkImage* Image::getImageHandlePtr() {
+  return &this->imageHandle;
 }

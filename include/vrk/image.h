@@ -18,8 +18,8 @@ public:
   Image(VkDevice* deviceHandlePtr,
       std::vector<uint32_t>* queueFamilyIndexListPtr,
       VkImageCreateFlags imageCreateFlags,
-      VkImageType imageType, VkFormat format, VkExtent3D extent3D,
-      uint32_t mipLevels, uint32_t arrayLayers,
+      VkImageType imageType, VkFormat format, uint32_t width, uint32_t height,
+      uint32_t depth, uint32_t mipLevels, uint32_t arrayLayers,
       VkSampleCountFlagBits sampleCountFlagBits, VkImageTiling imageTiling,
       VkImageUsageFlags imageUsageFlags, VkSharingMode sharingMode,
       VkImageLayout initialImageLayout);
@@ -27,4 +27,6 @@ public:
   ~Image();
 
   bool activate();
+
+  VkImage* getImageHandlePtr();
 };

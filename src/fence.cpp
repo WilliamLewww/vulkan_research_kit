@@ -3,10 +3,6 @@
 Fence::Fence(VkDevice* deviceHandlePtr, VkFenceCreateFlags fenceCreateFlags) :
     Component("Fence") {
 
-  if (*deviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid device handle");
-  }
-
   this->fenceHandle = VK_NULL_HANDLE;
 
   this->deviceHandlePtr = deviceHandlePtr;

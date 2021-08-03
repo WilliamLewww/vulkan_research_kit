@@ -3,10 +3,6 @@
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
     VkInstance* instanceHandlePtr) {
 
-  if (*instanceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid instance handle");
-  }
-
   uint32_t physicalDeviceCount = 0;
   VkResult result = vkEnumeratePhysicalDevices(*instanceHandlePtr,
       &physicalDeviceCount, NULL);
@@ -27,10 +23,6 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
 VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
     VkPhysicalDevice* physicalDeviceHandlePtr) {
 
-  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid physical device handle");
-  }
-
   VkPhysicalDeviceProperties physicalDeviceProperties;
 
   vkGetPhysicalDeviceProperties(*physicalDeviceHandlePtr,
@@ -41,10 +33,6 @@ VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
 
 std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
     VkPhysicalDevice* physicalDeviceHandlePtr) {
-
-  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid physical device handle");
-  }
 
   uint32_t queueFamilyPropertyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(*physicalDeviceHandlePtr,
@@ -62,14 +50,6 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
     VkSurfaceKHR* surfaceHandle) {
 
-  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid physical device handle");
-  }
-
-  if (*surfaceHandle == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid surface handle");
-  }
-
   VkBool32 isPresentSupported = false;
 
   VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
@@ -82,18 +62,27 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
   return isPresentSupported;
 }
 
+VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
+    VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
+    VkImageType imageType, VkImageTiling imageTiling,
+    VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags) {
+
+  VkImageFormatProperties imageFormatProperties = {};
+
+  VkResult result = vkGetPhysicalDeviceImageFormatProperties(
+      *physicalDeviceHandlePtr, format, imageType, imageTiling, imageUsageFlags,
+      imageCreateFlags, &imageFormatProperties);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceImageFormatProperties");
+  }
+
+  return imageFormatProperties;
+}
+
 Device::Device(VkInstance* instanceHandlePtr,
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
     uint32_t initialQueueCount, float initialQueuePriority) :
     Component("device") {
-
-  if (*instanceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid instance handle");
-  }
-
-  if (*physicalDeviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid physical device handle");
-  }
 
   this->deviceHandle = VK_NULL_HANDLE;
 
