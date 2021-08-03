@@ -8,9 +8,15 @@ CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) :
   }
 
   this->commandPoolHandle = VK_NULL_HANDLE;
+
   this->deviceHandlePtr = deviceHandlePtr;
 
-  this->queueFamilyIndex = queueFamilyIndex;
+  this->commandPoolCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .queueFamilyIndex = queueFamilyIndex
+  };
 }
 
 CommandPool::~CommandPool() {
@@ -21,13 +27,6 @@ bool CommandPool::activate() {
   if (!Component::activate()) {
     return false;
   }
-
-  VkCommandPoolCreateInfo commandPoolCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .queueFamilyIndex = this->queueFamilyIndex
-  };
 
   VkResult result = vkCreateCommandPool(*this->deviceHandlePtr,
       &commandPoolCreateInfo, NULL, &this->commandPoolHandle);
@@ -51,7 +50,8 @@ std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool) {
   os << static_cast<const Component&>(commandPool) << std::endl;
   os << "  command pool handle: " << commandPool.commandPoolHandle << std::endl;
   os << "  device handle (ptr): " << *commandPool.deviceHandlePtr << std::endl;
-  os << "  queue family index: " << commandPool.queueFamilyIndex;
+  os << "  queue family index: " << 
+      commandPool.commandPoolCreateInfo.queueFamilyIndex;
 
   return os;
 }

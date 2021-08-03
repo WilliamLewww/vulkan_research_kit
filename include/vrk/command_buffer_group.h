@@ -12,8 +12,10 @@ private:
   std::vector<VkCommandBuffer> commandBufferHandleList;
 
   VkDevice* deviceHandlePtr;
+
   VkCommandPool* commandPoolHandlePtr;
-  VkCommandBufferLevel commandBufferLevel;
+
+  VkCommandBufferAllocateInfo commandBufferAllocateInfo;
 public:
   CommandBufferGroup(VkDevice* deviceHandlePtr,
       VkCommandPool* commandPoolHandlePtr,

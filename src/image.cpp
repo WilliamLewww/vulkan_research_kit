@@ -1,18 +1,17 @@
 #include "vrk/image.h"
 
-Image::Image(VkDevice* deviceHandlePtr, VkImageCreateFlags imageCreateFlags,
+Image::Image(VkDevice* deviceHandlePtr,
+    std::vector<uint32_t>* queueFamilyIndexListPtr,
+    VkImageCreateFlags imageCreateFlags,
     VkImageType imageType, VkFormat format, VkExtent3D extent3D,
     uint32_t mipLevels, uint32_t arrayLayers,
     VkSampleCountFlagBits sampleCountFlagBits, VkImageTiling imageTiling,
     VkImageUsageFlags imageUsageFlags, VkSharingMode sharingMode,
-    std::vector<uint32_t> queueFamilyIndexList,
     VkImageLayout initialImageLayout) : Component("image") {
 
   this->imageHandle = VK_NULL_HANDLE;
 
   this->deviceHandlePtr = deviceHandlePtr;
-
-  this->queueFamilyIndexList = queueFamilyIndexList;
 
   this->imageCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -27,8 +26,8 @@ Image::Image(VkDevice* deviceHandlePtr, VkImageCreateFlags imageCreateFlags,
     .tiling = imageTiling,
     .usage = imageUsageFlags,
     .sharingMode = sharingMode,
-    .queueFamilyIndexCount = (uint32_t)this->queueFamilyIndexList.size(),
-    .pQueueFamilyIndices = this->queueFamilyIndexList.data(),
+    .queueFamilyIndexCount = (uint32_t)queueFamilyIndexListPtr->size(),
+    .pQueueFamilyIndices = queueFamilyIndexListPtr->data(),
     .initialLayout = initialImageLayout
   };
 }

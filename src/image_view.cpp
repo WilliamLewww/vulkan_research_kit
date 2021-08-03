@@ -12,8 +12,6 @@ ImageView::ImageView(VkDevice* deviceHandlePtr, VkImage* imageHandlePtr,
 
   this->deviceHandlePtr = deviceHandlePtr;
 
-  this->imageHandlePtr = imageHandlePtr;
-
   VkComponentMapping componentMapping = {
     .r = componentSwizzleR,
     .g = componentSwizzleG,
@@ -33,7 +31,7 @@ ImageView::ImageView(VkDevice* deviceHandlePtr, VkImage* imageHandlePtr,
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
     .pNext = NULL,
     .flags = imageViewCreateFlags,
-    .image = *this->imageHandlePtr,
+    .image = *imageHandlePtr,
     .viewType = imageViewType,
     .format = format,
     .components = componentMapping,

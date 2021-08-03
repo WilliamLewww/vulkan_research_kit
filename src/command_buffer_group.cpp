@@ -5,20 +5,20 @@ CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
     VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) :
     Component("command buffer group") {
 
-  if (*deviceHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid device handle");
-  }
-
-  if (*commandPoolHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid command pool handle");
-  }
-
   this->commandBufferHandleList =
       std::vector<VkCommandBuffer>(commandBufferCount, VK_NULL_HANDLE);
 
   this->deviceHandlePtr = deviceHandlePtr;
+
   this->commandPoolHandlePtr = commandPoolHandlePtr;
-  this->commandBufferLevel = commandBufferLevel;
+
+  this->commandBufferAllocateInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+    .pNext = NULL,
+    .commandPool = *this->commandPoolHandlePtr,
+    .level = commandBufferLevel,
+    .commandBufferCount = commandBufferCount
+  };
 }
 
 CommandBufferGroup::~CommandBufferGroup() {
@@ -36,16 +36,8 @@ bool CommandBufferGroup::activate() {
     return false;
   }
 
-  VkCommandBufferAllocateInfo commandBufferAllocateInfo = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-    .pNext = NULL,
-    .commandPool = *this->commandPoolHandlePtr,
-    .level = this->commandBufferLevel,
-    .commandBufferCount = (uint32_t)this->commandBufferHandleList.size()
-  };
-
   VkResult result = vkAllocateCommandBuffers(*this->deviceHandlePtr,
-      &commandBufferAllocateInfo, this->commandBufferHandleList.data());
+      &this->commandBufferAllocateInfo, this->commandBufferHandleList.data());
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkAllocateCommandBuffers");
   }
@@ -83,22 +75,6 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
     VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
     std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
     std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
-
-  if (*queueHandlePtr == VK_NULL_HANDLE) {
-    throwExceptionMessage("Invalid queue handle");
-  }
-
-  for (VkSemaphore semaphoreHandle : waitSemaphoreHandleList) {
-    if (semaphoreHandle == VK_NULL_HANDLE) {
-      throwExceptionMessage("Invalid semaphore handle");
-    }
-  }
-
-  for (VkSemaphore semaphoreHandle : signalSemaphoreHandleList) {
-    if (semaphoreHandle == VK_NULL_HANDLE) {
-      throwExceptionMessage("Invalid semaphore handle");
-    }
-  }
 
   VkSubmitInfo submitInfo = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

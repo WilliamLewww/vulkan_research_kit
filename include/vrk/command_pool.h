@@ -11,7 +11,7 @@ private:
 
   VkDevice* deviceHandlePtr;
 
-  uint32_t queueFamilyIndex;
+  VkCommandPoolCreateInfo commandPoolCreateInfo;
 public:
   CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex);
 

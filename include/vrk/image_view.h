@@ -13,8 +13,6 @@ private:
 
   VkDevice* deviceHandlePtr;
 
-  VkImage* imageHandlePtr;
-
   VkImageViewCreateInfo imageViewCreateInfo;
 public:
   ImageView(VkDevice* deviceHandlePtr, VkImage* imageHandlePtr,
