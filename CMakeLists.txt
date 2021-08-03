@@ -1,8 +1,7 @@
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.12)
 project(vulkan_research_kit)
 
 find_package(Vulkan REQUIRED)
-find_package(glfw3)
 find_package(GTest)
 
 file(GLOB SOURCES "src/*.cpp")
@@ -55,9 +54,5 @@ if(GTest_FOUND AND BUILD_TESTING)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-if(glfw3_FOUND)
-  add_executable(vrk-app src/main.cpp)
-  include_directories(vrk-app ${GLFW_INCLUDE_DIRS})
-  target_link_libraries(vrk-app glfw)
-  target_link_libraries(vrk-app vrk)
-endif()
+add_executable(vrk-app src/main.cpp)
+target_link_libraries(vrk-app vrk)
