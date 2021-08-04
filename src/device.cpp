@@ -79,6 +79,16 @@ VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
   return imageFormatProperties;
 }
 
+VkPhysicalDeviceMemoryProperties Device::getPhysicalDeviceMemoryProperties(
+    VkPhysicalDevice* physicalDeviceHandlePtr) {
+
+  VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+  vkGetPhysicalDeviceMemoryProperties(*physicalDeviceHandlePtr,
+      &physicalDeviceMemoryProperties);
+
+  return physicalDeviceMemoryProperties;
+}
+
 Device::Device(VkInstance* instanceHandlePtr,
     VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
     uint32_t initialQueueCount, float initialQueuePriority) :
@@ -202,18 +212,4 @@ VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex,
     uint32_t queueIndex) {
 
   return this->queueFamilyList[queueFamilyIndex].getQueueHandlePtr(queueIndex);
-}
-
-std::ostream& operator<<(std::ostream& os, const Device& device) {
-  os << static_cast<const Component&>(device) << std::endl;
-  os << "  device handle: " << device.deviceHandle << std::endl;
-  os << "  instance handle (ptr): " << *device.instanceHandlePtr << std::endl;
-  os << "  physical device handle (ptr): " << *device.physicalDeviceHandlePtr;
-
-  for (QueueFamily queueFamily : device.queueFamilyList) {
-    os << std::endl;
-    os << queueFamily;
-  }
-
-  return os;
 }

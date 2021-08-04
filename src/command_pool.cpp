@@ -41,13 +41,3 @@ void CommandPool::reset(VkCommandPoolResetFlags commandPoolResetFlags) {
 VkCommandPool* CommandPool::getCommandPoolHandlePtr() {
   return &this->commandPoolHandle;
 }
-
-std::ostream& operator<<(std::ostream& os, const CommandPool& commandPool) {
-  os << static_cast<const Component&>(commandPool) << std::endl;
-  os << "  command pool handle: " << commandPool.commandPoolHandle << std::endl;
-  os << "  device handle (ptr): " << *commandPool.deviceHandlePtr << std::endl;
-  os << "  queue family index: " << 
-      commandPool.commandPoolCreateInfo.queueFamilyIndex;
-
-  return os;
-}

@@ -64,6 +64,4 @@ public:
   bool activate();
 
   VkInstance* getInstanceHandlePtr();
-
-  friend std::ostream& operator<<(std::ostream& os, const Instance& instance);
 };

@@ -48,6 +48,5 @@ public:
 
   bool activate();
 
-  friend std::ostream& operator<<(std::ostream& os,
-      const RenderPass& renderPass);
+  VkRenderPass* getRenderPassHandlePtr();
 };

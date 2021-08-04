@@ -37,11 +37,3 @@ bool Fence::activate() {
 VkFence* Fence::getFenceHandlePtr() {
   return &this->fenceHandle;
 }
-
-std::ostream& operator<<(std::ostream& os, const Fence& fence) {
-  os << static_cast<const Component&>(fence) << std::endl;
-  os << "  fence handle: " << fence.fenceHandle << std::endl;
-  os << "  device handle (ptr): " << *fence.deviceHandlePtr;
-
-  return os;
-}

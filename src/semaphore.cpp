@@ -33,11 +33,3 @@ bool Semaphore::activate() {
 VkSemaphore* Semaphore::getSemaphoreHandlePtr() {
   return &this->semaphoreHandle;
 }
-
-std::ostream& operator<<(std::ostream& os, const Semaphore& semaphore) {
-  os << static_cast<const Component&>(semaphore) << std::endl;
-  os << "  semaphore handle: " << semaphore.semaphoreHandle << std::endl;
-  os << "  device handle (ptr): " << *semaphore.deviceHandlePtr;
-
-  return os;
-}

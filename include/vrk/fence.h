@@ -20,6 +20,4 @@ public:
   bool activate();
 
   VkFence* getFenceHandlePtr();
-
-  friend std::ostream& operator<<(std::ostream& os, const Fence& fence);
 };

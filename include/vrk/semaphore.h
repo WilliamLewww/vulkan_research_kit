@@ -18,6 +18,4 @@ public:
   bool activate();
 
   VkSemaphore* getSemaphoreHandlePtr();
-
-  friend std::ostream& operator<<(std::ostream& os, const Semaphore& semaphore);
 };

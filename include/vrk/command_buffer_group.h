@@ -37,7 +37,4 @@ public:
       std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
       std::vector<VkSemaphore> signalSemaphoreHandleList,
       VkFence fenceHandle = VK_NULL_HANDLE);
-
-  friend std::ostream& operator<<(std::ostream& os,
-      const CommandBufferGroup& commandBufferGroup);
 };

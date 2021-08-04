@@ -1,17 +1,25 @@
 #include "vrk/image.h"
 
 Image::Image(VkDevice* deviceHandlePtr,
+    VkPhysicalDevice* physicalDeviceHandlePtr,
     std::vector<uint32_t>* queueFamilyIndexListPtr,
     VkImageCreateFlags imageCreateFlags,
     VkImageType imageType, VkFormat format, uint32_t width, uint32_t height,
     uint32_t depth, uint32_t mipLevels, uint32_t arrayLayers,
     VkSampleCountFlagBits sampleCountFlagBits, VkImageTiling imageTiling,
     VkImageUsageFlags imageUsageFlags, VkSharingMode sharingMode,
-    VkImageLayout initialImageLayout) : Component("image") {
+    VkImageLayout initialImageLayout, VkMemoryPropertyFlags memoryPropertyFlags)
+    : Component("image") {
 
   this->imageHandle = VK_NULL_HANDLE;
 
+  this->deviceMemoryHandle = VK_NULL_HANDLE;
+
   this->deviceHandlePtr = deviceHandlePtr;
+
+  this->physicalDeviceHandlePtr = physicalDeviceHandlePtr;
+
+  this->memoryPropertyFlags = memoryPropertyFlags;
 
   VkExtent3D extent3D = {
     .width = width,
@@ -40,6 +48,7 @@ Image::Image(VkDevice* deviceHandlePtr,
 
 Image::~Image() {
   vkDestroyImage(*this->deviceHandlePtr, this->imageHandle, NULL);
+  vkFreeMemory(*this->deviceHandlePtr, this->deviceMemoryHandle, NULL);
 }
 
 bool Image::activate() {
@@ -51,6 +60,44 @@ bool Image::activate() {
       &this->imageCreateInfo, NULL, &this->imageHandle);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateImage");
+  }
+
+  VkMemoryRequirements memoryRequirements;
+  vkGetImageMemoryRequirements(*this->deviceHandlePtr, this->imageHandle,
+      &memoryRequirements);
+
+  VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties =
+      Device::getPhysicalDeviceMemoryProperties(this->physicalDeviceHandlePtr);
+
+  uint32_t memoryTypeIndex = -1;
+  for (uint32_t x = 0; x < physicalDeviceMemoryProperties.memoryTypeCount;
+      x++) {
+    if ((memoryRequirements.memoryTypeBits & (1 << x)) &&
+        (physicalDeviceMemoryProperties.memoryTypes[x].propertyFlags &
+        this->memoryPropertyFlags) == this->memoryPropertyFlags) {
+
+      memoryTypeIndex = x;
+      break;
+    }
+  }
+
+  VkMemoryAllocateInfo memoryAllocateInfo = {
+    .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+    .pNext = NULL,
+    .allocationSize = memoryRequirements.size,
+    .memoryTypeIndex = memoryTypeIndex
+  };
+
+  result = vkAllocateMemory(*this->deviceHandlePtr, &memoryAllocateInfo, NULL,
+      &this->deviceMemoryHandle);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkAllocateMemory");
+  }
+
+  result = vkBindImageMemory(*this->deviceHandlePtr, this->imageHandle,
+      this->deviceMemoryHandle, 0);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkBindImageMemory");
   }
 
   return true;

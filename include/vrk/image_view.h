@@ -28,4 +28,6 @@ public:
   ~ImageView();
 
   bool activate();
+
+  VkImageView* getImageViewHandlePtr();
 };

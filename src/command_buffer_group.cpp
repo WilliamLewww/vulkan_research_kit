@@ -93,24 +93,3 @@ void CommandBufferGroup::submit(uint32_t commandBufferIndex,
     throwExceptionVulkanAPI(result, "vkQueueSubmit");
   }
 }
-
-std::ostream& operator<<(std::ostream& os,
-    const CommandBufferGroup& commandBufferGroup) {
-
-  os << static_cast<const Component&>(commandBufferGroup) << std::endl;
-
-  for (uint32_t x = 0; x < commandBufferGroup.commandBufferHandleList.size();
-      x++) {
-
-    os << "  command buffer handle " << x << ": " <<
-        commandBufferGroup.commandBufferHandleList[x] << std::endl;
-  }
-
-  os << "  device handle (ptr): " << *commandBufferGroup.deviceHandlePtr <<
-      std::endl;
-
-  os << "  command pool handle (ptr): " <<
-      *commandBufferGroup.commandPoolHandlePtr;
-
-  return os;
-}

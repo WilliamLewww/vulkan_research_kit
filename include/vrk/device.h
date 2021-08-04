@@ -39,9 +39,12 @@ public:
       VkSurfaceKHR* surfaceHandle);
 
   static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
-    VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
-    VkImageType imageType, VkImageTiling imageTiling,
-    VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags);
+      VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
+      VkImageType imageType, VkImageTiling imageTiling,
+      VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags);
+
+  static VkPhysicalDeviceMemoryProperties getPhysicalDeviceMemoryProperties(
+      VkPhysicalDevice* physicalDeviceHandlePtr);
 
   Device(VkInstance* instanceHandlePtr,
       VkPhysicalDevice* physicalDeviceHandlePtr,
@@ -62,6 +65,4 @@ public:
   VkDevice* getDeviceHandlePtr();
 
   VkQueue* getQueueHandlePtr(uint32_t queueFamilyIndex, uint32_t queueIndex);
-
-  friend std::ostream& operator<<(std::ostream& os, const Device& device);
 };

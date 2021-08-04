@@ -20,7 +20,4 @@ public:
   ~ShaderModule();
 
   bool activate();
-
-  friend std::ostream& operator<<(std::ostream& os,
-      const ShaderModule& shaderModule);
 };

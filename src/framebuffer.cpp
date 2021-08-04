@@ -25,7 +25,7 @@ Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
 }
 
 Framebuffer::~Framebuffer() {
-
+  vkDestroyFramebuffer(*this->deviceHandlePtr, this->framebufferHandle, NULL);
 }
 
 bool Framebuffer::activate() {

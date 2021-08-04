@@ -7,6 +7,7 @@
 #include "vrk/shader_module.h"
 #include "vrk/image.h"
 #include "vrk/image_view.h"
+#include "vrk/framebuffer.h"
 
 #include <fstream>
 
@@ -29,9 +30,9 @@ int main() {
       VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT));
 
   instance->setDebugUtilsMessageTypeFlagBits(
-    (VkDebugUtilsMessageTypeFlagBitsEXT)
-    (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT));
+      (VkDebugUtilsMessageTypeFlagBitsEXT)
+      (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT));
 
   instance->addLayer("VK_LAYER_KHRONOS_validation");
   instance->addExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -78,15 +79,15 @@ int main() {
   commandBufferGroup->activate();
 
   Attachment colorAttachment(VK_FORMAT_R8G8B8A8_UINT, VK_SAMPLE_COUNT_1_BIT,
-    VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
-    VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+      VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+      VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
   Attachment depthAttachment(VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
-    VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-    VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-    VK_IMAGE_LAYOUT_UNDEFINED,
-    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+      VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      VK_IMAGE_LAYOUT_UNDEFINED,
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
   std::vector<Attachment> colorAttachmentList = { colorAttachment };
   std::vector<VkImageLayout> colorImageLayoutList = {
@@ -102,19 +103,43 @@ int main() {
 
   std::vector<uint32_t> imageQueueFamilyIndexList = { queueFamilyIndex };
 
-  Image* image = new Image(device->getDeviceHandlePtr(),
-    &imageQueueFamilyIndexList, 0, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UINT,
-    800, 600, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
-    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
-    VK_IMAGE_LAYOUT_UNDEFINED);
-  image->activate();
+  Image* colorImage = new Image(device->getDeviceHandlePtr(), &activePhysicalDevice,
+      &imageQueueFamilyIndexList, 0, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UINT,
+      800, 600, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+      VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  colorImage->activate();
 
-  ImageView* imageView = new ImageView(device->getDeviceHandlePtr(), 
-      image->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
+  ImageView* colorImageView = new ImageView(device->getDeviceHandlePtr(), 
+      colorImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
       VK_FORMAT_R8G8B8A8_UINT, VK_COMPONENT_SWIZZLE_IDENTITY,
       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
       VK_COMPONENT_SWIZZLE_IDENTITY, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
-  imageView->activate();
+  colorImageView->activate();
+
+  Image* depthImage = new Image(device->getDeviceHandlePtr(), &activePhysicalDevice,
+      &imageQueueFamilyIndexList, 0, VK_IMAGE_TYPE_2D, VK_FORMAT_D32_SFLOAT,
+      800, 600, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+      VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  depthImage->activate();
+
+  ImageView* depthImageView = new ImageView(device->getDeviceHandlePtr(), 
+      depthImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
+      VK_FORMAT_D32_SFLOAT, VK_COMPONENT_SWIZZLE_IDENTITY,
+      VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+      VK_COMPONENT_SWIZZLE_IDENTITY, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1);
+  depthImageView->activate();
+
+  std::vector<VkImageView> attachmentImageViewHandleList = {
+    *colorImageView->getImageViewHandlePtr(),
+    *depthImageView->getImageViewHandlePtr()
+  };
+
+  Framebuffer* framebuffer = new Framebuffer(device->getDeviceHandlePtr(),
+      renderPass->getRenderPassHandlePtr(), &attachmentImageViewHandleList, 0,
+      800, 600, 1);
+  framebuffer->activate();
 
   std::ifstream vertexFile("resources/shaders/default.vert.spv",
       std::ios::binary | std::ios::ate);
@@ -142,23 +167,25 @@ int main() {
   fragmentShaderModule->activate();
 
   std::cout << *instance << std::endl;
-  std::cout << std::endl;
   std::cout << *device << std::endl;
-  std::cout << std::endl;
   std::cout << *commandPool << std::endl;
-  std::cout << std::endl;
   std::cout << *commandBufferGroup << std::endl;
-  std::cout << std::endl;
   std::cout << *renderPass << std::endl;
-  std::cout << std::endl;
+  std::cout << *colorImage << std::endl;
+  std::cout << *colorImageView << std::endl;
+  std::cout << *depthImage << std::endl;
+  std::cout << *depthImageView << std::endl;
+  std::cout << *framebuffer << std::endl;
   std::cout << *vertexShaderModule << std::endl;
-  std::cout << std::endl;
   std::cout << *fragmentShaderModule << std::endl;
 
   delete fragmentShaderModule;
   delete vertexShaderModule;
-  delete imageView;
-  delete image;
+  delete framebuffer;
+  delete depthImageView;
+  delete depthImage;
+  delete colorImageView;
+  delete colorImage;
   delete renderPass;
   delete commandBufferGroup;
   delete commandPool;

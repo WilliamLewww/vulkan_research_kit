@@ -56,3 +56,7 @@ bool ImageView::activate() {
 
   return true;
 }
+
+VkImageView* ImageView::getImageViewHandlePtr() {
+  return &this->imageViewHandle;
+}

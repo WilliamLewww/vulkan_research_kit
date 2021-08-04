@@ -35,12 +35,3 @@ bool ShaderModule::activate() {
 
   return true;
 }
-
-std::ostream& operator<<(std::ostream& os, const ShaderModule& shaderModule) {
-  os << static_cast<const Component&>(shaderModule) << std::endl;
-  os << "  shader module handle: " << shaderModule.shaderModuleHandle <<
-      std::endl;
-  os << "  device handle (ptr): " << *shaderModule.deviceHandlePtr;
-
-  return os;
-}

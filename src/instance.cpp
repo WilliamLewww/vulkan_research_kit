@@ -336,12 +336,3 @@ bool Instance::activate() {
 VkInstance* Instance::getInstanceHandlePtr() {
   return &this->instanceHandle;
 }
-
-std::ostream& operator<<(std::ostream& os, const Instance& instance) {
-  os << static_cast<const Component&>(instance) << std::endl;
-  os << "  instance handle: " << instance.instanceHandle << std::endl;
-  os << "  debug utils messenger handle: " <<
-      instance.debugUtilsMessengerHandle;
-
-  return os;
-}
