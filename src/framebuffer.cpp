@@ -16,12 +16,19 @@ Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
     .pNext = NULL,
     .flags = framebufferCreateFlags,
     .renderPass = *renderPassHandlePtr,
-    .attachmentCount = (uint32_t)attachmentImageViewHandleListPtr->size(),
-    .pAttachments = attachmentImageViewHandleListPtr->data(),
+    .attachmentCount = 0,
+    .pAttachments = NULL,
     .width = width,
     .height = height,
     .layers = layers
   };
+
+  if (attachmentImageViewHandleListPtr != NULL) {
+    this->framebufferCreateInfo.attachmentCount =
+        (uint32_t)attachmentImageViewHandleListPtr->size();
+    this->framebufferCreateInfo.pAttachments =
+        attachmentImageViewHandleListPtr->data();
+  }
 }
 
 Framebuffer::~Framebuffer() {

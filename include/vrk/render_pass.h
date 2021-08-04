@@ -27,8 +27,8 @@ public:
       VkPipelineBindPoint initialSubpassPipelineBindPoint,
       std::vector<Attachment> initialColorAttachmentList,
       std::vector<VkImageLayout> initialColorImageLayoutList,
-      Attachment* initialDepthAttachmentPtr = NULL,
-      VkImageLayout* initialDepthImageLayoutPtr = NULL);
+      Attachment* initialDepthAttachmentPtr,
+      VkImageLayout* initialDepthImageLayoutPtr);
 
   ~RenderPass();
 
@@ -37,8 +37,8 @@ public:
   uint32_t addSubpass(VkPipelineBindPoint pipelineBindPoint,
       std::vector<uint32_t> colorAttachmentIndexList,
       std::vector<VkImageLayout> colorImageLayoutList,
-      uint32_t* depthAttachmentIndexPtr = NULL,
-      VkImageLayout* depthImageLayoutPtr = NULL);
+      uint32_t* depthAttachmentIndexPtr,
+      VkImageLayout* depthImageLayoutPtr);
 
   void addDependency(uint32_t srcSubpass, uint32_t dstSubpass,
       VkPipelineStageFlags srcPipelineStageMask,
