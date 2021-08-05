@@ -2,7 +2,7 @@
 
 Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
     VkRenderPass* renderPassHandlePtr, 
-    std::vector<VkImageView>* attachmentImageViewHandleListPtr,
+    VkImageView* initialAttachmentImageViewHandlePtr,
     VkFramebufferCreateFlags framebufferCreateFlags,
     uint32_t width, uint32_t height, uint32_t layers) :
     Component("framebuffer") {
@@ -23,11 +23,11 @@ Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
     .layers = layers
   };
 
-  if (attachmentImageViewHandleListPtr != NULL) {
-    this->framebufferCreateInfo.attachmentCount =
-        (uint32_t)attachmentImageViewHandleListPtr->size();
-    this->framebufferCreateInfo.pAttachments =
-        attachmentImageViewHandleListPtr->data();
+  this->attachmentImageViewHandleList = {};
+
+  if (initialAttachmentImageViewHandlePtr != NULL) {
+    this->attachmentImageViewHandleList.push_back(
+        *initialAttachmentImageViewHandlePtr);
   }
 }
 
@@ -35,10 +35,21 @@ Framebuffer::~Framebuffer() {
   vkDestroyFramebuffer(*this->deviceHandlePtr, this->framebufferHandle, NULL);
 }
 
+void Framebuffer::addAttachmentImageViewHandle(
+    VkImageView* attachmentImageViewHandlePtr) {
+
+  this->attachmentImageViewHandleList.push_back(*attachmentImageViewHandlePtr);
+}
+
 bool Framebuffer::activate() {
   if (!Component::activate()) {
     return false;
   }
+
+  this->framebufferCreateInfo.attachmentCount =
+      (uint32_t)this->attachmentImageViewHandleList.size();
+  this->framebufferCreateInfo.pAttachments =
+      this->attachmentImageViewHandleList.data();
 
   VkResult result = vkCreateFramebuffer(*this->deviceHandlePtr,
       &framebufferCreateInfo, NULL, &this->framebufferHandle);

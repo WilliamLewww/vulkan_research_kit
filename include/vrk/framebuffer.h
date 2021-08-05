@@ -13,15 +13,19 @@ private:
 
   VkDevice* deviceHandlePtr;
 
+  std::vector<VkImageView> attachmentImageViewHandleList;
+
   VkFramebufferCreateInfo framebufferCreateInfo;
 public:
   Framebuffer(VkDevice* deviceHandlePtr,
       VkRenderPass* renderPassHandlePtr, 
-      std::vector<VkImageView>* attachmentImageViewHandleListPtr,
+      VkImageView* initialAttachmentImageViewHandlePtr,
       VkFramebufferCreateFlags framebufferCreateFlags,
       uint32_t width, uint32_t height, uint32_t layers);
 
   ~Framebuffer();
+
+  void addAttachmentImageViewHandle(VkImageView* attachmentImageViewHandlePtr);
 
   bool activate();
 };

@@ -2,7 +2,7 @@
 
 Image::Image(VkDevice* deviceHandlePtr,
     VkPhysicalDevice* physicalDeviceHandlePtr,
-    std::vector<uint32_t>* queueFamilyIndexListPtr,
+    uint32_t initialQueueFamilyIndex,
     VkImageCreateFlags imageCreateFlags,
     VkImageType imageType, VkFormat format, uint32_t width, uint32_t height,
     uint32_t depth, uint32_t mipLevels, uint32_t arrayLayers,
@@ -27,6 +27,8 @@ Image::Image(VkDevice* deviceHandlePtr,
     .depth = depth
   };
 
+  this->queueFamilyIndexList = {initialQueueFamilyIndex};
+
   this->imageCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
     .pNext = NULL,
@@ -40,8 +42,8 @@ Image::Image(VkDevice* deviceHandlePtr,
     .tiling = imageTiling,
     .usage = imageUsageFlags,
     .sharingMode = sharingMode,
-    .queueFamilyIndexCount = (uint32_t)queueFamilyIndexListPtr->size(),
-    .pQueueFamilyIndices = queueFamilyIndexListPtr->data(),
+    .queueFamilyIndexCount = (uint32_t)this->queueFamilyIndexList.size(),
+    .pQueueFamilyIndices = this->queueFamilyIndexList.data(),
     .initialLayout = initialImageLayout
   };
 }
@@ -51,10 +53,20 @@ Image::~Image() {
   vkFreeMemory(*this->deviceHandlePtr, this->deviceMemoryHandle, NULL);
 }
 
+void Image::addQueueFamilyIndex(uint32_t queueFamilyIndex) {
+  this->queueFamilyIndexList.push_back(queueFamilyIndex);
+}
+
 bool Image::activate() {
   if (!Component::activate()) {
     return false;
   }
+
+  this->imageCreateInfo.queueFamilyIndexCount =
+      (uint32_t)this->queueFamilyIndexList.size();
+
+  this->imageCreateInfo.pQueueFamilyIndices =
+      this->queueFamilyIndexList.data();
 
   VkResult result = vkCreateImage(*this->deviceHandlePtr,
       &this->imageCreateInfo, NULL, &this->imageHandle);
