@@ -16,15 +16,18 @@ private:
   std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList;
 public:
   DescriptorSetLayout(VkDevice* deviceHandlePtr,
-      uint32_t initialBinding, VkDescriptorType initialDescriptorType,
+      uint32_t initialBinding, 
+      VkDescriptorType initialDescriptorType,
       uint32_t initialDescriptorCount,
       VkShaderStageFlags initialShaderStageFlags,
       std::vector<VkSampler>* initialImmutableSamplerHandleListPtr);
 
   ~DescriptorSetLayout();
 
-  void addSetLayoutBinding(uint32_t binding, VkDescriptorType descriptorType,
-      uint32_t descriptorCount, VkShaderStageFlags shaderStageFlags,
+  void addSetLayoutBinding(uint32_t binding, 
+      VkDescriptorType descriptorType,
+      uint32_t descriptorCount, 
+      VkShaderStageFlags shaderStageFlags,
       std::vector<VkSampler>* immutableSamplerHandleListPtr);
 
   bool activate();

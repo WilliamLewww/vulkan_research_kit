@@ -79,7 +79,8 @@ uint32_t RenderPass::addAttachment(Attachment attachment) {
 uint32_t RenderPass::addSubpass(VkPipelineBindPoint pipelineBindPoint,
     std::vector<uint32_t> colorAttachmentIndexList,
     std::vector<VkImageLayout> colorImageLayoutList,
-    uint32_t* depthAttachmentIndexPtr, VkImageLayout* depthImageLayoutPtr) {
+    uint32_t* depthAttachmentIndexPtr,
+    VkImageLayout* depthImageLayoutPtr) {
 
   std::vector<VkAttachmentReference> colorAttachmentReferenceList = {};
 
@@ -130,10 +131,12 @@ uint32_t RenderPass::addSubpass(VkPipelineBindPoint pipelineBindPoint,
   return this->subpassDescriptionList.size() - 1;
 }
 
-void RenderPass::addDependency(uint32_t srcSubpass, uint32_t dstSubpass,
+void RenderPass::addDependency(uint32_t srcSubpass,
+    uint32_t dstSubpass,
     VkPipelineStageFlags srcPipelineStageMask,
     VkPipelineStageFlags dstPipelineStageMask,
-    VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+    VkAccessFlags srcAccessMask,
+    VkAccessFlags dstAccessMask,
     VkDependencyFlags dependencyFlags) {
 
   VkSubpassDependency subpassDependency = {

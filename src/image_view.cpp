@@ -1,12 +1,20 @@
 #include "vrk/image_view.h"
 
-ImageView::ImageView(VkDevice* deviceHandlePtr, VkImage* imageHandlePtr,
-    VkImageViewCreateFlags imageViewCreateFlags, VkImageViewType imageViewType,
-    VkFormat format, VkComponentSwizzle componentSwizzleR,
-    VkComponentSwizzle componentSwizzleG, VkComponentSwizzle componentSwizzleB,
-    VkComponentSwizzle componentSwizzleA, VkImageAspectFlags imageAspectFlags,
-    uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer,
-    uint32_t layerCount) : Component("image view") {
+ImageView::ImageView(VkDevice* deviceHandlePtr,
+    VkImage* imageHandlePtr,
+    VkImageViewCreateFlags imageViewCreateFlags,
+    VkImageViewType imageViewType,
+    VkFormat format,
+    VkComponentSwizzle componentSwizzleR,
+    VkComponentSwizzle componentSwizzleG,
+    VkComponentSwizzle componentSwizzleB,
+    VkComponentSwizzle componentSwizzleA,
+    VkImageAspectFlags imageAspectFlags,
+    uint32_t baseMipLevel,
+    uint32_t levelCount,
+    uint32_t baseArrayLayer,
+    uint32_t layerCount) :
+    Component("image view") {
 
   this->imageViewHandle = VK_NULL_HANDLE;
 

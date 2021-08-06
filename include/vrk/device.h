@@ -35,20 +35,25 @@ public:
       VkPhysicalDevice* physicalDeviceHandlePtr);
 
   static VkBool32 checkQueueFamilyPresentSupported(
-      VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
+      VkPhysicalDevice* physicalDeviceHandlePtr,
+      uint32_t queueFamilyIndex,
       VkSurfaceKHR* surfaceHandle);
 
   static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
-      VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
-      VkImageType imageType, VkImageTiling imageTiling,
-      VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags);
+      VkPhysicalDevice* physicalDeviceHandlePtr,
+      VkFormat format,
+      VkImageType imageType,
+      VkImageTiling imageTiling,
+      VkImageUsageFlags imageUsageFlags,
+      VkImageCreateFlags imageCreateFlags);
 
   static VkPhysicalDeviceMemoryProperties getPhysicalDeviceMemoryProperties(
       VkPhysicalDevice* physicalDeviceHandlePtr);
 
   Device(VkInstance* instanceHandlePtr,
       VkPhysicalDevice* physicalDeviceHandlePtr,
-      uint32_t initialQueueFamilyIndex, uint32_t initialQueueCount,
+      uint32_t initialQueueFamilyIndex,
+      uint32_t initialQueueCount,
       float initialQueuePriority = 1.0f);
 
   ~Device();
@@ -57,7 +62,8 @@ public:
 
   bool addExtension(std::string extensionName);
 
-  void addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
+  void addQueueFamily(uint32_t queueFamilyIndex,
+      uint32_t queueCount,
       float queuePriority = 1.0f);
 
   bool activate();

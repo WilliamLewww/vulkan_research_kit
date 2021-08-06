@@ -40,10 +40,12 @@ public:
       uint32_t* depthAttachmentIndexPtr,
       VkImageLayout* depthImageLayoutPtr);
 
-  void addDependency(uint32_t srcSubpass, uint32_t dstSubpass,
+  void addDependency(uint32_t srcSubpass,
+      uint32_t dstSubpass,
       VkPipelineStageFlags srcPipelineStageMask,
       VkPipelineStageFlags dstPipelineStageMask,
-      VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+      VkAccessFlags srcAccessMask,
+      VkAccessFlags dstAccessMask,
       VkDependencyFlags dependencyFlags);
 
   bool activate();

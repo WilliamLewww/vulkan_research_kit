@@ -1,8 +1,10 @@
 #include "vrk/descriptor_set_layout.h"
 
 DescriptorSetLayout::DescriptorSetLayout(VkDevice* deviceHandlePtr,
-    uint32_t initialBinding, VkDescriptorType initialDescriptorType,
-    uint32_t initialDescriptorCount, VkShaderStageFlags initialShaderStageFlags,
+    uint32_t initialBinding, 
+    VkDescriptorType initialDescriptorType,
+    uint32_t initialDescriptorCount, 
+    VkShaderStageFlags initialShaderStageFlags,
     std::vector<VkSampler>* initialImmutableSamplerHandleListPtr) :
     Component("descriptor set layout") {
 
@@ -33,7 +35,8 @@ DescriptorSetLayout::~DescriptorSetLayout() {
 }
 
 void DescriptorSetLayout::addSetLayoutBinding(uint32_t binding,
-    VkDescriptorType descriptorType, uint32_t descriptorCount,
+    VkDescriptorType descriptorType, 
+    uint32_t descriptorCount,
     VkShaderStageFlags shaderStageFlags,
     std::vector<VkSampler>* immutableSamplerHandleListPtr) {
 

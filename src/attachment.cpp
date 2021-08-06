@@ -6,7 +6,8 @@ Attachment::Attachment(VkFormat format,
     VkAttachmentStoreOp attachmentStoreOp,
     VkAttachmentLoadOp stencilAttachmentLoadOp,
     VkAttachmentStoreOp stencilAttachmentStoreOp,
-    VkImageLayout initialImageLayout, VkImageLayout finalImageLayout) {
+    VkImageLayout initialImageLayout,
+    VkImageLayout finalImageLayout) {
 
   this->attachmentDescription = {
     .flags = 0,

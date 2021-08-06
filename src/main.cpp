@@ -205,8 +205,8 @@ int main() {
   //     VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   // colorImage->activate();
 
-  // ImageView* colorImageView = new ImageView(device->getDeviceHandlePtr(), 
-  //     colorImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
+  // ImageView* colorImageView = new ImageView(device->getDeviceHandlePtr(),
+  //     colorImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D,
   //     VK_FORMAT_R8G8B8A8_UINT, VK_COMPONENT_SWIZZLE_IDENTITY,
   //     VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
   //     VK_COMPONENT_SWIZZLE_IDENTITY, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
@@ -219,8 +219,8 @@ int main() {
   //     VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   // depthImage->activate();
 
-  // ImageView* depthImageView = new ImageView(device->getDeviceHandlePtr(), 
-  //     depthImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D, 
+  // ImageView* depthImageView = new ImageView(device->getDeviceHandlePtr(),
+  //     depthImage->getImageHandlePtr(), 0, VK_IMAGE_VIEW_TYPE_2D,
   //     VK_FORMAT_D32_SFLOAT, VK_COMPONENT_SWIZZLE_IDENTITY,
   //     VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
   //     VK_COMPONENT_SWIZZLE_IDENTITY, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1);

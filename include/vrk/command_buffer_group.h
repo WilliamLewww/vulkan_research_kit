@@ -19,7 +19,8 @@ private:
 public:
   CommandBufferGroup(VkDevice* deviceHandlePtr,
       VkCommandPool* commandPoolHandlePtr,
-      VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount);
+      VkCommandBufferLevel commandBufferLevel,
+      uint32_t commandBufferCount);
 
   ~CommandBufferGroup();
 
@@ -33,7 +34,8 @@ public:
   void endRecording(uint32_t commandBufferIndex);
 
   void submit(uint32_t commandBufferIndex,
-      VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
+      VkQueue* queueHandlePtr,
+      std::vector<VkSemaphore> waitSemaphoreHandleList,
       std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
       std::vector<VkSemaphore> signalSemaphoreHandleList,
       VkFence fenceHandle = VK_NULL_HANDLE);

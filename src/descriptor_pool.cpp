@@ -1,9 +1,10 @@
 #include "vrk/descriptor_pool.h"
 
 DescriptorPool::DescriptorPool(VkDevice* deviceHandlePtr,
-    VkDescriptorPoolCreateFlags descriptorPoolCreateFlags, uint32_t maxSets,
-    std::vector<DescriptorPoolSize> descriptorPoolSizeList)
-    : Component("descriptor pool") {
+    VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
+    uint32_t maxSets,
+    std::vector<DescriptorPoolSize> descriptorPoolSizeList) :
+    Component("descriptor pool") {
 
   this->descriptorPoolHandle = descriptorPoolHandle;
 

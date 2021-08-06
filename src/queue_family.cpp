@@ -1,7 +1,9 @@
 #include "vrk/queue_family.h"
 
-QueueFamily::QueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
-    float queuePriority) : Component("queue family") {
+QueueFamily::QueueFamily(uint32_t queueFamilyIndex,
+    uint32_t queueCount,
+    float queuePriority) :
+    Component("queue family") {
 
   this->queueHandleList = std::vector<VkQueue>(queueCount, VK_NULL_HANDLE);
 

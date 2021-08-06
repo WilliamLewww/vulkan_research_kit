@@ -18,10 +18,12 @@ private:
   VkFramebufferCreateInfo framebufferCreateInfo;
 public:
   Framebuffer(VkDevice* deviceHandlePtr,
-      VkRenderPass* renderPassHandlePtr, 
+      VkRenderPass* renderPassHandlePtr,
       VkImageView* initialAttachmentImageViewHandlePtr,
       VkFramebufferCreateFlags framebufferCreateFlags,
-      uint32_t width, uint32_t height, uint32_t layers);
+      uint32_t width,
+      uint32_t height,
+      uint32_t layers);
 
   ~Framebuffer();
 

@@ -22,9 +22,11 @@ private:
     VkDescriptorType type;
     uint32_t descriptorCount;
   };
+
 public:
   DescriptorPool(VkDevice* deviceHandlePtr,
-      VkDescriptorPoolCreateFlags descriptorPoolCreateFlags, uint32_t maxSets, 
+      VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
+      uint32_t maxSets,
       std::vector<DescriptorPoolSize> descriptorPoolSizeList);
 
   ~DescriptorPool();

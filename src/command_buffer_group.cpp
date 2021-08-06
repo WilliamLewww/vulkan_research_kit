@@ -2,7 +2,8 @@
 
 CommandBufferGroup::CommandBufferGroup(VkDevice* deviceHandlePtr,
     VkCommandPool* commandPoolHandlePtr,
-    VkCommandBufferLevel commandBufferLevel, uint32_t commandBufferCount) :
+    VkCommandBufferLevel commandBufferLevel,
+    uint32_t commandBufferCount) :
     Component("command buffer group") {
 
   this->commandBufferHandleList =
@@ -72,9 +73,11 @@ void CommandBufferGroup::endRecording(uint32_t commandBufferIndex) {
 }
 
 void CommandBufferGroup::submit(uint32_t commandBufferIndex,
-    VkQueue* queueHandlePtr, std::vector<VkSemaphore> waitSemaphoreHandleList,
+    VkQueue* queueHandlePtr,
+    std::vector<VkSemaphore> waitSemaphoreHandleList,
     std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList,
-    std::vector<VkSemaphore> signalSemaphoreHandleList, VkFence fenceHandle) {
+    std::vector<VkSemaphore> signalSemaphoreHandleList,
+    VkFence fenceHandle) {
 
   VkSubmitInfo submitInfo = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

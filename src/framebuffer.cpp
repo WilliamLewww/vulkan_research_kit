@@ -1,10 +1,12 @@
 #include "vrk/framebuffer.h"
 
 Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
-    VkRenderPass* renderPassHandlePtr, 
+    VkRenderPass* renderPassHandlePtr,
     VkImageView* initialAttachmentImageViewHandlePtr,
     VkFramebufferCreateFlags framebufferCreateFlags,
-    uint32_t width, uint32_t height, uint32_t layers) :
+    uint32_t width,
+    uint32_t height,
+    uint32_t layers) :
     Component("framebuffer") {
 
   this->framebufferHandle = VK_NULL_HANDLE;

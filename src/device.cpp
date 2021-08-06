@@ -47,7 +47,8 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
 }
 
 VkBool32 Device::checkQueueFamilyPresentSupported(
-    VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t queueFamilyIndex,
+    VkPhysicalDevice* physicalDeviceHandlePtr,
+    uint32_t queueFamilyIndex,
     VkSurfaceKHR* surfaceHandle) {
 
   VkBool32 isPresentSupported = false;
@@ -63,9 +64,12 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
 }
 
 VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
-    VkPhysicalDevice* physicalDeviceHandlePtr, VkFormat format,
-    VkImageType imageType, VkImageTiling imageTiling,
-    VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags) {
+    VkPhysicalDevice* physicalDeviceHandlePtr,
+    VkFormat format,
+    VkImageType imageType,
+    VkImageTiling imageTiling,
+    VkImageUsageFlags imageUsageFlags,
+    VkImageCreateFlags imageCreateFlags) {
 
   VkImageFormatProperties imageFormatProperties = {};
 
@@ -90,8 +94,10 @@ VkPhysicalDeviceMemoryProperties Device::getPhysicalDeviceMemoryProperties(
 }
 
 Device::Device(VkInstance* instanceHandlePtr,
-    VkPhysicalDevice* physicalDeviceHandlePtr, uint32_t initialQueueFamilyIndex,
-    uint32_t initialQueueCount, float initialQueuePriority) :
+    VkPhysicalDevice* physicalDeviceHandlePtr,
+    uint32_t initialQueueFamilyIndex,
+    uint32_t initialQueueCount,
+    float initialQueuePriority) :
     Component("device") {
 
   this->deviceHandle = VK_NULL_HANDLE;
@@ -149,7 +155,8 @@ bool Device::addExtension(std::string extensionName) {
   return foundExtension;
 }
 
-void Device::addQueueFamily(uint32_t queueFamilyIndex, uint32_t queueCount,
+void Device::addQueueFamily(uint32_t queueFamilyIndex,
+    uint32_t queueCount,
     float queuePriority) {
 
   this->queueFamilyList.push_back(QueueFamily(queueFamilyIndex,
