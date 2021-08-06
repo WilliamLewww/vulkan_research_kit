@@ -2,19 +2,22 @@
 
 DescriptorPool::DescriptorPool(VkDevice* deviceHandlePtr,
     VkDescriptorPoolCreateFlags descriptorPoolCreateFlags, uint32_t maxSets,
-    VkDescriptorType initialDescriptorType, uint32_t initialDescriptorCount) :
-    Component("descriptor pool") {
+    std::vector<DescriptorPoolSize> descriptorPoolSizeList)
+    : Component("descriptor pool") {
 
   this->descriptorPoolHandle = descriptorPoolHandle;
 
   this->deviceHandlePtr = deviceHandlePtr;
 
-  VkDescriptorPoolSize descriptorPoolSize = {
-    .type = initialDescriptorType,
-    .descriptorCount = initialDescriptorCount
-  };
+  this->descriptorPoolSizeList = {};
+  for (uint32_t x = 0; x < descriptorPoolSizeList.size(); x++) {
+    VkDescriptorPoolSize descriptorPoolSize = {
+      .type = descriptorPoolSizeList[x].type,
+      .descriptorCount = descriptorPoolSizeList[x].descriptorCount
+    };
 
-  this->descriptorPoolSizeList = {descriptorPoolSize};
+    this->descriptorPoolSizeList.push_back(descriptorPoolSize);
+  }
 
   this->descriptorPoolCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -30,27 +33,10 @@ DescriptorPool::~DescriptorPool() {
 
 }
 
-void DescriptorPool::addDescriptorPoolSize(VkDescriptorType descriptorType,
-    uint32_t descriptorCount) {
-
-  VkDescriptorPoolSize descriptorPoolSize = {
-    .type = descriptorType,
-    .descriptorCount = descriptorCount
-  };
-
-  this->descriptorPoolSizeList.push_back(descriptorPoolSize);
-}
-
 bool DescriptorPool::activate() {
   if (!Component::activate()) {
     return true;
   }
-
-  this->descriptorPoolCreateInfo.poolSizeCount =
-      (uint32_t)this->descriptorPoolSizeList.size();
-
-  this->descriptorPoolCreateInfo.pPoolSizes =
-      this->descriptorPoolSizeList.data();
 
   VkResult result = vkCreateDescriptorPool(*this->deviceHandlePtr,
       &this->descriptorPoolCreateInfo, NULL, &this->descriptorPoolHandle);

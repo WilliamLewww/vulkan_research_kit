@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <tuple>
 
 class DescriptorPool : public Component {
 private:
@@ -16,16 +17,17 @@ private:
   std::vector<VkDescriptorPoolSize> descriptorPoolSizeList;
 
   VkDescriptorPoolCreateInfo descriptorPoolCreateInfo;
+
+  struct DescriptorPoolSize {
+    VkDescriptorType type;
+    uint32_t descriptorCount;
+  };
 public:
   DescriptorPool(VkDevice* deviceHandlePtr,
-      VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
-      uint32_t maxSets, VkDescriptorType initialDescriptorType,
-      uint32_t initialDescriptorCount);
+      VkDescriptorPoolCreateFlags descriptorPoolCreateFlags, uint32_t maxSets, 
+      std::vector<DescriptorPoolSize> descriptorPoolSizeList);
 
   ~DescriptorPool();
-
-  void addDescriptorPoolSize(VkDescriptorType descriptorType,
-      uint32_t descriptorCount);
 
   bool activate();
 };
