@@ -50,14 +50,7 @@ std::vector<VkLayerProperties> Instance::getAvailableLayerPropertiesList() {
 std::vector<VkExtensionProperties>
     Instance::getAvailableExtensionPropertiesList(std::string layerName) {
 
-  const char* layerNameConst;
-
-  if (layerName == "") {
-    layerNameConst = NULL;
-  }
-  else {
-    layerNameConst = layerName.c_str();
-  }
+  const char* layerNameConst = (layerName == "") ? NULL : layerName.c_str();
 
   uint32_t extensionPropertiesCount = 0;
 
@@ -115,7 +108,7 @@ Instance::Instance(
     .pEnabledValidationFeatures = validationFeatureEnableList.data(),
     .disabledValidationFeatureCount =
         (uint32_t)validationFeatureDisableList.size(),
-    .pDisabledValidationFeatures = validationFeatureDisableList.data(),
+    .pDisabledValidationFeatures = validationFeatureDisableList.data()
   };
 
   VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo = {
@@ -160,7 +153,7 @@ Instance::Instance(
     .enabledLayerCount = (uint32_t)enabledLayerNameList.size(),
     .ppEnabledLayerNames = enabledLayerNameBuffer,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
-    .ppEnabledExtensionNames = enabledExtensionNameBuffer,
+    .ppEnabledExtensionNames = enabledExtensionNameBuffer
   };
 
   result = vkCreateInstance(&instanceCreateInfo, NULL, &this->instanceHandle);
@@ -210,6 +203,6 @@ std::string Instance::getVulkanVersionAPI() {
       std::to_string(this->patchVersion);
 }
 
-VkInstance* Instance::getInstanceHandlePtr() {
-  return &this->instanceHandle;
+VkInstance& Instance::getInstanceHandleRef() {
+  return this->instanceHandle;
 }

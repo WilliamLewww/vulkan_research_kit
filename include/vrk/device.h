@@ -8,17 +8,40 @@
 
 class Device {
 public:
+  struct DeviceQueueCreateInfoParam {
+    VkDeviceQueueCreateFlags deviceQueueCreateFlags;
+    uint32_t queueFamilyIndex;
+    uint32_t queueCount;
+    std::vector<float> queuePriorityList;
+  };
+
+  struct QueueFamily {
+    uint32_t index;
+    std::vector<VkQueue> queueHandleList;
+  };
+
   static std::vector<VkPhysicalDevice> getPhysicalDevices(
-      VkInstance* instanceHandlePtr);
+      VkInstance& instanceHandleRef);
 
   static VkPhysicalDeviceProperties getPhysicalDeviceProperties(
-      VkPhysicalDevice* physicalDeviceHandlePtr);
+      VkPhysicalDevice& physicalDeviceHandleRef);
 
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
-      VkPhysicalDevice* physicalDeviceHandlePtr);
+      VkPhysicalDevice& physicalDeviceHandleRef);
 
-  Device();
+  Device(VkPhysicalDevice& physicalDeviceHandleRef,
+      std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
+      std::vector<std::string> enabledLayerNameList,
+      std::vector<std::string> enabledExtensionNameList,
+      std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList);
 
   ~Device();
+
+  VkDevice& getDeviceHandleRef();
+
+  VkQueue& getQueueHandleRef(uint32_t queueFamilyIndex, uint32_t queueIndex);
 private:
+  VkDevice deviceHandle;
+
+  std::vector<QueueFamily> queueFamilyList;
 };

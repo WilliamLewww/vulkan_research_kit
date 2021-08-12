@@ -1,5 +1,7 @@
 #include "vrk/instance.h"
 #include "vrk/device.h"
+#include "vrk/command_pool.h"
+#include "vrk/command_buffer_group.h"
 
 int main(void) {
   Instance* instance = new Instance(
@@ -23,23 +25,23 @@ int main(void) {
       << std::endl;
 
   std::vector<VkPhysicalDevice> deviceHandleList =
-      Device::getPhysicalDevices(instance->getInstanceHandlePtr());
+      Device::getPhysicalDevices(instance->getInstanceHandleRef());
 
-  VkPhysicalDevice activePhysicalDevice;
+  VkPhysicalDevice activePhysicalDeviceHandle;
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties =
-        Device::getPhysicalDeviceProperties(&deviceHandle);
+        Device::getPhysicalDeviceProperties(deviceHandle);
 
     if (physicalDeviceProperties.deviceType ==
         VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 
-      activePhysicalDevice = deviceHandle;
+      activePhysicalDeviceHandle = deviceHandle;
       break;
     }
   }
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList =
-      Device::getQueueFamilyPropertiesList(&activePhysicalDevice);
+      Device::getQueueFamilyPropertiesList(activePhysicalDeviceHandle);
 
   uint32_t queueFamilyIndex = -1;
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
@@ -49,6 +51,22 @@ int main(void) {
     }
   }
 
+  Device* device = new Device(activePhysicalDeviceHandle,
+      {{0, queueFamilyIndex, 1, {1.0f}}},
+      {},
+      {},
+      {});
+
+  CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(), 0,
+      queueFamilyIndex);
+
+  CommandBufferGroup* commandBufferGroup = new CommandBufferGroup(
+      device->getDeviceHandleRef(), commandPool->getCommandPoolHandleRef(),
+      VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1);
+
+  delete commandBufferGroup;
+  delete commandPool;
+  delete device;
   delete instance;
 
   return 0;

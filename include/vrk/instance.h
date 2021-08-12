@@ -29,7 +29,7 @@ public:
 
   std::string getVulkanVersionAPI();
 
-  VkInstance* getInstanceHandlePtr();
+  VkInstance& getInstanceHandleRef();
 private:
   VkInstance instanceHandle;
 
