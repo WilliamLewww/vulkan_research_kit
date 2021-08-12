@@ -184,8 +184,7 @@ Instance::Instance(
         pvkCreateDebugUtilsMessengerEXT);
 
     result = pvkCreateDebugUtilsMessengerEXT(this->instanceHandle,
-        &debugUtilsMessengerCreateInfo, NULL,
-        &this->debugUtilsMessengerHandle);
+        &debugUtilsMessengerCreateInfo, NULL, &this->debugUtilsMessengerHandle);
 
     if (result != VK_SUCCESS) {
       throwExceptionVulkanAPI(result, "vkCreateDebugUtilsMessengerEXT");
@@ -209,4 +208,8 @@ std::string Instance::getVulkanVersionAPI() {
   return std::to_string(this->majorVersion) + "." +
       std::to_string(this->minorVersion) + "." +
       std::to_string(this->patchVersion);
+}
+
+VkInstance* Instance::getInstanceHandlePtr() {
+  return &this->instanceHandle;
 }

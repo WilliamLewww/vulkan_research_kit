@@ -28,6 +28,8 @@ public:
   ~Instance();
 
   std::string getVulkanVersionAPI();
+
+  VkInstance* getInstanceHandlePtr();
 private:
   VkInstance instanceHandle;
 
