@@ -14,7 +14,7 @@ CommandPool::CommandPool(VkDevice& deviceHandleRef,
     .queueFamilyIndex = queueFamilyIndex
   };
 
-  VkResult result = vkCreateCommandPool(this->deviceHandleRef,
+  VkResult result = vkCreateCommandPool(deviceHandleRef,
       &commandPoolCreateInfo, NULL, &this->commandPoolHandle);
 
   if (result != VK_SUCCESS) {

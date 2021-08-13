@@ -2,6 +2,7 @@
 #include "vrk/device.h"
 #include "vrk/command_pool.h"
 #include "vrk/command_buffer_group.h"
+#include "vrk/render_pass.h"
 
 int main(void) {
   Instance* instance = new Instance(
@@ -57,13 +58,31 @@ int main(void) {
       {},
       {});
 
-  CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(), 0,
+  CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(),
+      0,
       queueFamilyIndex);
 
   CommandBufferGroup* commandBufferGroup = new CommandBufferGroup(
       device->getDeviceHandleRef(), commandPool->getCommandPoolHandleRef(),
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1);
 
+  RenderPass* renderPass = new RenderPass(device->getDeviceHandleRef(),
+      (VkRenderPassCreateFlagBits)0,
+      {},
+      {{0,
+          VK_PIPELINE_BIND_POINT_GRAPHICS,
+          0,
+          NULL,
+          0,
+          NULL,
+          NULL,
+          NULL,
+          0,
+          NULL,
+      }},
+      {});
+
+  delete renderPass;
   delete commandBufferGroup;
   delete commandPool;
   delete device;

@@ -13,12 +13,12 @@ CommandBufferGroup::CommandBufferGroup(VkDevice& deviceHandleRef,
   VkCommandBufferAllocateInfo commandBufferAllocateInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
     .pNext = NULL,
-    .commandPool = this->commandPoolHandleRef,
+    .commandPool = commandPoolHandleRef,
     .level = commandBufferLevel,
     .commandBufferCount = commandBufferCount
   };
 
-  VkResult result = vkAllocateCommandBuffers(this->deviceHandleRef,
+  VkResult result = vkAllocateCommandBuffers(deviceHandleRef,
       &commandBufferAllocateInfo, this->commandBufferHandleList.data());
 
   if (result != VK_SUCCESS) {
