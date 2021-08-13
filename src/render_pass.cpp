@@ -32,3 +32,7 @@ RenderPass::RenderPass(VkDevice& deviceHandleRef,
 RenderPass::~RenderPass() {
   vkDestroyRenderPass(this->deviceHandleRef, this->renderPassHandle, NULL);
 }
+
+VkRenderPass& RenderPass::getRenderPassHandleRef() {
+  return this->renderPassHandle;
+}

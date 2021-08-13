@@ -3,6 +3,7 @@
 #include "vrk/command_pool.h"
 #include "vrk/command_buffer_group.h"
 #include "vrk/render_pass.h"
+#include "vrk/framebuffer.h"
 
 int main(void) {
   Instance* instance = new Instance(
@@ -82,6 +83,15 @@ int main(void) {
       }},
       {});
 
+  Framebuffer* framebuffer = new Framebuffer(device->getDeviceHandleRef(),
+      renderPass->getRenderPassHandleRef(),
+      std::vector<VkImageView>(),
+      (VkFramebufferCreateFlags)0,
+      800,
+      600,
+      1);
+
+  delete framebuffer;
   delete renderPass;
   delete commandBufferGroup;
   delete commandPool;

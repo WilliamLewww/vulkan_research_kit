@@ -15,6 +15,8 @@ public:
       std::vector<VkSubpassDependency> subpassDependencyList);
 
   ~RenderPass();
+
+  VkRenderPass& getRenderPassHandleRef();
 private:
   VkRenderPass renderPassHandle;
 

@@ -9,10 +9,10 @@
 class CommandBufferGroup {
 public:
   struct SubmitInfoParam {
-    std::vector<VkSemaphore>& waitSemaphoreHandleListRef;
+    std::vector<VkSemaphore> waitSemaphoreHandleList;
     std::vector<VkPipelineStageFlags> waitPipelineStageFlagsList;
     std::vector<uint32_t> commandBufferHandleIndexList;
-    std::vector<VkSemaphore>& signalSemaphoreHandleListRef;
+    std::vector<VkSemaphore> signalSemaphoreHandleList;
   };
 
   CommandBufferGroup(VkDevice& deviceHandleRef,
@@ -29,7 +29,7 @@ public:
 
   void submit(VkQueue& queueHandleRef,
       std::vector<SubmitInfoParam> submitInfoParamList,
-      VkFence& fenceHandleRef);
+      VkFence fenceHandle);
 private:
   std::vector<VkCommandBuffer> commandBufferHandleList;
 

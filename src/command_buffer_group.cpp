@@ -63,7 +63,7 @@ void CommandBufferGroup::endRecording(uint32_t commandBufferIndex) {
 void CommandBufferGroup::submit(
     VkQueue& queueHandleRef,
     std::vector<SubmitInfoParam> submitInfoParamList,
-    VkFence& fenceHandleRef) {
+    VkFence fenceHandle) {
 
   std::vector<VkSubmitInfo> submitInfoList = {};
 
@@ -78,19 +78,19 @@ void CommandBufferGroup::submit(
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .pNext = NULL,
       .waitSemaphoreCount =
-          (uint32_t)submitInfoParam.waitSemaphoreHandleListRef.size(),
-      .pWaitSemaphores = submitInfoParam.waitSemaphoreHandleListRef.data(),
+          (uint32_t)submitInfoParam.waitSemaphoreHandleList.size(),
+      .pWaitSemaphores = submitInfoParam.waitSemaphoreHandleList.data(),
       .pWaitDstStageMask = submitInfoParam.waitPipelineStageFlagsList.data(),
       .commandBufferCount = (uint32_t)commandBufferHandleList.size(),
       .pCommandBuffers = commandBufferHandleList.data(),
       .signalSemaphoreCount =
-          (uint32_t)submitInfoParam.signalSemaphoreHandleListRef.size(),
-      .pSignalSemaphores = submitInfoParam.signalSemaphoreHandleListRef.data()
+          (uint32_t)submitInfoParam.signalSemaphoreHandleList.size(),
+      .pSignalSemaphores = submitInfoParam.signalSemaphoreHandleList.data()
     };
   }
 
   VkResult result = vkQueueSubmit(queueHandleRef,
-      (uint32_t)submitInfoList.size(), submitInfoList.data(), fenceHandleRef);
+      (uint32_t)submitInfoList.size(), submitInfoList.data(), fenceHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkQueueSubmit");
