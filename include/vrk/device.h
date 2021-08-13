@@ -29,6 +29,22 @@ public:
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
       VkPhysicalDevice& physicalDeviceHandleRef);
 
+  static VkBool32 checkQueueFamilyPresentSupported(
+      VkPhysicalDevice& physicalDeviceHandleRef,
+      uint32_t queueFamilyIndex,
+      VkSurfaceKHR& surfaceHandleRef);
+
+  static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
+      VkPhysicalDevice& physicalDeviceHandleRef,
+      VkFormat format,
+      VkImageType imageType,
+      VkImageTiling imageTiling,
+      VkImageUsageFlags imageUsageFlags,
+      VkImageCreateFlags imageCreateFlags);
+
+  static VkPhysicalDeviceMemoryProperties getPhysicalDeviceMemoryProperties(
+      VkPhysicalDevice& physicalDeviceHandleRef);
+
   Device(VkPhysicalDevice& physicalDeviceHandleRef,
       std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
       std::vector<std::string> enabledLayerNameList,

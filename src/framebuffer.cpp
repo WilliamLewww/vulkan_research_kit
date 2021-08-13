@@ -6,7 +6,7 @@ Framebuffer::Framebuffer(VkDevice& deviceHandleRef,
     VkFramebufferCreateFlags framebufferCreateFlags,
     uint32_t width,
     uint32_t height,
-    uint32_t layers) : 
+    uint32_t layers) :
     deviceHandleRef(deviceHandleRef) {
 
   this->framebufferHandle = VK_NULL_HANDLE;

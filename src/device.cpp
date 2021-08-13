@@ -52,6 +52,56 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
   return queueFamilyPropertiesList;
 }
 
+VkBool32 Device::checkQueueFamilyPresentSupported(
+    VkPhysicalDevice& physicalDeviceHandleRef,
+    uint32_t queueFamilyIndex,
+    VkSurfaceKHR& surfaceHandleRef) {
+
+  VkBool32 isPresentSupported = false;
+
+  VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
+      physicalDeviceHandleRef, queueFamilyIndex, surfaceHandleRef,
+      &isPresentSupported);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceSurfaceSupportKHR");
+  }
+
+  return isPresentSupported;
+}
+
+VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
+    VkPhysicalDevice& physicalDeviceHandleRef,
+    VkFormat format,
+    VkImageType imageType,
+    VkImageTiling imageTiling,
+    VkImageUsageFlags imageUsageFlags,
+    VkImageCreateFlags imageCreateFlags) {
+
+  VkImageFormatProperties imageFormatProperties = {};
+
+  VkResult result = vkGetPhysicalDeviceImageFormatProperties(
+      physicalDeviceHandleRef, format, imageType, imageTiling, imageUsageFlags,
+      imageCreateFlags, &imageFormatProperties);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceImageFormatProperties");
+  }
+
+  return imageFormatProperties;
+}
+
+VkPhysicalDeviceMemoryProperties Device::getPhysicalDeviceMemoryProperties(
+    VkPhysicalDevice& physicalDeviceHandleRef) {
+
+  VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+
+  vkGetPhysicalDeviceMemoryProperties(physicalDeviceHandleRef,
+      &physicalDeviceMemoryProperties);
+
+  return physicalDeviceMemoryProperties;
+}
+
 Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
     std::vector<std::string> enabledLayerNameList,

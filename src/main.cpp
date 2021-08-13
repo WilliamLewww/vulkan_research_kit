@@ -4,6 +4,9 @@
 #include "vrk/command_buffer_group.h"
 #include "vrk/render_pass.h"
 #include "vrk/framebuffer.h"
+#include "vrk/shader_module.h"
+
+#include <fstream>
 
 int main(void) {
   Instance* instance = new Instance(
@@ -90,6 +93,32 @@ int main(void) {
       800,
       600,
       1);
+
+  std::ifstream vertexFile("resources/shaders/default.vert.spv",
+      std::ios::binary | std::ios::ate);
+  std::streamsize vertexFileSize = vertexFile.tellg();
+  vertexFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
+  vertexFile.read((char*)vertexShaderSource.data(), vertexFileSize);
+  vertexFile.close();
+
+  ShaderModule* vertexShaderModule = new ShaderModule(
+      device->getDeviceHandleRef(), vertexShaderSource);
+
+  std::ifstream fragmentFile("resources/shaders/default.vert.spv",
+      std::ios::binary | std::ios::ate);
+  std::streamsize fragmentFileSize = fragmentFile.tellg();
+  fragmentFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> fragmentShaderSource(
+      fragmentFileSize / sizeof(uint32_t));
+  fragmentFile.read((char*)fragmentShaderSource.data(), fragmentFileSize);
+  fragmentFile.close();
+
+  ShaderModule* fragmentShaderModule = new ShaderModule(
+      device->getDeviceHandleRef(), fragmentShaderSource);
+
+  delete fragmentShaderModule;
+  delete vertexShaderModule;
 
   delete framebuffer;
   delete renderPass;
