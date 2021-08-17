@@ -11,6 +11,8 @@ public:
   ShaderModule(VkDevice& deviceHandleRef, std::vector<uint32_t> code);
 
   ~ShaderModule();
+
+  VkShaderModule& getShaderModuleHandleRef();
 private:
   VkShaderModule shaderModuleHandle;
 

@@ -25,3 +25,7 @@ ShaderModule::ShaderModule(VkDevice& deviceHandleRef,
 ShaderModule::~ShaderModule() {
   vkDestroyShaderModule(this->deviceHandleRef, this->shaderModuleHandle, NULL);
 }
+
+VkShaderModule& ShaderModule::getShaderModuleHandleRef() {
+  return this->shaderModuleHandle;
+}

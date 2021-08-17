@@ -5,22 +5,36 @@
 #include "vrk/render_pass.h"
 #include "vrk/framebuffer.h"
 #include "vrk/shader_module.h"
+#include "vrk/graphics_pipeline_group.h"
+#include "vrk/pipeline_layout.h"
 
 #include <fstream>
 
 int main(void) {
-  Instance* instance = new Instance(
-      {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-          VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-          VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT},
-      {},
+  std::vector<VkValidationFeatureEnableEXT> validationFeatureEnableList = {
+    VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+    VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+    VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT
+  };
+
+  std::vector<VkValidationFeatureDisableEXT> validationFeatureDisableList = {};
+
+  VkDebugUtilsMessageSeverityFlagBitsEXT debugUtilsMessageSeverityFlagBits =
       (VkDebugUtilsMessageSeverityFlagBitsEXT)
-          (VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-          VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-          VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT),
+      (VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT);
+
+  VkDebugUtilsMessageTypeFlagBitsEXT debugUtilsMessageTypeFlagBits =
       (VkDebugUtilsMessageTypeFlagBitsEXT)
-          (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-          VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT),
+      (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
+
+  Instance* instance = new Instance(
+      validationFeatureEnableList,
+      validationFeatureDisableList,
+      debugUtilsMessageSeverityFlagBits,
+      debugUtilsMessageTypeFlagBits,
       "Demo Application",
       VK_MAKE_VERSION(1, 0, 0),
       {"VK_LAYER_KHRONOS_validation"},
@@ -105,7 +119,7 @@ int main(void) {
   ShaderModule* vertexShaderModule = new ShaderModule(
       device->getDeviceHandleRef(), vertexShaderSource);
 
-  std::ifstream fragmentFile("resources/shaders/default.vert.spv",
+  std::ifstream fragmentFile("resources/shaders/default.frag.spv",
       std::ios::binary | std::ios::ate);
   std::streamsize fragmentFileSize = fragmentFile.tellg();
   fragmentFile.seekg(0, std::ios::beg);
@@ -116,6 +130,66 @@ int main(void) {
 
   ShaderModule* fragmentShaderModule = new ShaderModule(
       device->getDeviceHandleRef(), fragmentShaderSource);
+
+  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam vertexStage = {
+    .pipelineShaderStageCreateFlags = 0,
+    .shaderStageFlagBits = VK_SHADER_STAGE_VERTEX_BIT,
+    .shaderModuleHandleRef = vertexShaderModule->getShaderModuleHandleRef(),
+    .entryPointName = "main",
+    .specializationInfoPtr = NULL
+  };
+
+  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam fragmentStage = {
+    .pipelineShaderStageCreateFlags = 0,
+    .shaderStageFlagBits = VK_SHADER_STAGE_FRAGMENT_BIT,
+    .shaderModuleHandleRef = fragmentShaderModule->getShaderModuleHandleRef(),
+    .entryPointName = "main",
+    .specializationInfoPtr = NULL
+  };
+
+  PipelineLayout* pipelineLayout = new PipelineLayout(
+      device->getDeviceHandleRef(),
+      std::vector<VkDescriptorSetLayout>(),
+      std::vector<VkPushConstantRange>());
+
+  auto pipelineRasterizationStateCreateInfoParam = 
+      std::make_shared<GraphicsPipelineGroup::
+      PipelineRasterizationStateCreateInfoParam>(GraphicsPipelineGroup::
+      PipelineRasterizationStateCreateInfoParam {
+
+    // .depthClampEnable = ,
+    .rasterizerDiscardEnable = VK_TRUE,
+    // .polygonMode = ,
+    // .cullModeFlags = ,
+    // .frontFace = ,
+    // .depthBiasEnable = ,
+    // .depthBiasConstantFactor = ,
+    // .depthBiasClamp = ,
+    // .depthBiasSlopeFactor = ,
+    .lineWidth = 1.0
+  });
+
+  GraphicsPipelineGroup* graphicsPipelineGroup = new GraphicsPipelineGroup(
+      device->getDeviceHandleRef(),
+      {
+        {0, 
+        {vertexStage, fragmentStage}, 
+        NULL, 
+        NULL, 
+        NULL, 
+        NULL, 
+        pipelineRasterizationStateCreateInfoParam, 
+        NULL, 
+        NULL, 
+        NULL, 
+        NULL,
+        pipelineLayout->getPipelineLayoutHandleRef(), 
+        renderPass->getRenderPassHandleRef(), 
+        0,
+        VK_NULL_HANDLE, 
+        0}});
+
+  delete graphicsPipelineGroup;
 
   delete fragmentShaderModule;
   delete vertexShaderModule;
