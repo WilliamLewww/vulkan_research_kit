@@ -1,23 +1,25 @@
 #pragma once
 
 #include "vrk/helper.h"
-#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
-class Fence : public Component {
-private:
-  VkFence fenceHandle;
-
-  VkDevice* deviceHandlePtr;
-
-  VkFenceCreateFlags fenceCreateFlags;
+class Fence {
 public:
-  Fence(VkDevice* deviceHandlePtr, VkFenceCreateFlags fenceCreateFlags = 0);
+  Fence(VkDevice& deviceHandleRef,
+      VkFenceCreateFlagBits fenceCreateFlagBits);
 
   ~Fence();
 
-  bool activate();
+  bool getSignaled();
 
-  VkFence* getFenceHandlePtr();
+  bool waitForSignal(uint32_t timeout);
+
+  void reset();
+
+  VkFence& getFenceHandleRef();
+private:
+  VkFence fenceHandle;
+
+  VkDevice& deviceHandleRef;
 };

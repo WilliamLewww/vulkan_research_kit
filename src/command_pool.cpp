@@ -1,43 +1,40 @@
 #include "vrk/command_pool.h"
 
-CommandPool::CommandPool(VkDevice* deviceHandlePtr, uint32_t queueFamilyIndex) :
-    Component("command pool") {
+CommandPool::CommandPool(VkDevice& deviceHandleRef,
+    VkCommandPoolCreateFlags commandPoolCreateFlags,
+    uint32_t queueFamilyIndex) :
+    deviceHandleRef(deviceHandleRef) {
 
   this->commandPoolHandle = VK_NULL_HANDLE;
 
-  this->deviceHandlePtr = deviceHandlePtr;
-
-  this->commandPoolCreateInfo = {
+  VkCommandPoolCreateInfo commandPoolCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
     .pNext = NULL,
-    .flags = 0,
+    .flags = commandPoolCreateFlags,
     .queueFamilyIndex = queueFamilyIndex
   };
-}
 
-CommandPool::~CommandPool() {
-  vkDestroyCommandPool(*this->deviceHandlePtr, this->commandPoolHandle, NULL);
-}
-
-bool CommandPool::activate() {
-  if (!Component::activate()) {
-    return false;
-  }
-
-  VkResult result = vkCreateCommandPool(*this->deviceHandlePtr,
+  VkResult result = vkCreateCommandPool(deviceHandleRef,
       &commandPoolCreateInfo, NULL, &this->commandPoolHandle);
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateCommandPool");
   }
+}
 
-  return true;
+CommandPool::~CommandPool() {
+  vkDestroyCommandPool(this->deviceHandleRef, this->commandPoolHandle, NULL);
 }
 
 void CommandPool::reset(VkCommandPoolResetFlags commandPoolResetFlags) {
-  VkResult result = vkResetCommandPool(*this->deviceHandlePtr,
+  VkResult result = vkResetCommandPool(this->deviceHandleRef,
       this->commandPoolHandle, commandPoolResetFlags);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkResetCommandPool");
+  }
 }
 
-VkCommandPool* CommandPool::getCommandPoolHandlePtr() {
-  return &this->commandPoolHandle;
+VkCommandPool& CommandPool::getCommandPoolHandleRef() {
+  return this->commandPoolHandle;
 }

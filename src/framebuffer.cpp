@@ -1,63 +1,40 @@
 #include "vrk/framebuffer.h"
 
-Framebuffer::Framebuffer(VkDevice* deviceHandlePtr,
-    VkRenderPass* renderPassHandlePtr,
-    VkImageView* initialAttachmentImageViewHandlePtr,
+Framebuffer::Framebuffer(VkDevice& deviceHandleRef,
+    VkRenderPass& renderPassHandleRef,
+    std::vector<VkImageView> imageViewHandleList,
     VkFramebufferCreateFlags framebufferCreateFlags,
     uint32_t width,
     uint32_t height,
     uint32_t layers) :
-    Component("framebuffer") {
+    deviceHandleRef(deviceHandleRef) {
 
   this->framebufferHandle = VK_NULL_HANDLE;
 
-  this->deviceHandlePtr = deviceHandlePtr;
-
-  this->framebufferCreateInfo = {
+  VkFramebufferCreateInfo framebufferCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
     .pNext = NULL,
     .flags = framebufferCreateFlags,
-    .renderPass = *renderPassHandlePtr,
-    .attachmentCount = 0,
-    .pAttachments = NULL,
+    .renderPass = renderPassHandleRef,
+    .attachmentCount = (uint32_t)imageViewHandleList.size(),
+    .pAttachments = imageViewHandleList.data(),
     .width = width,
     .height = height,
     .layers = layers
   };
 
-  this->attachmentImageViewHandleList = {};
+  VkResult result = vkCreateFramebuffer(deviceHandleRef,
+      &framebufferCreateInfo, NULL, &this->framebufferHandle);
 
-  if (initialAttachmentImageViewHandlePtr != NULL) {
-    this->attachmentImageViewHandleList.push_back(
-        *initialAttachmentImageViewHandlePtr);
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkCreateFramebuffer");
   }
 }
 
 Framebuffer::~Framebuffer() {
-  vkDestroyFramebuffer(*this->deviceHandlePtr, this->framebufferHandle, NULL);
+  vkDestroyFramebuffer(this->deviceHandleRef, this->framebufferHandle, NULL);
 }
 
-void Framebuffer::addAttachmentImageViewHandle(
-    VkImageView* attachmentImageViewHandlePtr) {
-
-  this->attachmentImageViewHandleList.push_back(*attachmentImageViewHandlePtr);
-}
-
-bool Framebuffer::activate() {
-  if (!Component::activate()) {
-    return false;
-  }
-
-  this->framebufferCreateInfo.attachmentCount =
-      (uint32_t)this->attachmentImageViewHandleList.size();
-  this->framebufferCreateInfo.pAttachments =
-      this->attachmentImageViewHandleList.data();
-
-  VkResult result = vkCreateFramebuffer(*this->deviceHandlePtr,
-      &framebufferCreateInfo, NULL, &this->framebufferHandle);
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result, "vkCreateFramebuffer");
-  }
-
-  return true;
+VkFramebuffer& Framebuffer::getFramebufferHandleRef() {
+  return this->framebufferHandle;
 }

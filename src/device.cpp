@@ -1,18 +1,22 @@
 #include "vrk/device.h"
 
 std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
-    VkInstance* instanceHandlePtr) {
+    VkInstance& instanceHandleRef) {
 
   uint32_t physicalDeviceCount = 0;
-  VkResult result = vkEnumeratePhysicalDevices(*instanceHandlePtr,
+
+  VkResult result = vkEnumeratePhysicalDevices(instanceHandleRef,
       &physicalDeviceCount, NULL);
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
   }
 
   std::vector<VkPhysicalDevice> physicalDeviceList(physicalDeviceCount);
-  result = vkEnumeratePhysicalDevices(*instanceHandlePtr, &physicalDeviceCount,
+
+  result = vkEnumeratePhysicalDevices(instanceHandleRef, &physicalDeviceCount,
       physicalDeviceList.data());
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumeratePhysicalDevices");
   }
@@ -21,41 +25,44 @@ std::vector<VkPhysicalDevice> Device::getPhysicalDevices(
 }
 
 VkPhysicalDeviceProperties Device::getPhysicalDeviceProperties(
-    VkPhysicalDevice* physicalDeviceHandlePtr) {
+    VkPhysicalDevice& physicalDeviceHandleRef) {
 
   VkPhysicalDeviceProperties physicalDeviceProperties;
 
-  vkGetPhysicalDeviceProperties(*physicalDeviceHandlePtr,
+  vkGetPhysicalDeviceProperties(physicalDeviceHandleRef,
       &physicalDeviceProperties);
 
   return physicalDeviceProperties;
 }
 
 std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
-    VkPhysicalDevice* physicalDeviceHandlePtr) {
+    VkPhysicalDevice& physicalDeviceHandleRef) {
 
   uint32_t queueFamilyPropertyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(*physicalDeviceHandlePtr,
+
+  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandleRef,
       &queueFamilyPropertyCount, NULL);
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList(
       queueFamilyPropertyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(*physicalDeviceHandlePtr,
+
+  vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceHandleRef,
       &queueFamilyPropertyCount, queueFamilyPropertiesList.data());
 
   return queueFamilyPropertiesList;
 }
 
 VkBool32 Device::checkQueueFamilyPresentSupported(
-    VkPhysicalDevice* physicalDeviceHandlePtr,
+    VkPhysicalDevice& physicalDeviceHandleRef,
     uint32_t queueFamilyIndex,
-    VkSurfaceKHR* surfaceHandle) {
+    VkSurfaceKHR& surfaceHandleRef) {
 
   VkBool32 isPresentSupported = false;
 
   VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
-      *physicalDeviceHandlePtr, queueFamilyIndex, *surfaceHandle,
+      physicalDeviceHandleRef, queueFamilyIndex, surfaceHandleRef,
       &isPresentSupported);
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceSurfaceSupportKHR");
   }
@@ -64,7 +71,7 @@ VkBool32 Device::checkQueueFamilyPresentSupported(
 }
 
 VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
-    VkPhysicalDevice* physicalDeviceHandlePtr,
+    VkPhysicalDevice& physicalDeviceHandleRef,
     VkFormat format,
     VkImageType imageType,
     VkImageTiling imageTiling,
@@ -74,8 +81,9 @@ VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
   VkImageFormatProperties imageFormatProperties = {};
 
   VkResult result = vkGetPhysicalDeviceImageFormatProperties(
-      *physicalDeviceHandlePtr, format, imageType, imageTiling, imageUsageFlags,
+      physicalDeviceHandleRef, format, imageType, imageTiling, imageUsageFlags,
       imageCreateFlags, &imageFormatProperties);
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceImageFormatProperties");
   }
@@ -84,103 +92,53 @@ VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
 }
 
 VkPhysicalDeviceMemoryProperties Device::getPhysicalDeviceMemoryProperties(
-    VkPhysicalDevice* physicalDeviceHandlePtr) {
+    VkPhysicalDevice& physicalDeviceHandleRef) {
 
   VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
-  vkGetPhysicalDeviceMemoryProperties(*physicalDeviceHandlePtr,
+
+  vkGetPhysicalDeviceMemoryProperties(physicalDeviceHandleRef,
       &physicalDeviceMemoryProperties);
 
   return physicalDeviceMemoryProperties;
 }
 
-Device::Device(VkInstance* instanceHandlePtr,
-    VkPhysicalDevice* physicalDeviceHandlePtr,
-    uint32_t initialQueueFamilyIndex,
-    uint32_t initialQueueCount,
-    float initialQueuePriority) :
-    Component("device") {
+Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
+    std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
+    std::vector<std::string> enabledLayerNameList,
+    std::vector<std::string> enabledExtensionNameList,
+    std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList) {
 
   this->deviceHandle = VK_NULL_HANDLE;
 
-  this->instanceHandlePtr = instanceHandlePtr;
-  this->physicalDeviceHandlePtr = physicalDeviceHandlePtr;
+  std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList;
 
-  uint32_t extensionPropertiesCount = 0;
-  VkResult result = vkEnumerateDeviceExtensionProperties(
-      *physicalDeviceHandlePtr, NULL, &extensionPropertiesCount, NULL);
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result,
-        "vkEnumerateDeviceExtensionProperties");
+  for (DeviceQueueCreateInfoParam& deviceQueueCreateInfoParam :
+      deviceQueueCreateInfoParamList) {
+
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+      .pNext = NULL,
+      .flags = deviceQueueCreateInfoParam.deviceQueueCreateFlags,
+      .queueFamilyIndex = deviceQueueCreateInfoParam.queueFamilyIndex,
+      .queueCount = deviceQueueCreateInfoParam.queueCount,
+      .pQueuePriorities = deviceQueueCreateInfoParam.queuePriorityList.data()
+    };
+
+    deviceQueueCreateInfoList.push_back(deviceQueueCreateInfo);
   }
 
-  this->extensionPropertiesList.resize(extensionPropertiesCount);
-  result = vkEnumerateDeviceExtensionProperties(*physicalDeviceHandlePtr, NULL,
-      &extensionPropertiesCount, this->extensionPropertiesList.data());
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result,
-        "vkEnumerateDeviceExtensionProperties");
+  const char** enabledLayerNameBuffer = (const char**)malloc(
+      sizeof(const char*) * enabledLayerNameList.size());
+
+  for (uint32_t x = 0; x < enabledLayerNameList.size(); x++) {
+    enabledLayerNameBuffer[x] = enabledLayerNameList[x].c_str();
   }
 
-  this->enabledExtensionNameList = {};
-
-  this->queueFamilyList = {};
-  this->queueFamilyList.push_back(QueueFamily(initialQueueFamilyIndex,
-      initialQueueCount, initialQueuePriority));
-}
-
-Device::~Device() {
-  vkDestroyDevice(this->deviceHandle, NULL);
-}
-
-std::vector<VkExtensionProperties>
-    Device::getAvailableExtensionPropertiesList() {
-
-  return this->extensionPropertiesList;
-}
-
-bool Device::addExtension(std::string extensionName) {
-  bool foundExtension = false;
-
-  if (std::find_if(
-      std::begin(this->extensionPropertiesList),
-      std::end(this->extensionPropertiesList),
-      [&](const VkExtensionProperties& x)
-      { return x.extensionName == extensionName; }) !=
-      std::end(this->extensionPropertiesList)) {
-
-    this->enabledExtensionNameList.push_back(extensionName);
-    foundExtension = true;
-  }
-
-  return foundExtension;
-}
-
-void Device::addQueueFamily(uint32_t queueFamilyIndex,
-    uint32_t queueCount,
-    float queuePriority) {
-
-  this->queueFamilyList.push_back(QueueFamily(queueFamilyIndex,
-      queueCount, queuePriority));
-}
-
-bool Device::activate() {
-  if (!Component::activate()) {
-    return false;
-  }
-
-  std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList(
-      queueFamilyList.size());
-
-  for (uint32_t x = 0; x < queueFamilyList.size(); x++) {
-    deviceQueueCreateInfoList[x] =
-        queueFamilyList[x].getDeviceQueueCreateInfo();
-  }
-
-  const char** enabledExtensionNamesUnsafe = (const char**)malloc(
+  const char** enabledExtensionNameBuffer = (const char**)malloc(
       sizeof(const char*) * enabledExtensionNameList.size());
 
   for (uint32_t x = 0; x < enabledExtensionNameList.size(); x++) {
-    enabledExtensionNamesUnsafe[x] = enabledExtensionNameList[x].c_str();
+    enabledExtensionNameBuffer[x] = enabledExtensionNameList[x].c_str();
   }
 
   VkDeviceCreateInfo deviceCreateInfo = {
@@ -189,34 +147,55 @@ bool Device::activate() {
     .flags = 0,
     .queueCreateInfoCount = (uint32_t)deviceQueueCreateInfoList.size(),
     .pQueueCreateInfos = deviceQueueCreateInfoList.data(),
-    .enabledLayerCount = 0,
-    .ppEnabledLayerNames = NULL,
+    .enabledLayerCount = (uint32_t)enabledLayerNameList.size(),
+    .ppEnabledLayerNames = enabledLayerNameBuffer,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
-    .ppEnabledExtensionNames = enabledExtensionNamesUnsafe,
-    .pEnabledFeatures = NULL,
+    .ppEnabledExtensionNames = enabledExtensionNameBuffer,
+    .pEnabledFeatures = physicalDeviceFeaturesList.data()
   };
 
-  VkResult result = vkCreateDevice(*this->physicalDeviceHandlePtr,
-      &deviceCreateInfo, NULL, &this->deviceHandle);
+  free(enabledExtensionNameBuffer);
+  free(enabledLayerNameBuffer);
+
+  VkResult result = vkCreateDevice(physicalDeviceHandleRef, &deviceCreateInfo,
+      NULL, &this->deviceHandle);
+
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateDevice");
   }
 
-  free(enabledExtensionNamesUnsafe);
+  this->queueFamilyList = {};
 
-  for (QueueFamily& queueFamily : this->queueFamilyList) {
-    queueFamily.activate(&this->deviceHandle);
+  for (DeviceQueueCreateInfoParam& deviceQueueCreateInfoParam :
+      deviceQueueCreateInfoParamList) {
+
+    QueueFamily queueFamily = {
+      .index = deviceQueueCreateInfoParam.queueFamilyIndex,
+      .queueHandleList =
+          std::vector<VkQueue>(deviceQueueCreateInfoParam.queueCount,
+          VK_NULL_HANDLE)
+    };
+
+    for (uint32_t x = 0; x < deviceQueueCreateInfoParam.queueCount; x++) {
+      vkGetDeviceQueue(this->deviceHandle,
+          deviceQueueCreateInfoParam.queueFamilyIndex, x,
+          &queueFamily.queueHandleList[x]);
+    }
+
+    this->queueFamilyList.push_back(queueFamily);
   }
-
-  return true;
 }
 
-VkDevice* Device::getDeviceHandlePtr() {
-  return &this->deviceHandle;
+Device::~Device() {
+  vkDestroyDevice(this->deviceHandle, NULL);
 }
 
-VkQueue* Device::getQueueHandlePtr(uint32_t queueFamilyIndex,
+VkDevice& Device::getDeviceHandleRef() {
+  return this->deviceHandle;
+}
+
+VkQueue& Device::getQueueHandleRef(uint32_t queueFamilyIndex,
     uint32_t queueIndex) {
 
-  return this->queueFamilyList[queueFamilyIndex].getQueueHandlePtr(queueIndex);
+  return this->queueFamilyList[queueFamilyIndex].queueHandleList[queueIndex];
 }

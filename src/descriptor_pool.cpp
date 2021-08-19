@@ -1,49 +1,31 @@
 #include "vrk/descriptor_pool.h"
 
-DescriptorPool::DescriptorPool(VkDevice* deviceHandlePtr,
+DescriptorPool::DescriptorPool(VkDevice& deviceHandleRef,
     VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
     uint32_t maxSets,
-    std::vector<DescriptorPoolSize> descriptorPoolSizeList) :
-    Component("descriptor pool") {
+    std::vector<VkDescriptorPoolSize> descriptorPoolSizeList) :
+    deviceHandleRef(deviceHandleRef) {
 
-  this->descriptorPoolHandle = descriptorPoolHandle;
+  this->descriptorPoolHandle = VK_NULL_HANDLE;
 
-  this->deviceHandlePtr = deviceHandlePtr;
-
-  this->descriptorPoolSizeList = {};
-  for (uint32_t x = 0; x < descriptorPoolSizeList.size(); x++) {
-    VkDescriptorPoolSize descriptorPoolSize = {
-      .type = descriptorPoolSizeList[x].type,
-      .descriptorCount = descriptorPoolSizeList[x].descriptorCount
-    };
-
-    this->descriptorPoolSizeList.push_back(descriptorPoolSize);
-  }
-
-  this->descriptorPoolCreateInfo = {
+  VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
     .pNext = NULL,
     .flags = descriptorPoolCreateFlags,
     .maxSets = maxSets,
-    .poolSizeCount = (uint32_t)this->descriptorPoolSizeList.size(),
-    .pPoolSizes = this->descriptorPoolSizeList.data()
+    .poolSizeCount = (uint32_t)descriptorPoolSizeList.size(),
+    .pPoolSizes = descriptorPoolSizeList.data()
   };
-}
 
-DescriptorPool::~DescriptorPool() {
+  VkResult result = vkCreateDescriptorPool(deviceHandleRef,
+      &descriptorPoolCreateInfo, NULL, &this->descriptorPoolHandle);
 
-}
-
-bool DescriptorPool::activate() {
-  if (!Component::activate()) {
-    return true;
-  }
-
-  VkResult result = vkCreateDescriptorPool(*this->deviceHandlePtr,
-      &this->descriptorPoolCreateInfo, NULL, &this->descriptorPoolHandle);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateDescriptorPool");
   }
+}
 
-  return true;
+DescriptorPool::~DescriptorPool() {
+  vkDestroyDescriptorPool(this->deviceHandleRef, this->descriptorPoolHandle,
+      NULL);
 }

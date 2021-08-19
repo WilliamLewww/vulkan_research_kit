@@ -1,25 +1,16 @@
 #pragma once
 
 #include "vrk/helper.h"
-#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-class Framebuffer : public Component {
-private:
-  VkFramebuffer framebufferHandle;
-
-  VkDevice* deviceHandlePtr;
-
-  std::vector<VkImageView> attachmentImageViewHandleList;
-
-  VkFramebufferCreateInfo framebufferCreateInfo;
+class Framebuffer {
 public:
-  Framebuffer(VkDevice* deviceHandlePtr,
-      VkRenderPass* renderPassHandlePtr,
-      VkImageView* initialAttachmentImageViewHandlePtr,
+  Framebuffer(VkDevice& deviceHandleRef,
+      VkRenderPass& renderPassHandleRef,
+      std::vector<VkImageView> imageViewHandleList,
       VkFramebufferCreateFlags framebufferCreateFlags,
       uint32_t width,
       uint32_t height,
@@ -27,7 +18,9 @@ public:
 
   ~Framebuffer();
 
-  void addAttachmentImageViewHandle(VkImageView* attachmentImageViewHandlePtr);
+  VkFramebuffer& getFramebufferHandleRef();
+private:
+  VkFramebuffer framebufferHandle;
 
-  bool activate();
+  VkDevice& deviceHandleRef;
 };

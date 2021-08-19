@@ -1,50 +1,37 @@
 #pragma once
 
 #include "vrk/helper.h"
-#include "vrk/component.h"
 #include "vrk/device.h"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-class Image : public Component {
-private:
-  VkImage imageHandle;
-
-  VkDeviceMemory deviceMemoryHandle;
-
-  VkDevice* deviceHandlePtr;
-  VkPhysicalDevice* physicalDeviceHandlePtr;
-
-  std::vector<uint32_t> queueFamilyIndexList;
-
-  VkImageCreateInfo imageCreateInfo;
-  VkMemoryPropertyFlags memoryPropertyFlags;
+class Image {
 public:
-  Image(VkDevice* deviceHandlePtr,
-      VkPhysicalDevice* physicalDeviceHandlePtr,
-      uint32_t initialQueueFamilyIndex,
+  Image(VkDevice& deviceHandleRef,
+      VkPhysicalDevice& physicalDeviceHandleRef,
       VkImageCreateFlags imageCreateFlags,
       VkImageType imageType,
       VkFormat format,
-      uint32_t width,
-      uint32_t height,
-      uint32_t depth,
+      VkExtent3D extent3D,
       uint32_t mipLevels,
       uint32_t arrayLayers,
       VkSampleCountFlagBits sampleCountFlagBits,
       VkImageTiling imageTiling,
       VkImageUsageFlags imageUsageFlags,
       VkSharingMode sharingMode,
+      std::vector<uint32_t> queueFamilyIndexList,
       VkImageLayout initialImageLayout,
       VkMemoryPropertyFlags memoryPropertyFlags);
 
   ~Image();
 
-  void addQueueFamilyIndex(uint32_t queueFamilyIndex);
+  VkImage& getImageHandleRef();
+private:
+  VkImage imageHandle;
 
-  bool activate();
+  VkDeviceMemory deviceMemoryHandle;
 
-  VkImage* getImageHandlePtr();
+  VkDevice& deviceHandleRef;
 };

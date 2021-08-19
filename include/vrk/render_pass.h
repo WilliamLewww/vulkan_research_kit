@@ -1,54 +1,39 @@
 #pragma once
 
 #include "vrk/helper.h"
-#include "vrk/component.h"
-#include "vrk/attachment.h"
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-class RenderPass : public Component {
-private:
-  VkRenderPass renderPassHandle;
-
-  VkDevice* deviceHandlePtr;
-
-  std::vector<VkAttachmentDescription> attachmentDescriptionList;
-  std::vector<VkSubpassDescription> subpassDescriptionList;
-  std::vector<VkSubpassDependency> subpassDependencyList;
-
-  std::vector<std::vector<VkAttachmentReference>>
-      subpassColorAttachmentReferenceList;
-
-  std::vector<VkAttachmentReference> subpassDepthAttachmentReferenceList;
+class RenderPass {
 public:
-  RenderPass(VkDevice* deviceHandlePtr,
-      VkPipelineBindPoint initialSubpassPipelineBindPoint,
-      std::vector<Attachment> initialColorAttachmentList,
-      std::vector<VkImageLayout> initialColorImageLayoutList,
-      Attachment* initialDepthAttachmentPtr,
-      VkImageLayout* initialDepthImageLayoutPtr);
+  RenderPass(VkDevice& deviceHandleRef,
+      VkRenderPassCreateFlagBits renderPassCreateFlagBits,
+      std::vector<VkAttachmentDescription> attachmentDescriptionList,
+      std::vector<VkSubpassDescription> subpassDescriptionList,
+      std::vector<VkSubpassDependency> subpassDependencyList);
 
   ~RenderPass();
 
-  uint32_t addAttachment(Attachment attachment);
+  void beginRenderPassCmd(VkCommandBuffer& commandBufferHandleRef,
+      VkFramebuffer& framebufferHandleRef,
+      VkRect2D renderAreaRect2D,
+      std::vector<VkClearValue> clearValueList,
+      VkSubpassContents subpassContents);
 
-  uint32_t addSubpass(VkPipelineBindPoint pipelineBindPoint,
-      std::vector<uint32_t> colorAttachmentIndexList,
-      std::vector<VkImageLayout> colorImageLayoutList,
-      uint32_t* depthAttachmentIndexPtr,
-      VkImageLayout* depthImageLayoutPtr);
+  void endRenderPassCmd(VkCommandBuffer& commandBufferHandleRef);
 
-  void addDependency(uint32_t srcSubpass,
-      uint32_t dstSubpass,
-      VkPipelineStageFlags srcPipelineStageMask,
-      VkPipelineStageFlags dstPipelineStageMask,
-      VkAccessFlags srcAccessMask,
-      VkAccessFlags dstAccessMask,
-      VkDependencyFlags dependencyFlags);
+  void drawIndexedCmd(VkCommandBuffer& commandBufferHandleRef,
+      uint32_t indexCount,
+      uint32_t instanceCount,
+      uint32_t firstIndex,
+      uint32_t vertexOffset,
+      uint32_t firstInstance);
 
-  bool activate();
+  VkRenderPass& getRenderPassHandleRef();
+private:
+  VkRenderPass renderPassHandle;
 
-  VkRenderPass* getRenderPassHandlePtr();
+  VkDevice& deviceHandleRef;
 };

@@ -1,46 +1,41 @@
 #pragma once
 
 #include "vrk/helper.h"
-#include "vrk/queue_family.h"
-#include "vrk/component.h"
 
 #include <vulkan/vulkan.h>
 
-#include <iostream>
-#include <map>
 #include <vector>
-#include <string>
-#include <algorithm>
-#include <stdlib.h>
-#include <string.h>
 
-class Device : public Component {
-private:
-  VkDevice deviceHandle;
-  std::vector<QueueFamily> queueFamilyList;
-
-  VkInstance* instanceHandlePtr;
-  VkPhysicalDevice* physicalDeviceHandlePtr;
-
-  std::vector<VkExtensionProperties> extensionPropertiesList;
-  std::vector<std::string> enabledExtensionNameList;
+class Device {
 public:
+  struct DeviceQueueCreateInfoParam {
+    VkDeviceQueueCreateFlags deviceQueueCreateFlags;
+    uint32_t queueFamilyIndex;
+    uint32_t queueCount;
+    std::vector<float> queuePriorityList;
+  };
+
+  struct QueueFamily {
+    uint32_t index;
+    std::vector<VkQueue> queueHandleList;
+  };
+
   static std::vector<VkPhysicalDevice> getPhysicalDevices(
-      VkInstance* instanceHandlePtr);
+      VkInstance& instanceHandleRef);
 
   static VkPhysicalDeviceProperties getPhysicalDeviceProperties(
-      VkPhysicalDevice* physicalDeviceHandlePtr);
+      VkPhysicalDevice& physicalDeviceHandleRef);
 
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
-      VkPhysicalDevice* physicalDeviceHandlePtr);
+      VkPhysicalDevice& physicalDeviceHandleRef);
 
   static VkBool32 checkQueueFamilyPresentSupported(
-      VkPhysicalDevice* physicalDeviceHandlePtr,
+      VkPhysicalDevice& physicalDeviceHandleRef,
       uint32_t queueFamilyIndex,
-      VkSurfaceKHR* surfaceHandle);
+      VkSurfaceKHR& surfaceHandleRef);
 
   static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
-      VkPhysicalDevice* physicalDeviceHandlePtr,
+      VkPhysicalDevice& physicalDeviceHandleRef,
       VkFormat format,
       VkImageType imageType,
       VkImageTiling imageTiling,
@@ -48,27 +43,21 @@ public:
       VkImageCreateFlags imageCreateFlags);
 
   static VkPhysicalDeviceMemoryProperties getPhysicalDeviceMemoryProperties(
-      VkPhysicalDevice* physicalDeviceHandlePtr);
+      VkPhysicalDevice& physicalDeviceHandleRef);
 
-  Device(VkInstance* instanceHandlePtr,
-      VkPhysicalDevice* physicalDeviceHandlePtr,
-      uint32_t initialQueueFamilyIndex,
-      uint32_t initialQueueCount,
-      float initialQueuePriority = 1.0f);
+  Device(VkPhysicalDevice& physicalDeviceHandleRef,
+      std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
+      std::vector<std::string> enabledLayerNameList,
+      std::vector<std::string> enabledExtensionNameList,
+      std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList);
 
   ~Device();
 
-  std::vector<VkExtensionProperties> getAvailableExtensionPropertiesList();
+  VkDevice& getDeviceHandleRef();
 
-  bool addExtension(std::string extensionName);
+  VkQueue& getQueueHandleRef(uint32_t queueFamilyIndex, uint32_t queueIndex);
+private:
+  VkDevice deviceHandle;
 
-  void addQueueFamily(uint32_t queueFamilyIndex,
-      uint32_t queueCount,
-      float queuePriority = 1.0f);
-
-  bool activate();
-
-  VkDevice* getDeviceHandlePtr();
-
-  VkQueue* getQueueHandlePtr(uint32_t queueFamilyIndex, uint32_t queueIndex);
+  std::vector<QueueFamily> queueFamilyList;
 };
