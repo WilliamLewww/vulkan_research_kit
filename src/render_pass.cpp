@@ -33,6 +33,41 @@ RenderPass::~RenderPass() {
   vkDestroyRenderPass(this->deviceHandleRef, this->renderPassHandle, NULL);
 }
 
+void RenderPass::beginRenderPassCmd(VkCommandBuffer& commandBufferHandleRef,
+    VkFramebuffer& framebufferHandleRef,
+    VkRect2D renderAreaRect2D,
+    std::vector<VkClearValue> clearValueList,
+    VkSubpassContents subpassContents) {
+
+  VkRenderPassBeginInfo renderPassBeginInfo = {
+    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+    .pNext = NULL,
+    .renderPass = this->renderPassHandle,
+    .framebuffer = framebufferHandleRef,
+    .renderArea = renderAreaRect2D,
+    .clearValueCount = (uint32_t)clearValueList.size(),
+    .pClearValues = clearValueList.data()
+  };
+
+  vkCmdBeginRenderPass(commandBufferHandleRef, &renderPassBeginInfo,
+      subpassContents);
+}
+
+void RenderPass::endRenderPassCmd(VkCommandBuffer& commandBufferHandleRef) {
+  vkCmdEndRenderPass(commandBufferHandleRef);
+}
+
+void RenderPass::drawIndexedCmd(VkCommandBuffer& commandBufferHandleRef,
+    uint32_t indexCount,
+    uint32_t instanceCount,
+    uint32_t firstIndex,
+    uint32_t vertexOffset,
+    uint32_t firstInstance) {
+
+  vkCmdDrawIndexed(commandBufferHandleRef, indexCount, instanceCount,
+      firstIndex, vertexOffset, firstInstance);
+}
+
 VkRenderPass& RenderPass::getRenderPassHandleRef() {
   return this->renderPassHandle;
 }

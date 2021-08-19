@@ -95,25 +95,25 @@ public:
     std::shared_ptr<PipelineInputAssemblyStateCreateInfoParam>
         pipelineInputAssemblyStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineTessellationStateCreateInfoParam> 
+    std::shared_ptr<PipelineTessellationStateCreateInfoParam>
         pipelineTessellationStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineViewportStateCreateInfoParam> 
+    std::shared_ptr<PipelineViewportStateCreateInfoParam>
         pipelineViewportStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineRasterizationStateCreateInfoParam> 
+    std::shared_ptr<PipelineRasterizationStateCreateInfoParam>
         pipelineRasterizationStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineMultisampleStateCreateInfoParam> 
+    std::shared_ptr<PipelineMultisampleStateCreateInfoParam>
         pipelineMultisampleStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineDepthStencilStateCreateInfoParam> 
+    std::shared_ptr<PipelineDepthStencilStateCreateInfoParam>
         pipelineDepthStencilStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineColorBlendStateCreateInfoParam> 
+    std::shared_ptr<PipelineColorBlendStateCreateInfoParam>
         pipelineColorBlendStateCreateInfoParamPtr;
 
-    std::shared_ptr<PipelineDynamicStateCreateInfoParam> 
+    std::shared_ptr<PipelineDynamicStateCreateInfoParam>
         pipelineDynamicStateCreateInfoParamPtr;
 
     VkPipelineLayout& pipelineLayoutHandleRef;
@@ -128,6 +128,9 @@ public:
           graphicsPipelineCreateInfoParamList);
 
   ~GraphicsPipelineGroup();
+
+  void bindPipelineCmd(uint32_t pipelineIndex,
+      VkCommandBuffer& commandBufferHandleRef);
 private:
   std::vector<VkPipeline> pipelineHandleList;
 

@@ -26,7 +26,8 @@ PipelineLayout::PipelineLayout(VkDevice& deviceHandleRef,
 }
 
 PipelineLayout::~PipelineLayout() {
-
+  vkDestroyPipelineLayout(this->deviceHandleRef, this->pipelineLayoutHandle,
+      NULL);
 }
 
 VkPipelineLayout& PipelineLayout::getPipelineLayoutHandleRef() {

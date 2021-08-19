@@ -17,6 +17,8 @@ public:
       VkImageSubresourceRange imageSubresourceRange);
 
   ~ImageView();
+
+  VkImageView& getImageViewHandleRef();
 private:
   VkImageView imageViewHandle;
 

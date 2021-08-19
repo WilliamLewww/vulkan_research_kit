@@ -66,13 +66,15 @@ void CommandBufferGroup::submit(
     VkFence fenceHandle) {
 
   std::vector<VkSubmitInfo> submitInfoList = {};
+  std::vector<std::vector<VkCommandBuffer>> commandBufferHandleListSubmit = {};
 
   for (SubmitInfoParam& submitInfoParam : submitInfoParamList) {
-    std::vector<VkCommandBuffer> commandBufferHandleList = {};
+    std::vector<VkCommandBuffer> commandBufferHandleListLocal = {};
 
     for (uint32_t index : submitInfoParam.commandBufferHandleIndexList) {
-      commandBufferHandleList.push_back(this->commandBufferHandleList[index]);
+      commandBufferHandleListLocal.push_back(this->commandBufferHandleList[index]);
     }
+    commandBufferHandleListSubmit.push_back(commandBufferHandleListLocal);
 
     VkSubmitInfo submitInfo = {
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -81,12 +83,16 @@ void CommandBufferGroup::submit(
           (uint32_t)submitInfoParam.waitSemaphoreHandleList.size(),
       .pWaitSemaphores = submitInfoParam.waitSemaphoreHandleList.data(),
       .pWaitDstStageMask = submitInfoParam.waitPipelineStageFlagsList.data(),
-      .commandBufferCount = (uint32_t)commandBufferHandleList.size(),
-      .pCommandBuffers = commandBufferHandleList.data(),
+      .commandBufferCount = (uint32_t)commandBufferHandleListSubmit[
+          commandBufferHandleListSubmit.size() - 1].size(),
+      .pCommandBuffers = commandBufferHandleListSubmit[
+          commandBufferHandleListSubmit.size() - 1].data(),
       .signalSemaphoreCount =
           (uint32_t)submitInfoParam.signalSemaphoreHandleList.size(),
       .pSignalSemaphores = submitInfoParam.signalSemaphoreHandleList.data()
     };
+
+    submitInfoList.push_back(submitInfo);
   }
 
   VkResult result = vkQueueSubmit(queueHandleRef,
@@ -95,4 +101,79 @@ void CommandBufferGroup::submit(
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkQueueSubmit");
   }
+}
+
+void CommandBufferGroup::createPipelineBarrierCmd(uint32_t commandBufferIndex,
+    VkPipelineStageFlags srcPipelineStageFlags,
+    VkPipelineStageFlags dstPipelineStageFlags,
+    VkDependencyFlags dependencyFlags,
+    std::vector<MemoryBarrierParam> memoryBarrierParamList,
+    std::vector<BufferMemoryBarrierParam> bufferMemoryBarrierParamList,
+    std::vector<ImageMemoryBarrierParam> imageMemoryBarrierParamList) {
+
+  std::vector<VkMemoryBarrier> memoryBarrierList = {};
+  for (MemoryBarrierParam memoryBarrierParam : memoryBarrierParamList) {
+    VkMemoryBarrier memoryBarrier = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = memoryBarrierParam.srcMaskAccessFlags,
+      .dstAccessMask = memoryBarrierParam.dstMaskAccessFlags
+    };
+
+    memoryBarrierList.push_back(memoryBarrier);
+  }
+
+  std::vector<VkBufferMemoryBarrier> bufferMemoryBarrierList = {};
+  for (BufferMemoryBarrierParam bufferMemoryBarrierParam :
+      bufferMemoryBarrierParamList) {
+
+    VkBufferMemoryBarrier bufferMemoryBarrier = {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = bufferMemoryBarrierParam.srcMaskAccessFlags,
+      .dstAccessMask = bufferMemoryBarrierParam.dstMaskAccessFlags,
+      .srcQueueFamilyIndex = bufferMemoryBarrierParam.srcQueueFamilyIndex,
+      .dstQueueFamilyIndex = bufferMemoryBarrierParam.dstQueueFamilyIndex,
+      .buffer = bufferMemoryBarrierParam.bufferHandleRef,
+      .offset = bufferMemoryBarrierParam.offsetDeviceSize,
+      .size = bufferMemoryBarrierParam.sizeDeviceSize
+    };
+
+    bufferMemoryBarrierList.push_back(bufferMemoryBarrier);
+  }
+
+  std::vector<VkImageMemoryBarrier> imageMemoryBarrierList = {};
+  for (ImageMemoryBarrierParam imageMemoryBarrierParam :
+      imageMemoryBarrierParamList) {
+
+    VkImageMemoryBarrier imageMemoryBarrier = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = imageMemoryBarrierParam.srcMaskAccessFlags,
+      .dstAccessMask = imageMemoryBarrierParam.dstMaskAccessFlags,
+      .oldLayout = imageMemoryBarrierParam.oldImageLayout,
+      .newLayout = imageMemoryBarrierParam.newImageLayout,
+      .srcQueueFamilyIndex = imageMemoryBarrierParam.srcQueueFamilyIndex,
+      .dstQueueFamilyIndex = imageMemoryBarrierParam.dstQueueFamilyIndex,
+      .image = imageMemoryBarrierParam.imageHandleRef,
+      .subresourceRange = imageMemoryBarrierParam.imageSubresourceRange
+    };
+
+    imageMemoryBarrierList.push_back(imageMemoryBarrier);
+  }
+  
+  vkCmdPipelineBarrier(this->commandBufferHandleList[commandBufferIndex],
+      srcPipelineStageFlags,
+      dstPipelineStageFlags,
+      dependencyFlags,
+      (uint32_t)memoryBarrierList.size(),
+      memoryBarrierList.data(),
+      (uint32_t)bufferMemoryBarrierList.size(),
+      bufferMemoryBarrierList.data(),
+      (uint32_t)imageMemoryBarrierList.size(),
+      imageMemoryBarrierList.data());
+}
+
+VkCommandBuffer& CommandBufferGroup::getCommandBufferHandleRef(uint32_t index) {
+  return this->commandBufferHandleList[index];
 }

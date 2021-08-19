@@ -59,7 +59,7 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         .stage = pipelineShaderStageCreateInfoParam.shaderStageFlagBits,
         .module = pipelineShaderStageCreateInfoParam.shaderModuleHandleRef,
         .pName = pipelineShaderStageCreateInfoParam.entryPointName.c_str(),
-        .pSpecializationInfo = 
+        .pSpecializationInfo =
             pipelineShaderStageCreateInfoParam.specializationInfoPtr.get()
       };
 
@@ -98,11 +98,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineVertexInputStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineVertexInputStateCreateInfoParam>
-          pipelineVertexInputStateCreateInfoParamPtr = 
+          pipelineVertexInputStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineVertexInputStateCreateInfoParamPtr;
 
-      VkPipelineVertexInputStateCreateInfo 
+      VkPipelineVertexInputStateCreateInfo
           pipelineVertexInputStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -134,11 +134,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineInputAssemblyStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineInputAssemblyStateCreateInfoParam>
-          pipelineInputAssemblyStateCreateInfoParamPtr = 
+          pipelineInputAssemblyStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineInputAssemblyStateCreateInfoParamPtr;
 
-      VkPipelineInputAssemblyStateCreateInfo 
+      VkPipelineInputAssemblyStateCreateInfo
           pipelineInputAssemblyStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -162,11 +162,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineTessellationStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineTessellationStateCreateInfoParam>
-          pipelineTessellationStateCreateInfoParamPtr = 
+          pipelineTessellationStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineTessellationStateCreateInfoParamPtr;
 
-      VkPipelineTessellationStateCreateInfo 
+      VkPipelineTessellationStateCreateInfo
           pipelineTessellationStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
@@ -188,11 +188,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineViewportStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineViewportStateCreateInfoParam>
-          pipelineViewportStateCreateInfoParamPtr = 
+          pipelineViewportStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineViewportStateCreateInfoParamPtr;
 
-      VkPipelineViewportStateCreateInfo 
+      VkPipelineViewportStateCreateInfo
           pipelineViewportStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
@@ -220,11 +220,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineRasterizationStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineRasterizationStateCreateInfoParam>
-          pipelineRasterizationStateCreateInfoParamPtr = 
+          pipelineRasterizationStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineRasterizationStateCreateInfoParamPtr;
 
-      VkPipelineRasterizationStateCreateInfo 
+      VkPipelineRasterizationStateCreateInfo
           pipelineRasterizationStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
@@ -263,11 +263,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineMultisampleStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineMultisampleStateCreateInfoParam>
-          pipelineMultisampleStateCreateInfoParamPtr = 
+          pipelineMultisampleStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineMultisampleStateCreateInfoParamPtr;
 
-      VkPipelineMultisampleStateCreateInfo 
+      VkPipelineMultisampleStateCreateInfo
           pipelineMultisampleStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
@@ -275,15 +275,15 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         .flags = 0,
         .rasterizationSamples = pipelineMultisampleStateCreateInfoParamPtr->
             rasterizationSampleCountFlagBits,
-        .sampleShadingEnable = 
+        .sampleShadingEnable =
             pipelineMultisampleStateCreateInfoParamPtr->sampleShadingEnable,
-        .minSampleShading = 
+        .minSampleShading =
             pipelineMultisampleStateCreateInfoParamPtr->minSampleShading,
-        .pSampleMask = 
+        .pSampleMask =
             pipelineMultisampleStateCreateInfoParamPtr->sampleMaskList.data(),
-        .alphaToCoverageEnable = 
+        .alphaToCoverageEnable =
             pipelineMultisampleStateCreateInfoParamPtr->alphaToCoverageEnable,
-        .alphaToOneEnable = 
+        .alphaToOneEnable =
             pipelineMultisampleStateCreateInfoParamPtr->alphaToOneEnable
       };
 
@@ -299,33 +299,33 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineDepthStencilStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineDepthStencilStateCreateInfoParam>
-          pipelineDepthStencilStateCreateInfoParamPtr = 
+          pipelineDepthStencilStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineDepthStencilStateCreateInfoParamPtr;
 
-      VkPipelineDepthStencilStateCreateInfo 
+      VkPipelineDepthStencilStateCreateInfo
           pipelineDepthStencilStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = NULL,
         .flags = 0,
-        .depthTestEnable = 
+        .depthTestEnable =
             pipelineDepthStencilStateCreateInfoParamPtr->depthTestEnable,
-        .depthWriteEnable = 
+        .depthWriteEnable =
             pipelineDepthStencilStateCreateInfoParamPtr->depthWriteEnable,
-        .depthCompareOp = 
+        .depthCompareOp =
             pipelineDepthStencilStateCreateInfoParamPtr->depthCompareOp,
-        .depthBoundsTestEnable = 
+        .depthBoundsTestEnable =
             pipelineDepthStencilStateCreateInfoParamPtr->depthBoundsTestEnable,
-        .stencilTestEnable = 
+        .stencilTestEnable =
             pipelineDepthStencilStateCreateInfoParamPtr->stencilTestEnable,
-        .front = 
+        .front =
             pipelineDepthStencilStateCreateInfoParamPtr->frontStencilOpState,
-        .back = 
+        .back =
             pipelineDepthStencilStateCreateInfoParamPtr->backStencilOpState,
-        .minDepthBounds = 
+        .minDepthBounds =
             pipelineDepthStencilStateCreateInfoParamPtr->minDepthBounds,
-        .maxDepthBounds = 
+        .maxDepthBounds =
             pipelineDepthStencilStateCreateInfoParamPtr->maxDepthBounds
       };
 
@@ -341,19 +341,19 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineColorBlendStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineColorBlendStateCreateInfoParam>
-          pipelineColorBlendStateCreateInfoParamPtr = 
+          pipelineColorBlendStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineColorBlendStateCreateInfoParamPtr;
 
-      VkPipelineColorBlendStateCreateInfo 
+      VkPipelineColorBlendStateCreateInfo
           pipelineColorBlendStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         .pNext = NULL,
         .flags = 0,
-        .logicOpEnable = 
+        .logicOpEnable =
             pipelineColorBlendStateCreateInfoParamPtr->logicOpEnable,
-        .logicOp = 
+        .logicOp =
             pipelineColorBlendStateCreateInfoParamPtr->logicOp,
         .attachmentCount = (uint32_t)pipelineColorBlendStateCreateInfoParamPtr->
             pipelineColorBlendAttachmentStateList.size(),
@@ -378,11 +378,11 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         pipelineDynamicStateCreateInfoParamPtr) {
 
       std::shared_ptr<PipelineDynamicStateCreateInfoParam>
-          pipelineDynamicStateCreateInfoParamPtr = 
+          pipelineDynamicStateCreateInfoParamPtr =
           graphicsPipelineCreateInfoParam.
           pipelineDynamicStateCreateInfoParamPtr;
 
-      VkPipelineDynamicStateCreateInfo 
+      VkPipelineDynamicStateCreateInfo
           pipelineDynamicStateCreateInfo = {
 
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
@@ -419,4 +419,11 @@ GraphicsPipelineGroup::~GraphicsPipelineGroup() {
   for (VkPipeline& pipeline : this->pipelineHandleList) {
     vkDestroyPipeline(this->deviceHandleRef, pipeline, NULL);
   }
+}
+
+void GraphicsPipelineGroup::bindPipelineCmd(uint32_t pipelineIndex,
+    VkCommandBuffer& commandBufferHandleRef) {
+
+  vkCmdBindPipeline(commandBufferHandleRef, VK_PIPELINE_BIND_POINT_GRAPHICS,
+      this->pipelineHandleList[pipelineIndex]);
 }

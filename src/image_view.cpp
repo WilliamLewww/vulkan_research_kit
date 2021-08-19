@@ -33,3 +33,7 @@ ImageView::ImageView(VkDevice& deviceHandleRef,
 ImageView::~ImageView() {
   vkDestroyImageView(this->deviceHandleRef, this->imageViewHandle, NULL);
 }
+
+VkImageView& ImageView::getImageViewHandleRef() {
+  return this->imageViewHandle;
+}

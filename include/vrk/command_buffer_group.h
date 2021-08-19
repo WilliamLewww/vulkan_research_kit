@@ -15,6 +15,32 @@ public:
     std::vector<VkSemaphore> signalSemaphoreHandleList;
   };
 
+  struct MemoryBarrierParam {
+    VkAccessFlags srcMaskAccessFlags;
+    VkAccessFlags dstMaskAccessFlags;
+  };
+
+  struct BufferMemoryBarrierParam {
+    VkAccessFlags srcMaskAccessFlags;
+    VkAccessFlags dstMaskAccessFlags;
+    uint32_t srcQueueFamilyIndex;
+    uint32_t dstQueueFamilyIndex;
+    VkBuffer& bufferHandleRef;
+    VkDeviceSize offsetDeviceSize;
+    VkDeviceSize sizeDeviceSize;
+  };
+
+  struct ImageMemoryBarrierParam {
+    VkAccessFlags srcMaskAccessFlags;
+    VkAccessFlags dstMaskAccessFlags;
+    VkImageLayout oldImageLayout;
+    VkImageLayout newImageLayout;
+    uint32_t srcQueueFamilyIndex;
+    uint32_t dstQueueFamilyIndex;
+    VkImage& imageHandleRef;
+    VkImageSubresourceRange imageSubresourceRange;
+  };
+
   CommandBufferGroup(VkDevice& deviceHandleRef,
       VkCommandPool& commandPoolHandleRef,
       VkCommandBufferLevel commandBufferLevel,
@@ -30,6 +56,16 @@ public:
   void submit(VkQueue& queueHandleRef,
       std::vector<SubmitInfoParam> submitInfoParamList,
       VkFence fenceHandle);
+
+  void createPipelineBarrierCmd(uint32_t commandBufferIndex,
+      VkPipelineStageFlags srcPipelineStageFlags,
+      VkPipelineStageFlags dstPipelineStageFlags,
+      VkDependencyFlags dependencyFlags,
+      std::vector<MemoryBarrierParam> memoryBarrierParamList,
+      std::vector<BufferMemoryBarrierParam> bufferMemoryBarrierParamList,
+      std::vector<ImageMemoryBarrierParam> imageMemoryBarrierParamList);
+
+  VkCommandBuffer& getCommandBufferHandleRef(uint32_t index);
 private:
   std::vector<VkCommandBuffer> commandBufferHandleList;
 

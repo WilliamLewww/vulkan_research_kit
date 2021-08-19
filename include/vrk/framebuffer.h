@@ -17,6 +17,8 @@ public:
       uint32_t layers);
 
   ~Framebuffer();
+
+  VkFramebuffer& getFramebufferHandleRef();
 private:
   VkFramebuffer framebufferHandle;
 

@@ -26,6 +26,8 @@ public:
       VkMemoryPropertyFlags memoryPropertyFlags);
 
   ~Image();
+
+  VkImage& getImageHandleRef();
 private:
   VkImage imageHandle;
 

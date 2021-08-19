@@ -34,3 +34,7 @@ Framebuffer::Framebuffer(VkDevice& deviceHandleRef,
 Framebuffer::~Framebuffer() {
   vkDestroyFramebuffer(this->deviceHandleRef, this->framebufferHandle, NULL);
 }
+
+VkFramebuffer& Framebuffer::getFramebufferHandleRef() {
+  return this->framebufferHandle;
+}
