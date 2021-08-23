@@ -1,1 +1,1 @@
-# vulkan_research_kit
+# Vulkan Research Kit
