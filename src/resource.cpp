@@ -1,0 +1,1 @@
+#include "vrk/resource.h"

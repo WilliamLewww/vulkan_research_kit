@@ -29,11 +29,6 @@ public:
   static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
       VkPhysicalDevice& physicalDeviceHandleRef);
 
-  static VkBool32 checkQueueFamilyPresentSupported(
-      VkPhysicalDevice& physicalDeviceHandleRef,
-      uint32_t queueFamilyIndex,
-      VkSurfaceKHR& surfaceHandleRef);
-
   static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
       VkPhysicalDevice& physicalDeviceHandleRef,
       VkFormat format,

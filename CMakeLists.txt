@@ -3,9 +3,12 @@ project(vulkan_research_kit)
 
 find_package(Vulkan REQUIRED)
 find_package(GTest)
+find_package(X11)
 
 file(GLOB SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+
+file(GLOB SOURCES_WSI "src/wsi/*.cpp")
 
 file(GLOB SHADERS "src/shaders/*")
 
@@ -13,10 +16,21 @@ add_library(vrk SHARED
   ${SOURCES}
 )
 
+add_library(vrk-wsi SHARED
+  ${SOURCES_WSI}
+)
+
 include_directories(vrk include)
 include_directories(vrk ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(vrk ${Vulkan_LIBRARIES})
 target_link_libraries(vrk m)
+
+target_link_libraries(vrk-wsi vrk)
+if(X11_FOUND)
+  include_directories(vrk-wsi ${X11_INCLUDE_DIR})
+  target_link_libraries(vrk-wsi ${X11_LIBRARIES})
+  target_compile_definitions(vrk-wsi PRIVATE -DX_LIB_SURFACE)
+endif()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
 foreach(SHADER ${SHADERS})
@@ -29,11 +43,6 @@ foreach(SHADER ${SHADERS})
   )
   target_sources(vrk PRIVATE resources/shaders/${SHADER_NAME}.spv)
 endforeach()
-
-add_custom_target(copy_resources
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-)
-add_dependencies(vrk copy_resources)
 
 if(GTest_FOUND AND BUILD_TESTING)
   enable_testing()
@@ -56,3 +65,4 @@ endif()
 
 add_executable(vrk-app src/main.cpp)
 target_link_libraries(vrk-app vrk)
+target_link_libraries(vrk-app vrk-wsi)

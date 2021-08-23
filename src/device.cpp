@@ -52,24 +52,6 @@ std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
   return queueFamilyPropertiesList;
 }
 
-VkBool32 Device::checkQueueFamilyPresentSupported(
-    VkPhysicalDevice& physicalDeviceHandleRef,
-    uint32_t queueFamilyIndex,
-    VkSurfaceKHR& surfaceHandleRef) {
-
-  VkBool32 isPresentSupported = false;
-
-  VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
-      physicalDeviceHandleRef, queueFamilyIndex, surfaceHandleRef,
-      &isPresentSupported);
-
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result, "vkGetPhysicalDeviceSurfaceSupportKHR");
-  }
-
-  return isPresentSupported;
-}
-
 VkImageFormatProperties Device::getPhysicalDeviceImageFormatProperties(
     VkPhysicalDevice& physicalDeviceHandleRef,
     VkFormat format,
