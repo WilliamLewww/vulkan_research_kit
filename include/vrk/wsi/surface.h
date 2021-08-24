@@ -45,7 +45,7 @@ public:
   Surface(VkInstance& instanceHandleRef,
       Platform platform,
       std::shared_ptr<void> surfaceCreateInfoParamPtr);
-  
+
   ~Surface();
 
   VkSurfaceCapabilitiesKHR getPhysicalDeviceSurfaceCapabilities(
@@ -56,6 +56,8 @@ public:
 
   std::vector<VkPresentModeKHR> getPhysicalDeviceSurfacePresentModeList(
       VkPhysicalDevice& physicalDeviceHandleRef);
+
+  VkSurfaceKHR& getSurfaceHandleRef();
 private:
   VkSurfaceKHR surfaceHandle;
 

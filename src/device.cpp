@@ -136,11 +136,11 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     .pEnabledFeatures = physicalDeviceFeaturesList.data()
   };
 
-  free(enabledExtensionNameBuffer);
-  free(enabledLayerNameBuffer);
-
   VkResult result = vkCreateDevice(physicalDeviceHandleRef, &deviceCreateInfo,
       NULL, &this->deviceHandle);
+
+  free(enabledExtensionNameBuffer);
+  free(enabledLayerNameBuffer);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateDevice");

@@ -11,6 +11,7 @@
 #include "vrk/image.h"
 #include "vrk/image_view.h"
 #include "vrk/buffer.h"
+#include "vrk/resource.h"
 
 #include <fstream>
 #include <cstring>
@@ -163,9 +164,9 @@ int main(void) {
       0,
       VK_IMAGE_VIEW_TYPE_2D,
       VK_FORMAT_R32G32B32A32_SFLOAT,
-      {VK_COMPONENT_SWIZZLE_IDENTITY, 
-          VK_COMPONENT_SWIZZLE_IDENTITY, 
-          VK_COMPONENT_SWIZZLE_IDENTITY, 
+      {VK_COMPONENT_SWIZZLE_IDENTITY,
+          VK_COMPONENT_SWIZZLE_IDENTITY,
+          VK_COMPONENT_SWIZZLE_IDENTITY,
           VK_COMPONENT_SWIZZLE_IDENTITY},
       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
 
@@ -177,7 +178,8 @@ int main(void) {
       600,
       1);
 
-  std::ifstream vertexFile("resources/shaders/default.vert.spv",
+  std::ifstream vertexFile(
+      Resource::findResource("shaders/default.vert.spv"),
       std::ios::binary | std::ios::ate);
   std::streamsize vertexFileSize = vertexFile.tellg();
   vertexFile.seekg(0, std::ios::beg);
@@ -188,7 +190,8 @@ int main(void) {
   ShaderModule* vertexShaderModule = new ShaderModule(
       device->getDeviceHandleRef(), vertexShaderSource);
 
-  std::ifstream fragmentFile("resources/shaders/default.frag.spv",
+  std::ifstream fragmentFile(
+      Resource::findResource("shaders/default.frag.spv"),
       std::ios::binary | std::ios::ate);
   std::streamsize fragmentFileSize = fragmentFile.tellg();
   fragmentFile.seekg(0, std::ios::beg);
@@ -226,7 +229,7 @@ int main(void) {
       PipelineVertexInputStateCreateInfoParam>(GraphicsPipelineGroup::
       PipelineVertexInputStateCreateInfoParam {
 
-    .vertexInputBindingDescriptionList = {{0, sizeof(float) * 3, 
+    .vertexInputBindingDescriptionList = {{0, sizeof(float) * 3,
         VK_VERTEX_INPUT_RATE_VERTEX}},
     .vertexInputAttributeDescriptionList = {{0, 0, VK_FORMAT_R32G32B32_SFLOAT,
         0}}
@@ -366,7 +369,8 @@ int main(void) {
   commandBufferGroup->beginRecording(0,
       VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
-  renderPass->beginRenderPassCmd(commandBufferGroup->getCommandBufferHandleRef(0),
+  renderPass->beginRenderPassCmd(
+      commandBufferGroup->getCommandBufferHandleRef(0),
       framebuffer->getFramebufferHandleRef(),
       {{0, 0}, {800, 600}},
       {{{0.0, 0.0, 0.0, 1.0}}},

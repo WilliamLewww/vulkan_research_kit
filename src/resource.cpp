@@ -5,8 +5,8 @@ std::string Resource::findResource(std::string resourcePath) {
   if (f.good()) {
     return resourcePath.c_str();
   }
-  else if (std::getenv("VRK_RESOURCE_PATH") != NULL) {
-    std::string envResourcePath = std::getenv("VRK_RESOURCE_PATH");
+  else if (std::getenv("VRK_RESOURCES_PATH") != NULL) {
+    std::string envResourcePath = std::getenv("VRK_RESOURCES_PATH");
 
     f = std::ifstream(envResourcePath + resourcePath);
     if (f.good()) {

@@ -10,14 +10,14 @@ struct VkXlibSurfaceCreateInfoKHR {
   Display* dpy;
   Window window;
 };
-typedef VkResult (VKAPI_PTR *PFN_vkCreateXlibSurfaceKHR)(VkInstance instance, 
-    const VkXlibSurfaceCreateInfoKHR* pCreateInfo, 
-    const VkAllocationCallbacks* pAllocator, 
+typedef VkResult (VKAPI_PTR *PFN_vkCreateXlibSurfaceKHR)(VkInstance instance,
+    const VkXlibSurfaceCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
     VkSurfaceKHR* pSurface);
 typedef VkBool32 (VKAPI_PTR *PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)(
-    VkPhysicalDevice physicalDevice, 
-    uint32_t queueFamilyIndex, 
-    Display* dpy, 
+    VkPhysicalDevice physicalDevice,
+    uint32_t queueFamilyIndex,
+    Display* dpy,
     VisualID visualID);
 #endif
 
@@ -174,4 +174,8 @@ std::vector<VkPresentModeKHR> Surface::getPhysicalDeviceSurfacePresentModeList(
   }
 
   return presentModeList;
+}
+
+VkSurfaceKHR& Surface::getSurfaceHandleRef() {
+  return this->surfaceHandle;
 }

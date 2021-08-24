@@ -35,14 +35,14 @@ bool Fence::getSignaled() {
 }
 
 bool Fence::waitForSignal(uint32_t timeout) {
-  VkResult result = vkWaitForFences(this->deviceHandleRef, 1, 
+  VkResult result = vkWaitForFences(this->deviceHandleRef, 1,
       &this->fenceHandle, true, timeout);
 
   if (result != VK_SUCCESS && result != VK_TIMEOUT) {
     throwExceptionVulkanAPI(result, "vkWaitForFences");
   }
 
-  return result == VK_SUCCESS; 
+  return result == VK_SUCCESS;
 }
 
 void Fence::reset() {

@@ -161,7 +161,7 @@ void CommandBufferGroup::createPipelineBarrierCmd(uint32_t commandBufferIndex,
 
     imageMemoryBarrierList.push_back(imageMemoryBarrier);
   }
-  
+
   vkCmdPipelineBarrier(this->commandBufferHandleList[commandBufferIndex],
       srcPipelineStageFlags,
       dstPipelineStageFlags,
