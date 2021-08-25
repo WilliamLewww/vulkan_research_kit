@@ -34,13 +34,9 @@ public:
       VkSemaphore semaphoreHandle,
       VkFence fenceHandle);
 
-  void queuePresentCmd(VkQueue& queueHandleRef,
-      std::vector<VkSemaphore> waitSemaphoreHandleList,
-      std::vector<VkSwapchainKHR> swapchainHandleList,
-      std::vector<uint32_t> imageIndexList,
-      std::shared_ptr<VkResult[]> resultPtr);
+  std::vector<VkImage> getSwapchainImageHandleList();
 
-  std::vector<VkImage> getSwapchainImageList();
+  VkSwapchainKHR& getSwapchainHandleRef();
 private:
   VkSwapchainKHR swapchainHandle;
 

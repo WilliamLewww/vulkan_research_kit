@@ -172,6 +172,14 @@ Device::~Device() {
   vkDestroyDevice(this->deviceHandle, NULL);
 }
 
+void Device::waitIdle() {
+  VkResult result = vkDeviceWaitIdle(this->deviceHandle);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkDeviceWaitIdle");
+  }
+}
+
 VkDevice& Device::getDeviceHandleRef() {
   return this->deviceHandle;
 }

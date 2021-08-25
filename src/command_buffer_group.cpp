@@ -72,7 +72,8 @@ void CommandBufferGroup::submit(
     std::vector<VkCommandBuffer> commandBufferHandleListLocal = {};
 
     for (uint32_t index : submitInfoParam.commandBufferHandleIndexList) {
-      commandBufferHandleListLocal.push_back(this->commandBufferHandleList[index]);
+      commandBufferHandleListLocal.push_back(
+          this->commandBufferHandleList[index]);
     }
     commandBufferHandleListSubmit.push_back(commandBufferHandleListLocal);
 

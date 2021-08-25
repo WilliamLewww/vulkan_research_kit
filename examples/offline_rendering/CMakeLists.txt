@@ -10,6 +10,10 @@ find_library(VRK_LIBRARY
 	HINTS ${VRK_SOURCE_DIR}/build/
 )
 
+if(NOT DEFINED ENV{VRK_RESOURCES_PATH})
+	message(FATAL_ERROR "VRK_RESOURCES_PATH environment variable not set (Hint: source setup-env.sh)")
+endif()
+
 add_executable(offline_rendering main.cpp)
 include_directories(offline_rendering ${Vulkan_INCLUDE_DIRS})
 include_directories(offline_rendering ${VRK_SOURCE_DIR}/include)

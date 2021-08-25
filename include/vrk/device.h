@@ -48,6 +48,8 @@ public:
 
   ~Device();
 
+  void waitIdle();
+
   VkDevice& getDeviceHandleRef();
 
   VkQueue& getQueueHandleRef(uint32_t queueFamilyIndex, uint32_t queueIndex);

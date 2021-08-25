@@ -16,6 +16,10 @@ find_library(VRK_WSI_LIBRARY
 	HINTS ${VRK_SOURCE_DIR}/build/
 )
 
+if(NOT DEFINED ENV{VRK_RESOURCES_PATH})
+	message(FATAL_ERROR "VRK_RESOURCES_PATH environment variable not set (Hint: source setup-env.sh)")
+endif()
+
 add_executable(xlib_surface main.cpp)
 include_directories(xlib_surface ${Vulkan_INCLUDE_DIRS})
 include_directories(xlib_surface ${X11_INCLUDE_DIR})
