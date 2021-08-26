@@ -11,6 +11,16 @@ if(NOT Vulkan_INCLUDE_DIRS)
   endif()
 endif()
 
+if(NOT Vulkan_GLSLANG_VALIDATOR_EXECUTABLE)
+  if(DEFINED ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+    set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE $ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+  elseif(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE $ENV{VULKAN_SDK}/bin/glslangValidator)
+  else()
+    message(FATAL_ERROR "Vulkan_GLSLANG_VALIDATOR_EXECUTABLE not set")
+  endif()
+endif()
+
 find_package(X11 REQUIRED)
 
 get_filename_component(VRK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
