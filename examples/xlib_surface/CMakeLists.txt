@@ -1,19 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(xlib_surface)
 
-if(Vulkan_INCLUDE_DIRS)
-  set(LOCAL_Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
-elseif(DEFINED ENV{Vulkan_INCLUDE_DIRS})
-  set(LOCAL_Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
-endif()
-
-find_package(Vulkan QUIET)
-
-if(LOCAL_Vulkan_INCLUDE_DIRS)
-  set(Vulkan_INCLUDE_DIRS ${LOCAL_Vulkan_INCLUDE_DIRS})
-endif()
 if(NOT Vulkan_INCLUDE_DIRS)
-  message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
+  if(DEFINED ENV{Vulkan_INCLUDE_DIRS})
+    set(Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
+  elseif(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_INCLUDE_DIRS $ENV{VULKAN_SDK}/include)
+  else()
+    message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
+  endif()
 endif()
 
 find_package(X11 REQUIRED)
