@@ -14,6 +14,8 @@ public:
       std::vector<VkDescriptorPoolSize> descriptorPoolSizeList);
 
   ~DescriptorPool();
+
+  VkDescriptorPool& getDescriptorPoolHandleRef();
 private:
   VkDescriptorPool descriptorPoolHandle;
 

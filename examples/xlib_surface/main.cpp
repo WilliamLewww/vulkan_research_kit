@@ -10,6 +10,9 @@
 #include "vrk/shader_module.h"
 #include "vrk/resource.h"
 #include "vrk/graphics_pipeline_group.h"
+#include "vrk/descriptor_pool.h"
+#include "vrk/descriptor_set_layout.h"
+#include "vrk/descriptor_set_group.h"
 #include "vrk/pipeline_layout.h"
 #include "vrk/buffer.h"
 #include "vrk/fence.h"
@@ -203,7 +206,7 @@ int main(void) {
   }
 
   std::ifstream vertexFile(
-      Resource::findResource("shaders/default.vert.spv"),
+      Resource::findResource("resources/shaders/shader.vert.spv"),
       std::ios::binary | std::ios::ate);
   std::streamsize vertexFileSize = vertexFile.tellg();
   vertexFile.seekg(0, std::ios::beg);
@@ -215,7 +218,7 @@ int main(void) {
       device->getDeviceHandleRef(), vertexShaderSource);
 
   std::ifstream fragmentFile(
-      Resource::findResource("shaders/default.frag.spv"),
+      Resource::findResource("resources/shaders/shader.frag.spv"),
       std::ios::binary | std::ios::ate);
   std::streamsize fragmentFileSize = fragmentFile.tellg();
   fragmentFile.seekg(0, std::ios::beg);
@@ -243,10 +246,57 @@ int main(void) {
     .specializationInfoPtr = NULL
   };
 
+  DescriptorPool* descriptorPool = new DescriptorPool(
+      device->getDeviceHandleRef(),
+      VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+      1,
+      {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}});
+
+  DescriptorSetLayout* descriptorSetLayout = new DescriptorSetLayout(
+      device->getDeviceHandleRef(),
+      0,
+      {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+          NULL}});
+
+  DescriptorSetGroup* descriptorSetGroup = new DescriptorSetGroup(
+      device->getDeviceHandleRef(),
+      descriptorPool->getDescriptorPoolHandleRef(),
+      {descriptorSetLayout->getDescriptorSetLayoutHandleRef()});
+
+  float colors[3] = {
+    1.0f, 0.7f, 0.5f,
+  };
+
+  Buffer* colorBuffer = new Buffer(device->getDeviceHandleRef(),
+      activePhysicalDeviceHandle,
+      0,
+      sizeof(float) * 3,
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      {queueFamilyIndex},
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+  void* hostColorBuffer;
+  colorBuffer->mapMemory(&hostColorBuffer, 0, 3 * sizeof(float));
+  memcpy(hostColorBuffer, colors, 3 * sizeof(float));
+  colorBuffer->unmapMemory();
+
+  auto descriptorBufferInfo =
+      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo {
+
+    .buffer = colorBuffer->getBufferHandleRef(),
+    .offset = 0,
+    .range = VK_WHOLE_SIZE
+  });
+
+  descriptorSetGroup->updateDescriptorSets(
+    {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL, descriptorBufferInfo, NULL}},
+    {});
+
   PipelineLayout* pipelineLayout = new PipelineLayout(
       device->getDeviceHandleRef(),
-      std::vector<VkDescriptorSetLayout>(),
-      std::vector<VkPushConstantRange>());
+      {descriptorSetLayout->getDescriptorSetLayoutHandleRef()},
+      {});
 
   auto pipelineVertexInputStateCreateInfoParam =
       std::make_shared<GraphicsPipelineGroup::
@@ -395,9 +445,12 @@ int main(void) {
   std::vector<Semaphore*> writeImageSemaphoreList;
 
   for (uint32_t x = 0; x < framebufferList.size(); x++) {
-    imageAvailableFenceList.push_back(new Fence(device->getDeviceHandleRef(), VK_FENCE_CREATE_SIGNALED_BIT));
-    acquireImageSemaphoreList.push_back(new Semaphore(device->getDeviceHandleRef(), 0));
-    writeImageSemaphoreList.push_back(new Semaphore(device->getDeviceHandleRef(), 0));
+    imageAvailableFenceList.push_back(
+        new Fence(device->getDeviceHandleRef(), VK_FENCE_CREATE_SIGNALED_BIT));
+    acquireImageSemaphoreList.push_back(
+        new Semaphore(device->getDeviceHandleRef(), 0));
+    writeImageSemaphoreList.push_back(
+        new Semaphore(device->getDeviceHandleRef(), 0));
 
     commandBufferGroup->beginRecording(x,
         VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
@@ -417,6 +470,14 @@ int main(void) {
     indexBuffer->bindIndexBufferCmd(
         commandBufferGroup->getCommandBufferHandleRef(x), VK_INDEX_TYPE_UINT32);
 
+    descriptorSetGroup->bindDescriptorSetsCmd(
+        commandBufferGroup->getCommandBufferHandleRef(x),
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineLayout->getPipelineLayoutHandleRef(),
+        0,
+        {0},
+        {});
+
     renderPass->drawIndexedCmd(
         commandBufferGroup->getCommandBufferHandleRef(x), 6, 1, 0, 0, 0);
 
@@ -434,7 +495,36 @@ int main(void) {
     XNextEvent(displayPtr, &event);
 
     if (event.type == KeyPress) {
-      break;
+      if (event.xkey.keycode == 9) {
+        break;
+      }
+      if (event.xkey.keycode == 27) {
+        void* hostColorBuffer;
+        colorBuffer->mapMemory(&hostColorBuffer, 0, 3 * sizeof(float));
+        ((float*)hostColorBuffer)[0] += 0.1f;
+        if (((float*)hostColorBuffer)[0] > 1.0f) {
+          ((float*)hostColorBuffer)[0] = 0.0f;
+        }
+        colorBuffer->unmapMemory();
+      }
+      if (event.xkey.keycode == 42) {
+        void* hostColorBuffer;
+        colorBuffer->mapMemory(&hostColorBuffer, 0, 3 * sizeof(float));
+        ((float*)hostColorBuffer)[1] += 0.1f;
+        if (((float*)hostColorBuffer)[1] > 1.0f) {
+          ((float*)hostColorBuffer)[1] = 0.0f;
+        }
+        colorBuffer->unmapMemory();
+      }
+      if (event.xkey.keycode == 56) {
+        void* hostColorBuffer;
+        colorBuffer->mapMemory(&hostColorBuffer, 0, 3 * sizeof(float));
+        ((float*)hostColorBuffer)[2] += 0.1f;
+        if (((float*)hostColorBuffer)[2] > 1.0f) {
+          ((float*)hostColorBuffer)[2] = 0.0f;
+        }
+        colorBuffer->unmapMemory();
+      }
     }
 
     imageAvailableFenceList[currentFrame]->waitForSignal(UINT32_MAX);
@@ -479,6 +569,12 @@ int main(void) {
   delete vertexBuffer;
   delete graphicsPipelineGroup;
   delete pipelineLayout;
+
+  delete colorBuffer;
+  delete descriptorSetGroup;
+  delete descriptorSetLayout;
+  delete descriptorPool;
+
   delete fragmentShaderModule;
   delete vertexShaderModule;
 

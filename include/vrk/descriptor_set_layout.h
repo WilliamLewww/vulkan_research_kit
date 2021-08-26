@@ -13,6 +13,8 @@ public:
       std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList);
 
   ~DescriptorSetLayout();
+
+  VkDescriptorSetLayout& getDescriptorSetLayoutHandleRef();
 private:
   VkDescriptorSetLayout descriptorSetLayoutHandle;
 

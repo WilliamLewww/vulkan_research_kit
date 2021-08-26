@@ -25,3 +25,16 @@ include_directories(xlib_surface ${Vulkan_INCLUDE_DIRS})
 include_directories(xlib_surface ${X11_INCLUDE_DIR})
 include_directories(xlib_surface ${VRK_SOURCE_DIR}/include)
 target_link_libraries(xlib_surface ${VRK_LIBRARY} ${VRK_WSI_LIBRARY} -lX11)
+
+file(GLOB SHADERS "shaders/*")
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
+foreach(SHADER ${SHADERS})
+  get_filename_component(SHADER_NAME ${SHADER} NAME)
+
+  add_custom_command(
+    OUTPUT resources/shaders/${SHADER_NAME}.spv
+    COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${SHADER} --target-env=vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv
+    DEPENDS ${SHADER}
+  )
+  target_sources(xlib_surface PRIVATE resources/shaders/${SHADER_NAME}.spv)
+endforeach()

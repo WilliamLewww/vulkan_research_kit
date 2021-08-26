@@ -29,3 +29,7 @@ DescriptorPool::~DescriptorPool() {
   vkDestroyDescriptorPool(this->deviceHandleRef, this->descriptorPoolHandle,
       NULL);
 }
+
+VkDescriptorPool& DescriptorPool::getDescriptorPoolHandleRef() {
+  return this->descriptorPoolHandle;
+}
