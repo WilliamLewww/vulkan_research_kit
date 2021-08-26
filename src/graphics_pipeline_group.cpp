@@ -406,7 +406,7 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
   }
 
   VkResult result = vkCreateGraphicsPipelines(deviceHandleRef, VK_NULL_HANDLE,
-      (uint32_t)graphicsPipelineCreateInfoParamList.size(),
+      (uint32_t)graphicsPipelineCreateInfoList.size(),
       graphicsPipelineCreateInfoList.data(), NULL,
       this->pipelineHandleList.data());
 
@@ -426,4 +426,15 @@ void GraphicsPipelineGroup::bindPipelineCmd(uint32_t pipelineIndex,
 
   vkCmdBindPipeline(commandBufferHandleRef, VK_PIPELINE_BIND_POINT_GRAPHICS,
       this->pipelineHandleList[pipelineIndex]);
+}
+
+void GraphicsPipelineGroup::drawIndexedCmd(VkCommandBuffer& commandBufferHandleRef,
+    uint32_t indexCount,
+    uint32_t instanceCount,
+    uint32_t firstIndex,
+    uint32_t vertexOffset,
+    uint32_t firstInstance) {
+
+  vkCmdDrawIndexed(commandBufferHandleRef, indexCount, instanceCount,
+      firstIndex, vertexOffset, firstInstance);
 }

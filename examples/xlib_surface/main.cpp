@@ -478,7 +478,7 @@ int main(void) {
         {0},
         {});
 
-    renderPass->drawIndexedCmd(
+    graphicsPipelineGroup->drawIndexedCmd(
         commandBufferGroup->getCommandBufferHandleRef(x), 6, 1, 0, 0, 0);
 
     renderPass->endRenderPassCmd(
