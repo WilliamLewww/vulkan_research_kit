@@ -1,7 +1,20 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(offline_rendering)
 
-find_package(Vulkan REQUIRED)
+if(Vulkan_INCLUDE_DIRS)
+  set(LOCAL_Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
+elseif(DEFINED ENV{Vulkan_INCLUDE_DIRS})
+  set(LOCAL_Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
+endif()
+
+find_package(Vulkan QUIET)
+
+if(LOCAL_Vulkan_INCLUDE_DIRS)
+  set(Vulkan_INCLUDE_DIRS ${LOCAL_Vulkan_INCLUDE_DIRS})
+endif()
+if(NOT Vulkan_INCLUDE_DIRS)
+  message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
+endif()
 
 get_filename_component(VRK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 

@@ -1,9 +1,48 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(vulkan_research_kit)
 
-find_package(Vulkan REQUIRED)
-find_package(GTest)
-find_package(X11)
+if(Vulkan_LIBRARIES)
+  set(LOCAL_Vulkan_LIBRARIES ${Vulkan_LIBRARIES})
+elseif(DEFINED ENV{Vulkan_LIBRARIES})
+  set(LOCAL_Vulkan_LIBRARIES $ENV{Vulkan_LIBRARIES})
+endif()
+
+if(Vulkan_INCLUDE_DIRS)
+  set(LOCAL_Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
+elseif(DEFINED ENV{Vulkan_INCLUDE_DIRS})
+  set(LOCAL_Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
+endif()
+
+if(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE)
+  set(LOCAL_Vulkan_GLSLANG_VALIDATOR_EXECUTABLE ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+elseif(DEFINED ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+  set(LOCAL_Vulkan_GLSLANG_VALIDATOR_EXECUTABLE $ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+endif()
+
+find_package(Vulkan QUIET)
+find_package(GTest QUIET)
+find_package(X11 QUIET)
+
+if(LOCAL_Vulkan_LIBRARIES)
+  set(Vulkan_LIBRARIES ${LOCAL_Vulkan_LIBRARIES})
+endif()
+if(NOT Vulkan_LIBRARIES)
+  message(FATAL_ERROR "Vulkan_LIBRARIES not set")
+endif()
+
+if(LOCAL_Vulkan_INCLUDE_DIRS)
+  set(Vulkan_INCLUDE_DIRS ${LOCAL_Vulkan_INCLUDE_DIRS})
+endif()
+if(NOT Vulkan_INCLUDE_DIRS)
+  message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
+endif()
+
+if(LOCAL_Vulkan_GLSLANG_VALIDATOR_EXECUTABLE)
+  set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE ${LOCAL_Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+endif()
+if(NOT Vulkan_GLSLANG_VALIDATOR_EXECUTABLE)
+  message(FATAL_ERROR "Vulkan_GLSLANG_VALIDATOR_EXECUTABLE not set")
+endif()
 
 file(GLOB SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
@@ -49,7 +88,7 @@ foreach(SHADER ${SHADERS})
 
   add_custom_command(
     OUTPUT resources/shaders/${SHADER_NAME}.spv
-    COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${SHADER} --target-env=vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv
+    COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv ${SHADER}
     DEPENDS ${SHADER}
   )
   target_sources(vrk PRIVATE resources/shaders/${SHADER_NAME}.spv)
@@ -76,3 +115,4 @@ endif()
 
 add_executable(vrk-app src/main.cpp)
 target_link_libraries(vrk-app vrk)
+
