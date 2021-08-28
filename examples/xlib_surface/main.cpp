@@ -113,7 +113,7 @@ int main(void) {
       {{0, queueFamilyIndex, 1, {1.0f}}},
       {},
       {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
-      {});
+      NULL);
 
   CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(),
       0,
@@ -530,16 +530,16 @@ int main(void) {
     imageAvailableFenceList[currentFrame]->waitForSignal(UINT32_MAX);
     imageAvailableFenceList[currentFrame]->reset();
 
-    uint32_t currentImageIndex = 
-        swapchain->aquireNextImageIndex(UINT32_MAX, 
-        acquireImageSemaphoreList[currentFrame]->getSemaphoreHandleRef(), 
+    uint32_t currentImageIndex =
+        swapchain->aquireNextImageIndex(UINT32_MAX,
+        acquireImageSemaphoreList[currentFrame]->getSemaphoreHandleRef(),
         VK_NULL_HANDLE);
 
     commandBufferGroup->submit(device->getQueueHandleRef(queueFamilyIndex, 0),
-        {{{acquireImageSemaphoreList[currentFrame]->getSemaphoreHandleRef()}, 
-        {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, 
-        {currentImageIndex}, 
-        {writeImageSemaphoreList[currentImageIndex]->getSemaphoreHandleRef()}}}, 
+        {{{acquireImageSemaphoreList[currentFrame]->getSemaphoreHandleRef()},
+        {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+        {currentImageIndex},
+        {writeImageSemaphoreList[currentImageIndex]->getSemaphoreHandleRef()}}},
         imageAvailableFenceList[currentFrame]->getFenceHandleRef());
 
     surface->queuePresentCmd(device->getQueueHandleRef(queueFamilyIndex, 0),

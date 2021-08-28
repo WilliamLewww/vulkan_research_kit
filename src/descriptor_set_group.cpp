@@ -41,7 +41,7 @@ void DescriptorSetGroup::updateDescriptorSets(
 
   std::vector<VkWriteDescriptorSet> writeDescriptorSetList = {};
 
-  for (WriteDescriptorSetParam& writeDescriptorSetParam : 
+  for (WriteDescriptorSetParam& writeDescriptorSetParam :
       writeDescriptorSetParamList) {
 
     VkWriteDescriptorSet writeDescriptorSet = {
@@ -63,7 +63,7 @@ void DescriptorSetGroup::updateDescriptorSets(
 
   std::vector<VkCopyDescriptorSet> copyDescriptorSetList = {};
 
-  for (CopyDescriptorSetParam& copyDescriptorSetParam : 
+  for (CopyDescriptorSetParam& copyDescriptorSetParam :
       copyDescriptorSetParamList) {
 
     VkCopyDescriptorSet copyDescriptorSet = {

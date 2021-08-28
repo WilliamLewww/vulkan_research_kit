@@ -38,7 +38,7 @@ ComputePipelineGroup::ComputePipelineGroup(VkDevice& deviceHandleRef,
     };
   }
 
-  VkResult result = vkCreateComputePipelines(deviceHandleRef, 
+  VkResult result = vkCreateComputePipelines(deviceHandleRef,
       VK_NULL_HANDLE,
       (uint32_t)computePipelineCreateInfoList.size(),
       computePipelineCreateInfoList.data(), NULL,

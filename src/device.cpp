@@ -88,7 +88,7 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
     std::vector<std::string> enabledLayerNameList,
     std::vector<std::string> enabledExtensionNameList,
-    std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList) {
+    std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr) {
 
   this->deviceHandle = VK_NULL_HANDLE;
 
@@ -133,7 +133,7 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     .ppEnabledLayerNames = enabledLayerNameBuffer,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
     .ppEnabledExtensionNames = enabledExtensionNameBuffer,
-    .pEnabledFeatures = physicalDeviceFeaturesList.data()
+    .pEnabledFeatures = physicalDeviceFeaturesPtr.get()
   };
 
   VkResult result = vkCreateDevice(physicalDeviceHandleRef, &deviceCreateInfo,

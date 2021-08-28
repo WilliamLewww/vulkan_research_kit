@@ -105,7 +105,7 @@ int main(void) {
       {{0, queueFamilyIndex, 1, {1.0f}}},
       {},
       {},
-      {});
+      NULL);
 
   CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(),
       0,

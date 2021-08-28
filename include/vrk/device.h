@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <memory>
 
 class Device {
 public:
@@ -44,7 +45,7 @@ public:
       std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
       std::vector<std::string> enabledLayerNameList,
       std::vector<std::string> enabledExtensionNameList,
-      std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList);
+      std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr);
 
   ~Device();
 
