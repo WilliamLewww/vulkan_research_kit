@@ -7,7 +7,8 @@ Buffer::Buffer(VkDevice& deviceHandleRef,
     VkBufferUsageFlags bufferUsageFlags,
     VkSharingMode sharingMode,
     std::vector<uint32_t> queueFamilyIndexList,
-    VkMemoryPropertyFlags memoryPropertyFlags) :
+    VkMemoryPropertyFlags memoryPropertyFlags,
+    std::vector<void*> memoryAllocateInfoChainList) :
     deviceHandleRef(deviceHandleRef) {
 
   this->bufferHandle = VK_NULL_HANDLE;
@@ -57,6 +58,19 @@ Buffer::Buffer(VkDevice& deviceHandleRef,
     .allocationSize = memoryRequirements.size,
     .memoryTypeIndex = memoryTypeIndex
   };
+
+  if (memoryAllocateInfoChainList.size() > 0) {
+    BaseVulkanStructure* previousStructure =
+        (BaseVulkanStructure*)&memoryAllocateInfo;
+
+    for (uint32_t x = 0; x < memoryAllocateInfoChainList.size(); x++) {
+      BaseVulkanStructure* currentStructure =
+          (BaseVulkanStructure*)memoryAllocateInfoChainList[x];
+
+      previousStructure->pNext = currentStructure;
+      previousStructure = currentStructure;
+    }
+  }
 
   result = vkAllocateMemory(deviceHandleRef, &memoryAllocateInfo, NULL,
       &this->deviceMemoryHandle);
@@ -130,6 +144,22 @@ void Buffer::bindIndexBufferCmd(VkCommandBuffer& commandBufferHandleRef,
 
   vkCmdBindIndexBuffer(commandBufferHandleRef, this->bufferHandle, 0,
       indexType);
+}
+
+
+VkDeviceAddress Buffer::getBufferDeviceAddress() {
+  VkBufferDeviceAddressInfo bufferDeviceAddressInfo = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+    .pNext = NULL,
+    .buffer = this->bufferHandle
+  };
+
+  LOAD_DEVICE_FUNCTION(this->deviceHandleRef,
+      vkGetBufferDeviceAddressKHR,
+      pvkGetBufferDeviceAddressKHR);
+
+  return pvkGetBufferDeviceAddressKHR(this->deviceHandleRef,
+      &bufferDeviceAddressInfo);
 }
 
 VkBuffer& Buffer::getBufferHandleRef() {

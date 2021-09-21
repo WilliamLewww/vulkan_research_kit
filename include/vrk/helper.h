@@ -32,5 +32,10 @@
     std::cerr << "Device funtion not found: " <<                        \
         #functionName << std::endl;
 
+struct BaseVulkanStructure {
+  VkStructureType sType;
+  void* pNext;
+};
+
 void throwExceptionVulkanAPI(VkResult result, std::string functionName);
 void throwExceptionMessage(std::string message);

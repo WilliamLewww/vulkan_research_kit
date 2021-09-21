@@ -45,7 +45,8 @@ public:
       std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
       std::vector<std::string> enabledLayerNameList,
       std::vector<std::string> enabledExtensionNameList,
-      std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr);
+      std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr,
+      std::vector<void*> deviceCreateInfoChainList = {});
 
   ~Device();
 

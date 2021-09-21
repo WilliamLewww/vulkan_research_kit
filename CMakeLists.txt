@@ -105,4 +105,3 @@ endif()
 
 add_executable(vrk-app src/main.cpp)
 target_link_libraries(vrk-app vrk)
-target_link_libraries(vrk-app vrk-ray-tracing)

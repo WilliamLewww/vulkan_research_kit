@@ -104,6 +104,18 @@ void CommandBufferGroup::submit(
   }
 }
 
+void CommandBufferGroup::reset(uint32_t commandBufferIndex,
+      VkCommandBufferResetFlags commandBufferResetFlags) {
+
+  VkResult result = vkResetCommandBuffer(this->commandBufferHandleList[
+      commandBufferIndex],
+      commandBufferResetFlags);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkResetCommandBuffer");
+  }
+}
+
 void CommandBufferGroup::createPipelineBarrierCmd(uint32_t commandBufferIndex,
     VkPipelineStageFlags srcPipelineStageFlags,
     VkPipelineStageFlags dstPipelineStageFlags,

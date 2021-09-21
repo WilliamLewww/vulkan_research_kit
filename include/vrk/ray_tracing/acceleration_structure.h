@@ -43,6 +43,17 @@ public:
     VkGeometryFlagsKHR geometryFlags;
   };
 
+  struct AccelerationStructureBuildGeometryInfoParam {
+    VkAccelerationStructureTypeKHR accelerationStructureType;
+    VkBuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags;
+    VkBuildAccelerationStructureModeKHR buildAccelerationStructureMode;
+    VkAccelerationStructureKHR srcAccelerationStructureHandle;
+    VkAccelerationStructureKHR& dstAccelerationStructureHandleRef;
+    std::vector<AccelerationStructureGeometryParam>
+        accelerationStructureGeometryParamList;
+    VkDeviceOrHostAddressKHR scratchDataDeviceOrHostAddress;
+  };
+
   static AccelerationStructureBuildSizesInfoParam
       getAccelerationStructureBuildSizes(
       VkDevice& deviceHandleRef,
@@ -53,6 +64,14 @@ public:
           accelerationStructureGeometryParamList,
       std::vector<uint32_t> maxPrimitiveCountList);
 
+  static void buildAccelerationStructures(
+      VkDevice& deviceHandleRef,
+      VkCommandBuffer& commandBufferHandleRef,
+      std::vector<AccelerationStructureBuildGeometryInfoParam>
+          accelerationStructureBuildGeometryInfoParamList,
+      std::vector<VkAccelerationStructureBuildRangeInfoKHR>
+         accelerationStructureBuildRangeInfoList);
+
   AccelerationStructure(VkDevice& deviceHandleRef,
       VkAccelerationStructureCreateFlagsKHR accelerationStructureCreateFlags,
       VkBuffer& bufferHandleRef,
@@ -62,6 +81,10 @@ public:
       VkDeviceAddress deviceAddress);
 
   ~AccelerationStructure();
+
+  VkDeviceAddress getAccelerationStructureDeviceAddress();
+
+  VkAccelerationStructureKHR& getAccelerationStructureHandleRef();
 private:
   VkAccelerationStructureKHR accelerationStructureHandle;
 
