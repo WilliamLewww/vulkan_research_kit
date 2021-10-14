@@ -105,7 +105,7 @@ int main(void) {
       {{0, queueFamilyIndex, 1, {1.0f}}},
       {},
       {},
-      {});
+      NULL);
 
   CommandPool* commandPool = new CommandPool(device->getDeviceHandleRef(),
       0,
@@ -384,7 +384,7 @@ int main(void) {
   indexBuffer->bindIndexBufferCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), VK_INDEX_TYPE_UINT32);
 
-  renderPass->drawIndexedCmd(
+  graphicsPipelineGroup->drawIndexedCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), 6, 1, 0, 0, 0);
 
   renderPass->endRenderPassCmd(

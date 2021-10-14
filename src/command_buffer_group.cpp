@@ -72,7 +72,8 @@ void CommandBufferGroup::submit(
     std::vector<VkCommandBuffer> commandBufferHandleListLocal = {};
 
     for (uint32_t index : submitInfoParam.commandBufferHandleIndexList) {
-      commandBufferHandleListLocal.push_back(this->commandBufferHandleList[index]);
+      commandBufferHandleListLocal.push_back(
+          this->commandBufferHandleList[index]);
     }
     commandBufferHandleListSubmit.push_back(commandBufferHandleListLocal);
 
@@ -100,6 +101,18 @@ void CommandBufferGroup::submit(
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkQueueSubmit");
+  }
+}
+
+void CommandBufferGroup::reset(uint32_t commandBufferIndex,
+      VkCommandBufferResetFlags commandBufferResetFlags) {
+
+  VkResult result = vkResetCommandBuffer(this->commandBufferHandleList[
+      commandBufferIndex],
+      commandBufferResetFlags);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkResetCommandBuffer");
   }
 }
 

@@ -57,17 +57,6 @@ void RenderPass::endRenderPassCmd(VkCommandBuffer& commandBufferHandleRef) {
   vkCmdEndRenderPass(commandBufferHandleRef);
 }
 
-void RenderPass::drawIndexedCmd(VkCommandBuffer& commandBufferHandleRef,
-    uint32_t indexCount,
-    uint32_t instanceCount,
-    uint32_t firstIndex,
-    uint32_t vertexOffset,
-    uint32_t firstInstance) {
-
-  vkCmdDrawIndexed(commandBufferHandleRef, indexCount, instanceCount,
-      firstIndex, vertexOffset, firstInstance);
-}
-
 VkRenderPass& RenderPass::getRenderPassHandleRef() {
   return this->renderPassHandle;
 }

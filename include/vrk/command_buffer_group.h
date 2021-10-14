@@ -57,6 +57,9 @@ public:
       std::vector<SubmitInfoParam> submitInfoParamList,
       VkFence fenceHandle);
 
+  void reset(uint32_t commandBufferIndex,
+      VkCommandBufferResetFlags commandBufferResetFlags);
+
   void createPipelineBarrierCmd(uint32_t commandBufferIndex,
       VkPipelineStageFlags srcPipelineStageFlags,
       VkPipelineStageFlags dstPipelineStageFlags,

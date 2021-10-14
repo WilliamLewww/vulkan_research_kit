@@ -23,5 +23,19 @@
     std::cerr << "Instance funtion not found: " <<                      \
         #functionName << std::endl;
 
+#define LOAD_DEVICE_FUNCTION(deviceHandle, functionName,                \
+    functionLocalName)                                                  \
+  PFN##_##functionName functionLocalName =                              \
+      (PFN##_##functionName)vkGetDeviceProcAddr(deviceHandle,           \
+      #functionName);                                                   \
+  if (functionLocalName == NULL)                                        \
+    std::cerr << "Device funtion not found: " <<                        \
+        #functionName << std::endl;
+
+struct BaseVulkanStructure {
+  VkStructureType sType;
+  void* pNext;
+};
+
 void throwExceptionVulkanAPI(VkResult result, std::string functionName);
 void throwExceptionMessage(std::string message);

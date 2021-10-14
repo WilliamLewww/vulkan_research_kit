@@ -87,31 +87,7 @@ uint32_t Swapchain::aquireNextImageIndex(uint64_t timeout,
   return imageIndex;
 }
 
-void Swapchain::queuePresentCmd(VkQueue& queueHandleRef,
-    std::vector<VkSemaphore> waitSemaphoreHandleList,
-    std::vector<VkSwapchainKHR> swapchainHandleList,
-    std::vector<uint32_t> imageIndexList,
-    std::shared_ptr<VkResult[]> resultPtr) {
-
-  VkPresentInfoKHR presentInfo = {
-    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-    .pNext = NULL,
-    .waitSemaphoreCount = (uint32_t)waitSemaphoreHandleList.size(),
-    .pWaitSemaphores = waitSemaphoreHandleList.data(),
-    .swapchainCount = (uint32_t)swapchainHandleList.size(),
-    .pSwapchains = swapchainHandleList.data(),
-    .pImageIndices = imageIndexList.data(),
-    .pResults = resultPtr.get()
-  };
-
-  VkResult result = vkQueuePresentKHR(queueHandleRef, &presentInfo);
-
-  if (result != VK_SUCCESS) {
-    throwExceptionVulkanAPI(result, "vkQueuePresentKHR");
-  }
-}
-
-std::vector<VkImage> Swapchain::getSwapchainImageList() {
+std::vector<VkImage> Swapchain::getSwapchainImageHandleList() {
   uint32_t imageCount = 0;
 
   VkResult result = vkGetSwapchainImagesKHR(this->deviceHandleRef,
@@ -130,4 +106,8 @@ std::vector<VkImage> Swapchain::getSwapchainImageList() {
   }
 
   return imageList;
+}
+
+VkSwapchainKHR& Swapchain::getSwapchainHandleRef() {
+  return this->swapchainHandle;
 }

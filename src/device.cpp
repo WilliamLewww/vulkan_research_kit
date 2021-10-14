@@ -88,7 +88,8 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
     std::vector<std::string> enabledLayerNameList,
     std::vector<std::string> enabledExtensionNameList,
-    std::vector<VkPhysicalDeviceFeatures> physicalDeviceFeaturesList) {
+    std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr,
+    std::vector<void*> deviceCreateInfoChainList) {
 
   this->deviceHandle = VK_NULL_HANDLE;
 
@@ -133,8 +134,21 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
     .ppEnabledLayerNames = enabledLayerNameBuffer,
     .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
     .ppEnabledExtensionNames = enabledExtensionNameBuffer,
-    .pEnabledFeatures = physicalDeviceFeaturesList.data()
+    .pEnabledFeatures = physicalDeviceFeaturesPtr.get()
   };
+
+  if (deviceCreateInfoChainList.size() > 0) {
+    BaseVulkanStructure* previousStructure =
+        (BaseVulkanStructure*)&deviceCreateInfo;
+
+    for (uint32_t x = 0; x < deviceCreateInfoChainList.size(); x++) {
+      BaseVulkanStructure* currentStructure =
+          (BaseVulkanStructure*)deviceCreateInfoChainList[x];
+
+      previousStructure->pNext = currentStructure;
+      previousStructure = currentStructure;
+    }
+  }
 
   VkResult result = vkCreateDevice(physicalDeviceHandleRef, &deviceCreateInfo,
       NULL, &this->deviceHandle);
@@ -170,6 +184,14 @@ Device::Device(VkPhysicalDevice& physicalDeviceHandleRef,
 
 Device::~Device() {
   vkDestroyDevice(this->deviceHandle, NULL);
+}
+
+void Device::waitIdle() {
+  VkResult result = vkDeviceWaitIdle(this->deviceHandle);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkDeviceWaitIdle");
+  }
 }
 
 VkDevice& Device::getDeviceHandleRef() {

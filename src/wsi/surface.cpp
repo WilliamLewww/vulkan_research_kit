@@ -176,6 +176,30 @@ std::vector<VkPresentModeKHR> Surface::getPhysicalDeviceSurfacePresentModeList(
   return presentModeList;
 }
 
+void Surface::queuePresentCmd(VkQueue& queueHandleRef,
+    std::vector<VkSemaphore> waitSemaphoreHandleList,
+    std::vector<VkSwapchainKHR> swapchainHandleList,
+    std::vector<uint32_t> imageIndexList,
+    std::shared_ptr<VkResult[]> resultPtr) {
+
+  VkPresentInfoKHR presentInfo = {
+    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+    .pNext = NULL,
+    .waitSemaphoreCount = (uint32_t)waitSemaphoreHandleList.size(),
+    .pWaitSemaphores = waitSemaphoreHandleList.data(),
+    .swapchainCount = (uint32_t)swapchainHandleList.size(),
+    .pSwapchains = swapchainHandleList.data(),
+    .pImageIndices = imageIndexList.data(),
+    .pResults = resultPtr.get()
+  };
+
+  VkResult result = vkQueuePresentKHR(queueHandleRef, &presentInfo);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkQueuePresentKHR");
+  }
+}
+
 VkSurfaceKHR& Surface::getSurfaceHandleRef() {
   return this->surfaceHandle;
 }

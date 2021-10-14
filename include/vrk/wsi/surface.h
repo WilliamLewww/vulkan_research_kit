@@ -57,6 +57,12 @@ public:
   std::vector<VkPresentModeKHR> getPhysicalDeviceSurfacePresentModeList(
       VkPhysicalDevice& physicalDeviceHandleRef);
 
+  void queuePresentCmd(VkQueue& queueHandleRef,
+      std::vector<VkSemaphore> waitSemaphoreHandleList,
+      std::vector<VkSwapchainKHR> swapchainHandleList,
+      std::vector<uint32_t> imageIndexList,
+      std::shared_ptr<VkResult[]> resultPtr);
+
   VkSurfaceKHR& getSurfaceHandleRef();
 private:
   VkSurfaceKHR surfaceHandle;

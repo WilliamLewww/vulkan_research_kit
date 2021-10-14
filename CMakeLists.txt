@@ -1,14 +1,41 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(vulkan_research_kit)
 
-find_package(Vulkan REQUIRED)
-find_package(GTest)
-find_package(X11)
+if(NOT Vulkan_INCLUDE_DIRS)
+  if(DEFINED ENV{Vulkan_INCLUDE_DIRS})
+    set(Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
+  elseif(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_INCLUDE_DIRS $ENV{VULKAN_SDK}/include)
+  else()
+    message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
+  endif()
+endif()
+
+if(NOT Vulkan_LIBRARIES)
+  if(DEFINED ENV{Vulkan_LIBRARIES})
+    set(Vulkan_LIBRARIES $ENV{Vulkan_LIBRARIES})
+  elseif(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_LIBRARIES $ENV{VULKAN_SDK}/lib/libvulkan.so)
+  else()
+    message(FATAL_ERROR "Vulkan_LIBRARIES not set")
+  endif()
+endif()
+
+if(NOT Vulkan_GLSLANG_VALIDATOR_EXECUTABLE)
+  if(DEFINED ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+    set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE $ENV{Vulkan_GLSLANG_VALIDATOR_EXECUTABLE})
+  elseif(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE $ENV{VULKAN_SDK}/bin/glslangValidator)
+  else()
+    message(FATAL_ERROR "Vulkan_GLSLANG_VALIDATOR_EXECUTABLE not set")
+  endif()
+endif()
+
+find_package(GTest QUIET)
+find_package(X11 QUIET)
 
 file(GLOB SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
-
-file(GLOB SOURCES_WSI "src/wsi/*.cpp")
 
 file(GLOB SHADERS "src/shaders/*")
 
@@ -16,17 +43,30 @@ add_library(vrk SHARED
   ${SOURCES}
 )
 
-add_library(vrk-wsi SHARED
-  ${SOURCES_WSI}
-)
-
 include_directories(vrk include)
 include_directories(vrk ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(vrk ${Vulkan_LIBRARIES})
 target_link_libraries(vrk m)
 
-target_link_libraries(vrk-wsi vrk)
+if(NOT DISABLE_RAY_TRACING)
+  file(GLOB SOURCES_RAY_TRACING "src/ray_tracing/*.cpp")
+
+  add_library(vrk-ray-tracing SHARED
+    ${SOURCES_RAY_TRACING}
+  )
+
+  target_link_libraries(vrk-ray-tracing vrk)
+endif()
+
 if(X11_FOUND)
+  file(GLOB SOURCES_WSI "src/wsi/*.cpp")
+
+  add_library(vrk-wsi SHARED
+    ${SOURCES_WSI}
+  )
+
+  target_link_libraries(vrk-wsi vrk)
+
   include_directories(vrk-wsi ${X11_INCLUDE_DIR})
   target_link_libraries(vrk-wsi ${X11_LIBRARIES})
   target_compile_definitions(vrk-wsi PRIVATE -DX_LIB_SURFACE)
@@ -38,7 +78,7 @@ foreach(SHADER ${SHADERS})
 
   add_custom_command(
     OUTPUT resources/shaders/${SHADER_NAME}.spv
-    COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${SHADER} --target-env=vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv
+    COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv ${SHADER}
     DEPENDS ${SHADER}
   )
   target_sources(vrk PRIVATE resources/shaders/${SHADER_NAME}.spv)
@@ -65,4 +105,3 @@ endif()
 
 add_executable(vrk-app src/main.cpp)
 target_link_libraries(vrk-app vrk)
-target_link_libraries(vrk-app vrk-wsi)

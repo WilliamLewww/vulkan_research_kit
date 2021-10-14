@@ -17,7 +17,8 @@ public:
       VkBufferUsageFlags bufferUsageFlags,
       VkSharingMode sharingMode,
       std::vector<uint32_t> queueFamilyIndexList,
-      VkMemoryPropertyFlags memoryPropertyFlags);
+      VkMemoryPropertyFlags memoryPropertyFlags,
+      std::vector<void*> memoryAllocateInfoChainList = {});
 
   ~Buffer();
 
@@ -42,6 +43,8 @@ public:
 
   void bindIndexBufferCmd(VkCommandBuffer& commandBufferHandleRef,
       VkIndexType indexType);
+
+  VkDeviceAddress getBufferDeviceAddress();
 
   VkBuffer& getBufferHandleRef();
 private:

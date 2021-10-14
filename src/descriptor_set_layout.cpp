@@ -27,3 +27,7 @@ DescriptorSetLayout::~DescriptorSetLayout() {
   vkDestroyDescriptorSetLayout(this->deviceHandleRef,
       this->descriptorSetLayoutHandle, NULL);
 }
+
+VkDescriptorSetLayout& DescriptorSetLayout::getDescriptorSetLayoutHandleRef() {
+  return this->descriptorSetLayoutHandle;
+}
