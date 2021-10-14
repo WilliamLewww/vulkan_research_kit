@@ -9,25 +9,25 @@ The Vulkan Research Kit requires the following components:
 - [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader) (Required for libvulkan.so)
 - [GLSLang](https://github.com/KhronosGroup/glslang) (Required for compiling GLSL -> SPIR-V)
 
-The following environment variables may be used to pick each component (the same variables could also be defined when building in cmake)
+The following environment variables may be used to pick each component (the same variables could also be defined when building in cmake):
 - Vulkan_INCLUDE_DIRS="Vulkan-Headers/build/install/include"
 - Vulkan_LIBRARIES="Vulkan-Loader/build/install/lib/libvulkan.so"
 - Vulkan_GLSLANG_VALIDATOR_EXECUTABLE="glslang/build/install/bin/glslangValidator"
 
 ### Build Steps
 
-Create a build directory and navigate to the new directory
+Create a build directory and navigate to the new directory.
 ```bash
 mkdir build
 cd build
 ```
-Run cmake with the root of the repository as the argument
+Run cmake with the root of the repository as the argument.
 ```bash
 cmake ..
 ```
 
 ### Building Examples
-An included source file can be used to set up the environment variables required for building the examples
+An included source file can be used to set up the environment variables required for building the examples.
 ```bash
 source setup-env.sh
 ```
