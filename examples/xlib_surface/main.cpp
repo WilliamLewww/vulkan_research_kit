@@ -3,7 +3,6 @@
 #include "vrk/device.h"
 #include "vrk/command_pool.h"
 #include "vrk/command_buffer_group.h"
-#include "vrk/wsi/swapchain.h"
 #include "vrk/render_pass.h"
 #include "vrk/image_view.h"
 #include "vrk/framebuffer.h"
@@ -17,6 +16,8 @@
 #include "vrk/buffer.h"
 #include "vrk/fence.h"
 #include "vrk/semaphore.h"
+
+#include "vrk/wsi/swapchain.h"
 
 #include <X11/Xlib.h>
 

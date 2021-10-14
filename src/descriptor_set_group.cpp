@@ -44,11 +44,17 @@ void DescriptorSetGroup::updateDescriptorSets(
   for (WriteDescriptorSetParam& writeDescriptorSetParam :
       writeDescriptorSetParamList) {
 
+    void* writeDescriptorSetNext = NULL;
+
+    if (writeDescriptorSetParam.writeDescriptorSetNext != NULL) {
+      writeDescriptorSetNext = writeDescriptorSetParam.writeDescriptorSetNext;
+    }
+
     VkWriteDescriptorSet writeDescriptorSet = {
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .pNext = NULL,
+      .pNext = writeDescriptorSetNext,
       .dstSet = this->descriptorSetHandleList[
-          writeDescriptorSetParam.dstDescriptorIndex],
+          writeDescriptorSetParam.dstDescriptorSetIndex],
       .dstBinding = writeDescriptorSetParam.dstBinding,
       .dstArrayElement = writeDescriptorSetParam.dstArrayElement,
       .descriptorCount = writeDescriptorSetParam.descriptorCount,
@@ -70,11 +76,11 @@ void DescriptorSetGroup::updateDescriptorSets(
       .sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,
       .pNext = NULL,
       .srcSet = this->descriptorSetHandleList[
-          copyDescriptorSetParam.srcDescriptorIndex],
+          copyDescriptorSetParam.srcDescriptorSetIndex],
       .srcBinding = copyDescriptorSetParam.srcBinding,
       .srcArrayElement = copyDescriptorSetParam.srcArrayElement,
       .dstSet = this->descriptorSetHandleList[
-          copyDescriptorSetParam.dstDescriptorIndex],
+          copyDescriptorSetParam.dstDescriptorSetIndex],
       .dstBinding = copyDescriptorSetParam.dstBinding,
       .dstArrayElement = copyDescriptorSetParam.dstArrayElement,
       .descriptorCount = copyDescriptorSetParam.descriptorCount
