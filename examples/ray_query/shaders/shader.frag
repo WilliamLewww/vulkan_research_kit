@@ -5,13 +5,7 @@
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform Colors {
-  float red;
-  float green;
-  float blue;
-} colors;
-
-layout(set = 0, binding = 1) uniform accelerationStructureEXT topLevelAS;
+layout(set = 0, binding = 0) uniform accelerationStructureEXT topLevelAS;
 
 void main() {
   vec3 rayOrigin = vec3(0, 0, 0);
@@ -22,5 +16,10 @@ void main() {
 
   while (rayQueryProceedEXT(rayQuery));
 
-  outColor = vec4(colors.red, colors.green, colors.blue, 1.0f);
+  if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionNoneEXT) {
+    outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  }
+  else {
+    outColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  }
 }

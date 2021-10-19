@@ -58,7 +58,7 @@ if(NOT DISABLE_RAY_TRACING)
   target_link_libraries(vrk-ray-tracing vrk)
 endif()
 
-if(X11_FOUND)
+if(NOT DISABLE_WSI AND X11_FOUND)
   file(GLOB SOURCES_WSI "src/wsi/*.cpp")
 
   add_library(vrk-wsi SHARED

@@ -161,10 +161,10 @@ int main(void) {
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 2);
 
   float vertices[12] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.5f,  0.5f, 0.0f,
-    -0.5f,  0.5f, 0.0f
+    -0.5f, -0.5f, 0.5f,
+     0.5f, -0.5f, 0.5f,
+     0.5f,  0.5f, 0.5f,
+    -0.5f,  0.5f, 0.5f
   };
 
   uint32_t indices[6] = {
@@ -221,7 +221,7 @@ int main(void) {
         .deviceAddress = vertexBuffer->getBufferDeviceAddress()
       },
       .vertexStride = sizeof(float) * 3,
-      .maxVertex = 3,
+      .maxVertex = 4,
       .indexType = VK_INDEX_TYPE_UINT32,
       .indexData = {
         .deviceAddress = indexBuffer->getBufferDeviceAddress()
@@ -291,7 +291,7 @@ int main(void) {
     .accelerationStructureGeometryParamList =
         {{VK_GEOMETRY_TYPE_TRIANGLES_KHR,
             accelerationStructureGeometryDataParam,
-            0}},
+            VK_GEOMETRY_OPAQUE_BIT_KHR}},
     .scratchDataDeviceOrHostAddress = {
       .deviceAddress = accelerationStructureScratchBuffer->
           getBufferDeviceAddress()
@@ -301,7 +301,7 @@ int main(void) {
   VkAccelerationStructureBuildRangeInfoKHR
       accelerationStructureBuildRangeInfoKHR = {
 
-    .primitiveCount = 1,
+    .primitiveCount = 2,
     .primitiveOffset = 0,
     .firstVertex = 0,
     .transformOffset = 0
@@ -377,7 +377,7 @@ int main(void) {
       0,
       {{VK_GEOMETRY_TYPE_INSTANCES_KHR,
           topLevelAccelerationStructureGeometryDataParam,
-          0}},
+          VK_GEOMETRY_OPAQUE_BIT_KHR}},
       {1});
 
   Buffer* topLevelAccelerationStructureBuffer = new Buffer(device->getDeviceHandleRef(),
@@ -567,47 +567,18 @@ int main(void) {
       device->getDeviceHandleRef(),
       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
       1,
-      {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
-       {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}});
+      {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}});
 
   DescriptorSetLayout* descriptorSetLayout = new DescriptorSetLayout(
       device->getDeviceHandleRef(),
       0,
-      {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-          NULL},
-       {1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
+      {{0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
           VK_SHADER_STAGE_FRAGMENT_BIT, NULL}});
 
   DescriptorSetGroup* descriptorSetGroup = new DescriptorSetGroup(
       device->getDeviceHandleRef(),
       descriptorPool->getDescriptorPoolHandleRef(),
       {descriptorSetLayout->getDescriptorSetLayoutHandleRef()});
-
-  float colors[3] = {
-    1.0f, 0.7f, 0.5f,
-  };
-
-  Buffer* colorBuffer = new Buffer(device->getDeviceHandleRef(),
-      activePhysicalDeviceHandle,
-      0,
-      sizeof(float) * 3,
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_SHARING_MODE_EXCLUSIVE,
-      {queueFamilyIndex},
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-  void* hostColorBuffer;
-  colorBuffer->mapMemory(&hostColorBuffer, 0, 3 * sizeof(float));
-  memcpy(hostColorBuffer, colors, 3 * sizeof(float));
-  colorBuffer->unmapMemory();
-
-  auto descriptorBufferInfo =
-      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo {
-
-    .buffer = colorBuffer->getBufferHandleRef(),
-    .offset = 0,
-    .range = VK_WHOLE_SIZE
-  });
 
   VkWriteDescriptorSetAccelerationStructureKHR
       writeDescriptorSetAccelerationStructure = {
@@ -619,8 +590,7 @@ int main(void) {
   };
 
   descriptorSetGroup->updateDescriptorSets(
-    {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL, descriptorBufferInfo, NULL},
-     {0, 1, 0, 1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, NULL, NULL, NULL, &writeDescriptorSetAccelerationStructure}},
+    {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, NULL, NULL, NULL, &writeDescriptorSetAccelerationStructure}},
     {});
 
   PipelineLayout* pipelineLayout = new PipelineLayout(

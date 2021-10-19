@@ -1,5 +1,4 @@
 #include "vrk/instance.h"
-#include "vrk/wsi/surface.h"
 #include "vrk/device.h"
 #include "vrk/command_pool.h"
 #include "vrk/command_buffer_group.h"
@@ -17,6 +16,7 @@
 #include "vrk/fence.h"
 #include "vrk/semaphore.h"
 
+#include "vrk/wsi/surface.h"
 #include "vrk/wsi/swapchain.h"
 
 #include <X11/Xlib.h>
