@@ -351,10 +351,10 @@ AccelerationStructure::~AccelerationStructure() {
 
 VkDeviceAddress AccelerationStructure::
     getAccelerationStructureDeviceAddress() {
-  
-  VkAccelerationStructureDeviceAddressInfoKHR 
+
+  VkAccelerationStructureDeviceAddressInfoKHR
       accelerationStructureDeviceAddressInfo = {
-    
+
     .sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR,
     .pNext = NULL,
     .accelerationStructure = this->accelerationStructureHandle

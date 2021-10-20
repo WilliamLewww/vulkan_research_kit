@@ -187,6 +187,8 @@ void CommandBufferGroup::createPipelineBarrierCmd(uint32_t commandBufferIndex,
       imageMemoryBarrierList.data());
 }
 
-VkCommandBuffer& CommandBufferGroup::getCommandBufferHandleRef(uint32_t index) {
+VkCommandBuffer& CommandBufferGroup::getCommandBufferHandleRef(
+    uint32_t index) {
+
   return this->commandBufferHandleList[index];
 }

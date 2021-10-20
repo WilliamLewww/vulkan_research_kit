@@ -9,7 +9,8 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
       std::vector<VkPipeline>(graphicsPipelineCreateInfoParamList.size(),
       VK_NULL_HANDLE);
 
-  std::vector<VkGraphicsPipelineCreateInfo> graphicsPipelineCreateInfoList = {};
+  std::vector<VkGraphicsPipelineCreateInfo> graphicsPipelineCreateInfoList =
+      {};
 
   std::vector<std::vector<VkPipelineShaderStageCreateInfo>>
       pipelineShaderStageCreateInfoMainList = {};
@@ -147,7 +148,8 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
         .topology =
             pipelineInputAssemblyStateCreateInfoParamPtr->primitiveTopology,
         .primitiveRestartEnable =
-            pipelineInputAssemblyStateCreateInfoParamPtr->primitiveRestartEnable
+            pipelineInputAssemblyStateCreateInfoParamPtr->
+              primitiveRestartEnable
       };
 
       pipelineInputAssemblyStateCreateInfoList.push_back(
@@ -237,8 +239,10 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
             rasterizerDiscardEnable,
         .polygonMode = pipelineRasterizationStateCreateInfoParamPtr->
             polygonMode,
-        .cullMode = pipelineRasterizationStateCreateInfoParamPtr->cullModeFlags,
-        .frontFace = pipelineRasterizationStateCreateInfoParamPtr->frontFace,
+        .cullMode = pipelineRasterizationStateCreateInfoParamPtr->
+            cullModeFlags,
+        .frontFace = pipelineRasterizationStateCreateInfoParamPtr->
+            frontFace,
         .depthBiasEnable = pipelineRasterizationStateCreateInfoParamPtr->
             depthBiasEnable,
         .depthBiasConstantFactor =
@@ -355,8 +359,9 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(VkDevice& deviceHandleRef,
             pipelineColorBlendStateCreateInfoParamPtr->logicOpEnable,
         .logicOp =
             pipelineColorBlendStateCreateInfoParamPtr->logicOp,
-        .attachmentCount = (uint32_t)pipelineColorBlendStateCreateInfoParamPtr->
-            pipelineColorBlendAttachmentStateList.size(),
+        .attachmentCount = 
+            (uint32_t)pipelineColorBlendStateCreateInfoParamPtr->
+              pipelineColorBlendAttachmentStateList.size(),
         .pAttachments = pipelineColorBlendStateCreateInfoParamPtr->
             pipelineColorBlendAttachmentStateList.data(),
         .blendConstants = {

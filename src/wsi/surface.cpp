@@ -14,7 +14,8 @@ typedef VkResult (VKAPI_PTR *PFN_vkCreateXlibSurfaceKHR)(VkInstance instance,
     const VkXlibSurfaceCreateInfoKHR* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
     VkSurfaceKHR* pSurface);
-typedef VkBool32 (VKAPI_PTR *PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)(
+typedef VkBool32 (
+    VKAPI_PTR *PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)(
     VkPhysicalDevice physicalDevice,
     uint32_t queueFamilyIndex,
     Display* dpy,

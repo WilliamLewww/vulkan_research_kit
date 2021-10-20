@@ -46,7 +46,8 @@ bool Fence::waitForSignal(uint32_t timeout) {
 }
 
 void Fence::reset() {
-  VkResult result = vkResetFences(this->deviceHandleRef, 1, &this->fenceHandle);
+  VkResult result = vkResetFences(this->deviceHandleRef, 1,
+      &this->fenceHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkResetFences");

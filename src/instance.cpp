@@ -173,11 +173,12 @@ Instance::Instance(
 
     debugUtilsMessengerCreateInfo.pNext = NULL;
 
-    LOAD_INSTANCE_FUNCTION(this->instanceHandle, vkCreateDebugUtilsMessengerEXT,
-        pvkCreateDebugUtilsMessengerEXT);
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle,
+        vkCreateDebugUtilsMessengerEXT, pvkCreateDebugUtilsMessengerEXT);
 
     result = pvkCreateDebugUtilsMessengerEXT(this->instanceHandle,
-        &debugUtilsMessengerCreateInfo, NULL, &this->debugUtilsMessengerHandle);
+        &debugUtilsMessengerCreateInfo, NULL,
+        &this->debugUtilsMessengerHandle);
 
     if (result != VK_SUCCESS) {
       throwExceptionVulkanAPI(result, "vkCreateDebugUtilsMessengerEXT");

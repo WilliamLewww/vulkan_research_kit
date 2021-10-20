@@ -76,7 +76,7 @@ int main(void) {
       "Demo Application",
       VK_MAKE_VERSION(1, 0, 0),
       {"VK_LAYER_KHRONOS_validation"},
-      {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, 
+      {VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
           VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
 
   std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str()
@@ -143,9 +143,9 @@ int main(void) {
   Device* device = new Device(activePhysicalDeviceHandle,
       {{0, queueFamilyIndex, 1, {1.0f}}},
       {},
-      {"VK_KHR_ray_query", "VK_KHR_spirv_1_4", "VK_KHR_shader_float_controls", 
-          "VK_KHR_acceleration_structure", "VK_EXT_descriptor_indexing", 
-          "VK_KHR_maintenance3", "VK_KHR_buffer_device_address", 
+      {"VK_KHR_ray_query", "VK_KHR_spirv_1_4", "VK_KHR_shader_float_controls",
+          "VK_KHR_acceleration_structure", "VK_EXT_descriptor_indexing",
+          "VK_KHR_maintenance3", "VK_KHR_buffer_device_address",
           "VK_KHR_deferred_host_operations"},
       NULL,
       {&physicalDeviceBufferDeviceAddressFeatures,
@@ -726,7 +726,7 @@ int main(void) {
       0,
       {0},
       {});
-  
+
   graphicsPipelineGroup->drawIndexedCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), 6, 1, 0, 0, 0);
 
@@ -786,6 +786,32 @@ int main(void) {
   imageBuffer->mapMemory(&hostImageBuffer, 0, 800 * 600 * 4 * sizeof(float));
   saveImage("image.ppm", hostImageBuffer, 800, 600);
   imageBuffer->unmapMemory();
+
+  delete imageBuffer;
+  delete graphicsPipelineGroup;
+  delete pipelineLayout;
+  delete descriptorSetLayout;
+  delete descriptorPool;
+  delete fragmentShaderModule;
+  delete vertexShaderModule;
+  delete framebuffer;
+  delete colorImageView;
+  delete colorImage;
+  delete renderPass;
+  delete topLevelAccelerationStructureScratchBuffer;
+  delete topLevelAccelerationStructure;
+  delete topLevelAccelerationStructureBuffer;
+  delete geometryInstanceBuffer;
+  delete fence;
+  delete accelerationStructureScratchBuffer;
+  delete accelerationStructure;
+  delete accelerationStructureBuffer;
+  delete indexBuffer;
+  delete vertexBuffer;
+  delete commandBufferGroup;
+  delete commandPool;
+  delete device;
+  delete instance;
 
   return 0;
 }

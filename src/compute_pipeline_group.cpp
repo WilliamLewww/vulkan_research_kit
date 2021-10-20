@@ -20,11 +20,13 @@ ComputePipelineGroup::ComputePipelineGroup(VkDevice& deviceHandleRef,
     VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
-      .flags = pipelineShaderStageCreateInfoParam.pipelineShaderStageCreateFlags,
+      .flags = 
+          pipelineShaderStageCreateInfoParam.pipelineShaderStageCreateFlags,
       .stage = pipelineShaderStageCreateInfoParam.shaderStageFlagBits,
       .module = pipelineShaderStageCreateInfoParam.shaderModuleHandleRef,
       .pName = pipelineShaderStageCreateInfoParam.entryPointName.c_str(),
-      .pSpecializationInfo = pipelineShaderStageCreateInfoParam.specializationInfoPtr.get()
+      .pSpecializationInfo = 
+          pipelineShaderStageCreateInfoParam.specializationInfoPtr.get()
     };
 
     VkComputePipelineCreateInfo computePipelineCreateInfo = {

@@ -119,8 +119,8 @@ void Buffer::mapMemory(void** hostMemory,
     VkDeviceSize offset,
     VkDeviceSize size) {
 
-  VkResult result = vkMapMemory(this->deviceHandleRef, this->deviceMemoryHandle,
-      offset, size, 0, hostMemory);
+  VkResult result = vkMapMemory(this->deviceHandleRef,
+      this->deviceMemoryHandle, offset, size, 0, hostMemory);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkMapMemory");

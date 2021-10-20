@@ -448,23 +448,16 @@ int main(void) {
   imageBuffer->unmapMemory();
 
   delete imageBuffer;
-
   delete indexBuffer;
   delete vertexBuffer;
-
   delete fence;
-
   delete graphicsPipelineGroup;
   delete pipelineLayout;
-
   delete fragmentShaderModule;
   delete vertexShaderModule;
-
   delete framebuffer;
-
   delete colorImageView;
   delete colorImage;
-
   delete renderPass;
   delete commandBufferGroup;
   delete commandPool;

@@ -557,36 +557,28 @@ int main(void) {
   for (uint32_t x = 0; x < writeImageSemaphoreList.size(); x++) {
     delete writeImageSemaphoreList[x];
   }
-
   for (uint32_t x = 0; x < acquireImageSemaphoreList.size(); x++) {
     delete acquireImageSemaphoreList[x];
   }
-
   for (uint32_t x = 0; x < imageAvailableFenceList.size(); x++) {
     delete imageAvailableFenceList[x];
   }
-
   delete indexBuffer;
   delete vertexBuffer;
   delete graphicsPipelineGroup;
   delete pipelineLayout;
-
   delete colorBuffer;
   delete descriptorSetGroup;
   delete descriptorSetLayout;
   delete descriptorPool;
-
   delete fragmentShaderModule;
   delete vertexShaderModule;
-
   for (uint32_t x = 0; x < framebufferList.size(); x++) {
     delete framebufferList[x];
   }
-
   for (uint32_t x = 0; x < imageViewList.size(); x++) {
     delete imageViewList[x];
   }
-
   delete renderPass;
   delete swapchain;
   delete commandBufferGroup;
