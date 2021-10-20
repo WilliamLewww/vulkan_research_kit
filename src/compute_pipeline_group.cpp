@@ -35,6 +35,8 @@ ComputePipelineGroup::ComputePipelineGroup(
         .layout = computePipelineCreateInfoParam.pipelineLayoutHandleRef,
         .basePipelineHandle = computePipelineCreateInfoParam.basePipelineHandle,
         .basePipelineIndex = computePipelineCreateInfoParam.basePipelineIndex};
+
+    computePipelineCreateInfoList.push_back(computePipelineCreateInfo);
   }
 
   VkResult result =
