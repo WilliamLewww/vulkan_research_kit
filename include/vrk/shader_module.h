@@ -8,13 +8,14 @@
 
 class ShaderModule {
 public:
-  ShaderModule(VkDevice& deviceHandleRef, std::vector<uint32_t> code);
+  ShaderModule(VkDevice &deviceHandleRef, std::vector<uint32_t> code);
 
   ~ShaderModule();
 
-  VkShaderModule& getShaderModuleHandleRef();
+  VkShaderModule &getShaderModuleHandleRef();
+
 private:
   VkShaderModule shaderModuleHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

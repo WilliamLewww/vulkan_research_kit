@@ -6,17 +6,18 @@
 
 class CommandPool {
 public:
-  CommandPool(VkDevice& deviceHandleRef,
-      VkCommandPoolCreateFlags commandPoolCreateFlags,
-      uint32_t queueFamilyIndex);
+  CommandPool(VkDevice &deviceHandleRef,
+              VkCommandPoolCreateFlags commandPoolCreateFlags,
+              uint32_t queueFamilyIndex);
 
   ~CommandPool();
 
   void reset(VkCommandPoolResetFlags commandPoolResetFlags);
 
-  VkCommandPool& getCommandPoolHandleRef();
+  VkCommandPool &getCommandPoolHandleRef();
+
 private:
   VkCommandPool commandPoolHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

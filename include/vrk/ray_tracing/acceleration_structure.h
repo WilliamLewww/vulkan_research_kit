@@ -48,15 +48,15 @@ public:
     VkBuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags;
     VkBuildAccelerationStructureModeKHR buildAccelerationStructureMode;
     VkAccelerationStructureKHR srcAccelerationStructureHandle;
-    VkAccelerationStructureKHR& dstAccelerationStructureHandleRef;
+    VkAccelerationStructureKHR &dstAccelerationStructureHandleRef;
     std::vector<AccelerationStructureGeometryParam>
         accelerationStructureGeometryParamList;
     VkDeviceOrHostAddressKHR scratchDataDeviceOrHostAddress;
   };
 
   static AccelerationStructureBuildSizesInfoParam
-      getAccelerationStructureBuildSizes(
-      VkDevice& deviceHandleRef,
+  getAccelerationStructureBuildSizes(
+      VkDevice &deviceHandleRef,
       VkAccelerationStructureBuildTypeKHR accelerationStructureBuildType,
       VkAccelerationStructureTypeKHR accelerationStructureType,
       VkBuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags,
@@ -65,17 +65,16 @@ public:
       std::vector<uint32_t> maxPrimitiveCountList);
 
   static void buildAccelerationStructures(
-      VkDevice& deviceHandleRef,
-      VkCommandBuffer& commandBufferHandleRef,
+      VkDevice &deviceHandleRef, VkCommandBuffer &commandBufferHandleRef,
       std::vector<AccelerationStructureBuildGeometryInfoParam>
           accelerationStructureBuildGeometryInfoParamList,
       std::vector<VkAccelerationStructureBuildRangeInfoKHR>
-         accelerationStructureBuildRangeInfoList);
+          accelerationStructureBuildRangeInfoList);
 
-  AccelerationStructure(VkDevice& deviceHandleRef,
+  AccelerationStructure(
+      VkDevice &deviceHandleRef,
       VkAccelerationStructureCreateFlagsKHR accelerationStructureCreateFlags,
-      VkBuffer& bufferHandleRef,
-      VkDeviceSize offsetDeviceSize,
+      VkBuffer &bufferHandleRef, VkDeviceSize offsetDeviceSize,
       VkDeviceSize bufferDeviceSize,
       VkAccelerationStructureTypeKHR accelerationStructureType,
       VkDeviceAddress deviceAddress);
@@ -84,9 +83,10 @@ public:
 
   VkDeviceAddress getAccelerationStructureDeviceAddress();
 
-  VkAccelerationStructureKHR& getAccelerationStructureHandleRef();
+  VkAccelerationStructureKHR &getAccelerationStructureHandleRef();
+
 private:
   VkAccelerationStructureKHR accelerationStructureHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

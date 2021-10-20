@@ -4,8 +4,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 class Device {
 public:
@@ -21,40 +21,38 @@ public:
     std::vector<VkQueue> queueHandleList;
   };
 
-  static std::vector<VkPhysicalDevice> getPhysicalDevices(
-      VkInstance& instanceHandleRef);
+  static std::vector<VkPhysicalDevice>
+  getPhysicalDevices(VkInstance &instanceHandleRef);
 
-  static VkPhysicalDeviceProperties getPhysicalDeviceProperties(
-      VkPhysicalDevice& physicalDeviceHandleRef);
+  static VkPhysicalDeviceProperties
+  getPhysicalDeviceProperties(VkPhysicalDevice &physicalDeviceHandleRef);
 
-  static std::vector<VkQueueFamilyProperties> getQueueFamilyPropertiesList(
-      VkPhysicalDevice& physicalDeviceHandleRef);
+  static std::vector<VkQueueFamilyProperties>
+  getQueueFamilyPropertiesList(VkPhysicalDevice &physicalDeviceHandleRef);
 
   static VkImageFormatProperties getPhysicalDeviceImageFormatProperties(
-      VkPhysicalDevice& physicalDeviceHandleRef,
-      VkFormat format,
-      VkImageType imageType,
-      VkImageTiling imageTiling,
-      VkImageUsageFlags imageUsageFlags,
-      VkImageCreateFlags imageCreateFlags);
+      VkPhysicalDevice &physicalDeviceHandleRef, VkFormat format,
+      VkImageType imageType, VkImageTiling imageTiling,
+      VkImageUsageFlags imageUsageFlags, VkImageCreateFlags imageCreateFlags);
 
-  static VkPhysicalDeviceMemoryProperties getPhysicalDeviceMemoryProperties(
-      VkPhysicalDevice& physicalDeviceHandleRef);
+  static VkPhysicalDeviceMemoryProperties
+  getPhysicalDeviceMemoryProperties(VkPhysicalDevice &physicalDeviceHandleRef);
 
-  Device(VkPhysicalDevice& physicalDeviceHandleRef,
-      std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
-      std::vector<std::string> enabledLayerNameList,
-      std::vector<std::string> enabledExtensionNameList,
-      std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr,
-      std::vector<void*> deviceCreateInfoChainList = {});
+  Device(VkPhysicalDevice &physicalDeviceHandleRef,
+         std::vector<DeviceQueueCreateInfoParam> deviceQueueCreateInfoParamList,
+         std::vector<std::string> enabledLayerNameList,
+         std::vector<std::string> enabledExtensionNameList,
+         std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr,
+         std::vector<void *> deviceCreateInfoChainList = {});
 
   ~Device();
 
   void waitIdle();
 
-  VkDevice& getDeviceHandleRef();
+  VkDevice &getDeviceHandleRef();
 
-  VkQueue& getQueueHandleRef(uint32_t queueFamilyIndex, uint32_t queueIndex);
+  VkQueue &getQueueHandleRef(uint32_t queueFamilyIndex, uint32_t queueIndex);
+
 private:
   VkDevice deviceHandle;
 

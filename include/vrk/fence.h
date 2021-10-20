@@ -6,8 +6,7 @@
 
 class Fence {
 public:
-  Fence(VkDevice& deviceHandleRef,
-      VkFenceCreateFlagBits fenceCreateFlagBits);
+  Fence(VkDevice &deviceHandleRef, VkFenceCreateFlagBits fenceCreateFlagBits);
 
   ~Fence();
 
@@ -17,9 +16,10 @@ public:
 
   void reset();
 
-  VkFence& getFenceHandleRef();
+  VkFence &getFenceHandleRef();
+
 private:
   VkFence fenceHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

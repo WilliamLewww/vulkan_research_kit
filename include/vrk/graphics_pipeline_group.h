@@ -4,15 +4,15 @@
 
 #include <vulkan/vulkan.h>
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 class GraphicsPipelineGroup {
 public:
   struct PipelineShaderStageCreateInfoParam {
     VkPipelineShaderStageCreateFlags pipelineShaderStageCreateFlags;
     VkShaderStageFlagBits shaderStageFlagBits;
-    VkShaderModule& shaderModuleHandleRef;
+    VkShaderModule &shaderModuleHandleRef;
     std::string entryPointName;
     std::shared_ptr<VkSpecializationInfo> specializationInfoPtr;
   };
@@ -116,30 +116,29 @@ public:
     std::shared_ptr<PipelineDynamicStateCreateInfoParam>
         pipelineDynamicStateCreateInfoParamPtr;
 
-    VkPipelineLayout& pipelineLayoutHandleRef;
-    VkRenderPass& renderPassHandleRef;
+    VkPipelineLayout &pipelineLayoutHandleRef;
+    VkRenderPass &renderPassHandleRef;
     uint32_t subpass;
     VkPipeline basePipelineHandle;
     int32_t basePipelineIndex;
   };
 
-  GraphicsPipelineGroup(VkDevice& deviceHandleRef,
-      std::vector<GraphicsPipelineCreateInfoParam>
-          graphicsPipelineCreateInfoParamList);
+  GraphicsPipelineGroup(VkDevice &deviceHandleRef,
+                        std::vector<GraphicsPipelineCreateInfoParam>
+                            graphicsPipelineCreateInfoParamList);
 
   ~GraphicsPipelineGroup();
 
   void bindPipelineCmd(uint32_t pipelineIndex,
-      VkCommandBuffer& commandBufferHandleRef);
+                       VkCommandBuffer &commandBufferHandleRef);
 
-  void drawIndexedCmd(VkCommandBuffer& commandBufferHandleRef,
-      uint32_t indexCount,
-      uint32_t instanceCount,
-      uint32_t firstIndex,
-      uint32_t vertexOffset,
-      uint32_t firstInstance);
+  void drawIndexedCmd(VkCommandBuffer &commandBufferHandleRef,
+                      uint32_t indexCount, uint32_t instanceCount,
+                      uint32_t firstIndex, uint32_t vertexOffset,
+                      uint32_t firstInstance);
+
 private:
   std::vector<VkPipeline> pipelineHandleList;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

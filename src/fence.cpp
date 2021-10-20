@@ -1,19 +1,18 @@
 #include "vrk/fence.h"
 
-Fence::Fence(VkDevice& deviceHandleRef,
-    VkFenceCreateFlagBits fenceCreateFlagBits) :
-    deviceHandleRef(deviceHandleRef) {
+Fence::Fence(VkDevice &deviceHandleRef,
+             VkFenceCreateFlagBits fenceCreateFlagBits)
+    : deviceHandleRef(deviceHandleRef) {
 
   this->fenceHandle = VK_NULL_HANDLE;
 
-  VkFenceCreateInfo fenceCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = fenceCreateFlagBits
-  };
+  VkFenceCreateInfo fenceCreateInfo = {.sType =
+                                           VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                                       .pNext = NULL,
+                                       .flags = fenceCreateFlagBits};
 
   VkResult result = vkCreateFence(deviceHandleRef, &fenceCreateInfo, NULL,
-      &this->fenceHandle);
+                                  &this->fenceHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateFence");
@@ -36,7 +35,7 @@ bool Fence::getSignaled() {
 
 bool Fence::waitForSignal(uint32_t timeout) {
   VkResult result = vkWaitForFences(this->deviceHandleRef, 1,
-      &this->fenceHandle, true, timeout);
+                                    &this->fenceHandle, true, timeout);
 
   if (result != VK_SUCCESS && result != VK_TIMEOUT) {
     throwExceptionVulkanAPI(result, "vkWaitForFences");
@@ -46,14 +45,11 @@ bool Fence::waitForSignal(uint32_t timeout) {
 }
 
 void Fence::reset() {
-  VkResult result = vkResetFences(this->deviceHandleRef, 1,
-      &this->fenceHandle);
+  VkResult result = vkResetFences(this->deviceHandleRef, 1, &this->fenceHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkResetFences");
   }
 }
 
-VkFence& Fence::getFenceHandleRef() {
-  return this->fenceHandle;
-}
+VkFence &Fence::getFenceHandleRef() { return this->fenceHandle; }

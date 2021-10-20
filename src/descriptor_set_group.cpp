@@ -1,24 +1,24 @@
 #include "vrk/descriptor_set_group.h"
 
-DescriptorSetGroup::DescriptorSetGroup(VkDevice& deviceHandleRef,
-    VkDescriptorPool& descriptorPoolHandleRef,
-    std::vector<VkDescriptorSetLayout> descriptorSetLayoutHandleList) :
-    deviceHandleRef(deviceHandleRef),
-    descriptorPoolHandleRef(descriptorPoolHandleRef) {
+DescriptorSetGroup::DescriptorSetGroup(
+    VkDevice &deviceHandleRef, VkDescriptorPool &descriptorPoolHandleRef,
+    std::vector<VkDescriptorSetLayout> descriptorSetLayoutHandleList)
+    : deviceHandleRef(deviceHandleRef),
+      descriptorPoolHandleRef(descriptorPoolHandleRef) {
 
   this->descriptorSetHandleList = std::vector<VkDescriptorSet>(
       descriptorSetLayoutHandleList.size(), VK_NULL_HANDLE);
 
   VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-    .pNext = NULL,
-    .descriptorPool = descriptorPoolHandleRef,
-    .descriptorSetCount = (uint32_t)descriptorSetLayoutHandleList.size(),
-    .pSetLayouts = descriptorSetLayoutHandleList.data()
-  };
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .pNext = NULL,
+      .descriptorPool = descriptorPoolHandleRef,
+      .descriptorSetCount = (uint32_t)descriptorSetLayoutHandleList.size(),
+      .pSetLayouts = descriptorSetLayoutHandleList.data()};
 
-  VkResult result = vkAllocateDescriptorSets(deviceHandleRef,
-      &descriptorSetAllocateInfo, this->descriptorSetHandleList.data());
+  VkResult result =
+      vkAllocateDescriptorSets(deviceHandleRef, &descriptorSetAllocateInfo,
+                               this->descriptorSetHandleList.data());
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkAllocateDescriptorSets");
@@ -26,9 +26,10 @@ DescriptorSetGroup::DescriptorSetGroup(VkDevice& deviceHandleRef,
 }
 
 DescriptorSetGroup::~DescriptorSetGroup() {
-  VkResult result = vkFreeDescriptorSets(this->deviceHandleRef,
-      this->descriptorPoolHandleRef, this->descriptorSetHandleList.size(),
-      this->descriptorSetHandleList.data());
+  VkResult result =
+      vkFreeDescriptorSets(this->deviceHandleRef, this->descriptorPoolHandleRef,
+                           this->descriptorSetHandleList.size(),
+                           this->descriptorSetHandleList.data());
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkFreeDescriptorSets");
@@ -41,66 +42,62 @@ void DescriptorSetGroup::updateDescriptorSets(
 
   std::vector<VkWriteDescriptorSet> writeDescriptorSetList = {};
 
-  for (WriteDescriptorSetParam& writeDescriptorSetParam :
-      writeDescriptorSetParamList) {
+  for (WriteDescriptorSetParam &writeDescriptorSetParam :
+       writeDescriptorSetParamList) {
 
-    void* writeDescriptorSetNext = NULL;
+    void *writeDescriptorSetNext = NULL;
 
     if (writeDescriptorSetParam.writeDescriptorSetNext != NULL) {
       writeDescriptorSetNext = writeDescriptorSetParam.writeDescriptorSetNext;
     }
 
     VkWriteDescriptorSet writeDescriptorSet = {
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .pNext = writeDescriptorSetNext,
-      .dstSet = this->descriptorSetHandleList[
-          writeDescriptorSetParam.dstDescriptorSetIndex],
-      .dstBinding = writeDescriptorSetParam.dstBinding,
-      .dstArrayElement = writeDescriptorSetParam.dstArrayElement,
-      .descriptorCount = writeDescriptorSetParam.descriptorCount,
-      .descriptorType = writeDescriptorSetParam.descriptorType,
-      .pImageInfo = writeDescriptorSetParam.descriptorImageInfoPtr.get(),
-      .pBufferInfo = writeDescriptorSetParam.descriptorBufferInfoPtr.get(),
-      .pTexelBufferView = writeDescriptorSetParam.bufferViewHandlePtr.get()
-    };
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .pNext = writeDescriptorSetNext,
+        .dstSet = this->descriptorSetHandleList[writeDescriptorSetParam
+                                                    .dstDescriptorSetIndex],
+        .dstBinding = writeDescriptorSetParam.dstBinding,
+        .dstArrayElement = writeDescriptorSetParam.dstArrayElement,
+        .descriptorCount = writeDescriptorSetParam.descriptorCount,
+        .descriptorType = writeDescriptorSetParam.descriptorType,
+        .pImageInfo = writeDescriptorSetParam.descriptorImageInfoPtr.get(),
+        .pBufferInfo = writeDescriptorSetParam.descriptorBufferInfoPtr.get(),
+        .pTexelBufferView = writeDescriptorSetParam.bufferViewHandlePtr.get()};
 
     writeDescriptorSetList.push_back(writeDescriptorSet);
   }
 
   std::vector<VkCopyDescriptorSet> copyDescriptorSetList = {};
 
-  for (CopyDescriptorSetParam& copyDescriptorSetParam :
-      copyDescriptorSetParamList) {
+  for (CopyDescriptorSetParam &copyDescriptorSetParam :
+       copyDescriptorSetParamList) {
 
     VkCopyDescriptorSet copyDescriptorSet = {
-      .sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,
-      .pNext = NULL,
-      .srcSet = this->descriptorSetHandleList[
-          copyDescriptorSetParam.srcDescriptorSetIndex],
-      .srcBinding = copyDescriptorSetParam.srcBinding,
-      .srcArrayElement = copyDescriptorSetParam.srcArrayElement,
-      .dstSet = this->descriptorSetHandleList[
-          copyDescriptorSetParam.dstDescriptorSetIndex],
-      .dstBinding = copyDescriptorSetParam.dstBinding,
-      .dstArrayElement = copyDescriptorSetParam.dstArrayElement,
-      .descriptorCount = copyDescriptorSetParam.descriptorCount
-    };
+        .sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,
+        .pNext = NULL,
+        .srcSet = this->descriptorSetHandleList[copyDescriptorSetParam
+                                                    .srcDescriptorSetIndex],
+        .srcBinding = copyDescriptorSetParam.srcBinding,
+        .srcArrayElement = copyDescriptorSetParam.srcArrayElement,
+        .dstSet = this->descriptorSetHandleList[copyDescriptorSetParam
+                                                    .dstDescriptorSetIndex],
+        .dstBinding = copyDescriptorSetParam.dstBinding,
+        .dstArrayElement = copyDescriptorSetParam.dstArrayElement,
+        .descriptorCount = copyDescriptorSetParam.descriptorCount};
 
     copyDescriptorSetList.push_back(copyDescriptorSet);
   }
 
-  vkUpdateDescriptorSets(this->deviceHandleRef,
-      writeDescriptorSetList.size(),
-      writeDescriptorSetList.data(),
-      copyDescriptorSetList.size(),
-      copyDescriptorSetList.data());
+  vkUpdateDescriptorSets(this->deviceHandleRef, writeDescriptorSetList.size(),
+                         writeDescriptorSetList.data(),
+                         copyDescriptorSetList.size(),
+                         copyDescriptorSetList.data());
 }
 
 void DescriptorSetGroup::bindDescriptorSetsCmd(
-    VkCommandBuffer& commandBufferHandleRef,
+    VkCommandBuffer &commandBufferHandleRef,
     VkPipelineBindPoint pipelineBindPoint,
-    VkPipelineLayout& pipelineLayoutHandleRef,
-    uint32_t firstSet,
+    VkPipelineLayout &pipelineLayoutHandleRef, uint32_t firstSet,
     std::vector<uint32_t> descriptorSetIndexList,
     std::vector<uint32_t> dynamicOffsetList) {
 
@@ -111,12 +108,9 @@ void DescriptorSetGroup::bindDescriptorSetsCmd(
         this->descriptorSetHandleList[descriptorSetIndex]);
   }
 
-  vkCmdBindDescriptorSets(commandBufferHandleRef,
-      pipelineBindPoint,
-      pipelineLayoutHandleRef,
-      firstSet,
-      (uint32_t)descriptorSetHandleList.size(),
-      descriptorSetHandleList.data(),
-      (uint32_t)dynamicOffsetList.size(),
+  vkCmdBindDescriptorSets(
+      commandBufferHandleRef, pipelineBindPoint, pipelineLayoutHandleRef,
+      firstSet, (uint32_t)descriptorSetHandleList.size(),
+      descriptorSetHandleList.data(), (uint32_t)dynamicOffsetList.size(),
       dynamicOffsetList.data());
 }

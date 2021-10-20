@@ -8,19 +8,18 @@
 
 class ImageView {
 public:
-  ImageView(VkDevice& deviceHandleRef,
-      VkImage& imageHandleRef,
-      VkImageViewCreateFlags imageViewCreateFlags,
-      VkImageViewType imageViewType,
-      VkFormat format,
-      VkComponentMapping componentMapping,
-      VkImageSubresourceRange imageSubresourceRange);
+  ImageView(VkDevice &deviceHandleRef, VkImage &imageHandleRef,
+            VkImageViewCreateFlags imageViewCreateFlags,
+            VkImageViewType imageViewType, VkFormat format,
+            VkComponentMapping componentMapping,
+            VkImageSubresourceRange imageSubresourceRange);
 
   ~ImageView();
 
-  VkImageView& getImageViewHandleRef();
+  VkImageView &getImageViewHandleRef();
+
 private:
   VkImageView imageViewHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

@@ -8,15 +8,17 @@
 
 class PipelineLayout {
 public:
-  PipelineLayout(VkDevice& deviceHandleRef,
+  PipelineLayout(
+      VkDevice &deviceHandleRef,
       std::vector<VkDescriptorSetLayout> descriptorSetLayoutHandleList,
       std::vector<VkPushConstantRange> pushConstantRangeList);
 
   ~PipelineLayout();
 
-  VkPipelineLayout& getPipelineLayoutHandleRef();
+  VkPipelineLayout &getPipelineLayoutHandleRef();
+
 private:
   VkPipelineLayout pipelineLayoutHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

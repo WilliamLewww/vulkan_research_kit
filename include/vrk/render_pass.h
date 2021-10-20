@@ -8,25 +8,26 @@
 
 class RenderPass {
 public:
-  RenderPass(VkDevice& deviceHandleRef,
-      VkRenderPassCreateFlagBits renderPassCreateFlagBits,
-      std::vector<VkAttachmentDescription> attachmentDescriptionList,
-      std::vector<VkSubpassDescription> subpassDescriptionList,
-      std::vector<VkSubpassDependency> subpassDependencyList);
+  RenderPass(VkDevice &deviceHandleRef,
+             VkRenderPassCreateFlagBits renderPassCreateFlagBits,
+             std::vector<VkAttachmentDescription> attachmentDescriptionList,
+             std::vector<VkSubpassDescription> subpassDescriptionList,
+             std::vector<VkSubpassDependency> subpassDependencyList);
 
   ~RenderPass();
 
-  void beginRenderPassCmd(VkCommandBuffer& commandBufferHandleRef,
-      VkFramebuffer& framebufferHandleRef,
-      VkRect2D renderAreaRect2D,
-      std::vector<VkClearValue> clearValueList,
-      VkSubpassContents subpassContents);
+  void beginRenderPassCmd(VkCommandBuffer &commandBufferHandleRef,
+                          VkFramebuffer &framebufferHandleRef,
+                          VkRect2D renderAreaRect2D,
+                          std::vector<VkClearValue> clearValueList,
+                          VkSubpassContents subpassContents);
 
-  void endRenderPassCmd(VkCommandBuffer& commandBufferHandleRef);
+  void endRenderPassCmd(VkCommandBuffer &commandBufferHandleRef);
 
-  VkRenderPass& getRenderPassHandleRef();
+  VkRenderPass &getRenderPassHandleRef();
+
 private:
   VkRenderPass renderPassHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

@@ -1,9 +1,10 @@
 #include "vrk/instance.h"
 
-VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData) {
+VkBool32
+debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+              VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+              void *pUserData) {
 
   std::string message = pCallbackData->pMessage;
 
@@ -28,8 +29,8 @@ VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 std::vector<VkLayerProperties> Instance::getAvailableLayerPropertiesList() {
   uint32_t layerPropertiesCount = 0;
 
-  VkResult result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount,
-      NULL);
+  VkResult result =
+      vkEnumerateInstanceLayerProperties(&layerPropertiesCount, NULL);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumerateInstanceVersion");
@@ -38,7 +39,7 @@ std::vector<VkLayerProperties> Instance::getAvailableLayerPropertiesList() {
   std::vector<VkLayerProperties> layerPropertiesList(layerPropertiesCount);
 
   result = vkEnumerateInstanceLayerProperties(&layerPropertiesCount,
-      layerPropertiesList.data());
+                                              layerPropertiesList.data());
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumerateInstanceVersion");
@@ -48,14 +49,14 @@ std::vector<VkLayerProperties> Instance::getAvailableLayerPropertiesList() {
 }
 
 std::vector<VkExtensionProperties>
-    Instance::getAvailableExtensionPropertiesList(std::string layerName) {
+Instance::getAvailableExtensionPropertiesList(std::string layerName) {
 
-  const char* layerNameConst = (layerName == "") ? NULL : layerName.c_str();
+  const char *layerNameConst = (layerName == "") ? NULL : layerName.c_str();
 
   uint32_t extensionPropertiesCount = 0;
 
-  VkResult result = vkEnumerateInstanceExtensionProperties(layerNameConst,
-      &extensionPropertiesCount, NULL);
+  VkResult result = vkEnumerateInstanceExtensionProperties(
+      layerNameConst, &extensionPropertiesCount, NULL);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
@@ -64,8 +65,9 @@ std::vector<VkExtensionProperties>
   std::vector<VkExtensionProperties> extensionPropertiesList(
       extensionPropertiesCount);
 
-  result = vkEnumerateInstanceExtensionProperties(layerNameConst,
-      &extensionPropertiesCount, extensionPropertiesList.data());
+  result = vkEnumerateInstanceExtensionProperties(
+      layerNameConst, &extensionPropertiesCount,
+      extensionPropertiesList.data());
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkEnumerateInstanceExtensionProperties");
@@ -79,8 +81,7 @@ Instance::Instance(
     std::vector<VkValidationFeatureDisableEXT> validationFeatureDisableList,
     VkDebugUtilsMessageSeverityFlagBitsEXT debugUtilsMessageSeverityFlagBits,
     VkDebugUtilsMessageTypeFlagBitsEXT debugUtilsMessageTypeFlagBits,
-    std::string applicationName,
-    uint32_t applicationVersion,
+    std::string applicationName, uint32_t applicationVersion,
     std::vector<std::string> enabledLayerNameList,
     std::vector<std::string> enabledExtensionNameList) {
 
@@ -101,60 +102,56 @@ Instance::Instance(
   this->patchVersion = VK_API_VERSION_PATCH(apiVersion);
 
   VkValidationFeaturesEXT validationFeatures = {
-    .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
-    .pNext = NULL,
-    .enabledValidationFeatureCount =
-        (uint32_t)validationFeatureEnableList.size(),
-    .pEnabledValidationFeatures = validationFeatureEnableList.data(),
-    .disabledValidationFeatureCount =
-        (uint32_t)validationFeatureDisableList.size(),
-    .pDisabledValidationFeatures = validationFeatureDisableList.data()
-  };
+      .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+      .pNext = NULL,
+      .enabledValidationFeatureCount =
+          (uint32_t)validationFeatureEnableList.size(),
+      .pEnabledValidationFeatures = validationFeatureEnableList.data(),
+      .disabledValidationFeatureCount =
+          (uint32_t)validationFeatureDisableList.size(),
+      .pDisabledValidationFeatures = validationFeatureDisableList.data()};
 
   VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-    .pNext = &validationFeatures,
-    .flags = 0,
-    .messageSeverity = debugUtilsMessageSeverityFlagBits,
-    .messageType = debugUtilsMessageTypeFlagBits,
-    .pfnUserCallback = &debugCallback,
-    .pUserData = NULL
-  };
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+      .pNext = &validationFeatures,
+      .flags = 0,
+      .messageSeverity = debugUtilsMessageSeverityFlagBits,
+      .messageType = debugUtilsMessageTypeFlagBits,
+      .pfnUserCallback = &debugCallback,
+      .pUserData = NULL};
 
   VkApplicationInfo applicationInfo = {
-    .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    .pNext = NULL,
-    .pApplicationName = applicationName.c_str(),
-    .applicationVersion = applicationVersion,
-    .pEngineName = "Vulkan Research Kit",
-    .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-    .apiVersion = VK_MAKE_VERSION(1, 2, 184)
-  };
+      .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+      .pNext = NULL,
+      .pApplicationName = applicationName.c_str(),
+      .applicationVersion = applicationVersion,
+      .pEngineName = "Vulkan Research Kit",
+      .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+      .apiVersion = VK_MAKE_VERSION(1, 2, 184)};
 
-  const char** enabledLayerNameBuffer = (const char**)malloc(
-      sizeof(const char*) * enabledLayerNameList.size());
+  const char **enabledLayerNameBuffer =
+      (const char **)malloc(sizeof(const char *) * enabledLayerNameList.size());
 
   for (uint32_t x = 0; x < enabledLayerNameList.size(); x++) {
     enabledLayerNameBuffer[x] = enabledLayerNameList[x].c_str();
   }
 
-  const char** enabledExtensionNameBuffer = (const char**)malloc(
-      sizeof(const char*) * enabledExtensionNameList.size());
+  const char **enabledExtensionNameBuffer = (const char **)malloc(
+      sizeof(const char *) * enabledExtensionNameList.size());
 
   for (uint32_t x = 0; x < enabledExtensionNameList.size(); x++) {
     enabledExtensionNameBuffer[x] = enabledExtensionNameList[x].c_str();
   }
 
   VkInstanceCreateInfo instanceCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-    .pNext = &debugUtilsMessengerCreateInfo,
-    .flags = 0,
-    .pApplicationInfo = &applicationInfo,
-    .enabledLayerCount = (uint32_t)enabledLayerNameList.size(),
-    .ppEnabledLayerNames = enabledLayerNameBuffer,
-    .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
-    .ppEnabledExtensionNames = enabledExtensionNameBuffer
-  };
+      .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+      .pNext = &debugUtilsMessengerCreateInfo,
+      .flags = 0,
+      .pApplicationInfo = &applicationInfo,
+      .enabledLayerCount = (uint32_t)enabledLayerNameList.size(),
+      .ppEnabledLayerNames = enabledLayerNameBuffer,
+      .enabledExtensionCount = (uint32_t)enabledExtensionNameList.size(),
+      .ppEnabledExtensionNames = enabledExtensionNameBuffer};
 
   result = vkCreateInstance(&instanceCreateInfo, NULL, &this->instanceHandle);
 
@@ -166,18 +163,19 @@ Instance::Instance(
   }
 
   if (std::find(std::begin(enabledExtensionNameList),
-      std::end(enabledExtensionNameList), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) !=
+                std::end(enabledExtensionNameList),
+                VK_EXT_DEBUG_UTILS_EXTENSION_NAME) !=
       std::end(enabledExtensionNameList)) {
 
     this->debugUtilsExtensionEnabled = true;
 
     debugUtilsMessengerCreateInfo.pNext = NULL;
 
-    LOAD_INSTANCE_FUNCTION(this->instanceHandle,
-        vkCreateDebugUtilsMessengerEXT, pvkCreateDebugUtilsMessengerEXT);
+    LOAD_INSTANCE_FUNCTION(this->instanceHandle, vkCreateDebugUtilsMessengerEXT,
+                           pvkCreateDebugUtilsMessengerEXT);
 
-    result = pvkCreateDebugUtilsMessengerEXT(this->instanceHandle,
-        &debugUtilsMessengerCreateInfo, NULL,
+    result = pvkCreateDebugUtilsMessengerEXT(
+        this->instanceHandle, &debugUtilsMessengerCreateInfo, NULL,
         &this->debugUtilsMessengerHandle);
 
     if (result != VK_SUCCESS) {
@@ -189,10 +187,11 @@ Instance::Instance(
 Instance::~Instance() {
   if (this->debugUtilsExtensionEnabled) {
     LOAD_INSTANCE_FUNCTION(this->instanceHandle,
-        vkDestroyDebugUtilsMessengerEXT, pvkDestroyDebugUtilsMessengerEXT);
+                           vkDestroyDebugUtilsMessengerEXT,
+                           pvkDestroyDebugUtilsMessengerEXT);
 
     pvkDestroyDebugUtilsMessengerEXT(this->instanceHandle,
-        this->debugUtilsMessengerHandle, NULL);
+                                     this->debugUtilsMessengerHandle, NULL);
   }
 
   vkDestroyInstance(this->instanceHandle, NULL);
@@ -200,10 +199,8 @@ Instance::~Instance() {
 
 std::string Instance::getVulkanVersionAPI() {
   return std::to_string(this->majorVersion) + "." +
-      std::to_string(this->minorVersion) + "." +
-      std::to_string(this->patchVersion);
+         std::to_string(this->minorVersion) + "." +
+         std::to_string(this->patchVersion);
 }
 
-VkInstance& Instance::getInstanceHandleRef() {
-  return this->instanceHandle;
-}
+VkInstance &Instance::getInstanceHandleRef() { return this->instanceHandle; }
