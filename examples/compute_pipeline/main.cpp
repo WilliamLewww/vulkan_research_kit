@@ -1,10 +1,13 @@
 #include "vrk/buffer.h"
 #include "vrk/command_buffer_group.h"
 #include "vrk/command_pool.h"
+#include "vrk/compute_pipeline_group.h"
+#include "vrk/descriptor_pool.h"
+#include "vrk/descriptor_set_group.h"
+#include "vrk/descriptor_set_layout.h"
 #include "vrk/device.h"
 #include "vrk/fence.h"
 #include "vrk/framebuffer.h"
-#include "vrk/compute_pipeline_group.h"
 #include "vrk/image.h"
 #include "vrk/image_view.h"
 #include "vrk/instance.h"
@@ -12,14 +15,11 @@
 #include "vrk/render_pass.h"
 #include "vrk/resource.h"
 #include "vrk/shader_module.h"
-#include "vrk/descriptor_set_layout.h"
-#include "vrk/descriptor_set_group.h"
-#include "vrk/descriptor_pool.h"
 
 #include <cstring>
 #include <fstream>
 
-int main(void) { 
+int main(void) {
   std::vector<VkValidationFeatureEnableEXT> validationFeatureEnableList = {
       VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
       VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
@@ -86,8 +86,9 @@ int main(void) {
       device->getDeviceHandleRef(), commandPool->getCommandPoolHandleRef(),
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 2);
 
-  std::ifstream computeFile(Resource::findResource("resources/shaders/default.comp.spv"),
-                           std::ios::binary | std::ios::ate);
+  std::ifstream computeFile(
+      Resource::findResource("resources/shaders/default.comp.spv"),
+      std::ios::binary | std::ios::ate);
   std::streamsize computeFileSize = computeFile.tellg();
   computeFile.seekg(0, std::ios::beg);
   std::vector<uint32_t> computeShaderSource(computeFileSize / sizeof(uint32_t));
@@ -141,21 +142,24 @@ int main(void) {
       device->getDeviceHandleRef(),
       {descriptorSetLayout->getDescriptorSetLayoutHandleRef()}, {});
 
-  ComputePipelineGroup* computePipelineGroup = new ComputePipelineGroup(
+  ComputePipelineGroup *computePipelineGroup = new ComputePipelineGroup(
       device->getDeviceHandleRef(),
-      {{0, computeStage, pipelineLayout->getPipelineLayoutHandleRef(), VK_NULL_HANDLE, 0}});
+      {{0, computeStage, pipelineLayout->getPipelineLayoutHandleRef(),
+        VK_NULL_HANDLE, 0}});
 
   commandBufferGroup->beginRecording(
       0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-  computePipelineGroup->bindPipelineCmd(0, commandBufferGroup->getCommandBufferHandleRef(0));
+  computePipelineGroup->bindPipelineCmd(
+      0, commandBufferGroup->getCommandBufferHandleRef(0));
 
   descriptorSetGroup->bindDescriptorSetsCmd(
       commandBufferGroup->getCommandBufferHandleRef(0),
       VK_PIPELINE_BIND_POINT_COMPUTE,
       pipelineLayout->getPipelineLayoutHandleRef(), 0, {0}, {});
 
-  computePipelineGroup->dispatchCmd(commandBufferGroup->getCommandBufferHandleRef(0), 128, 1, 1);
+  computePipelineGroup->dispatchCmd(
+      commandBufferGroup->getCommandBufferHandleRef(0), 128, 1, 1);
 
   commandBufferGroup->endRecording(0);
 
@@ -171,7 +175,7 @@ int main(void) {
   void *hostDataBuffer;
   dataBuffer->mapMemory(&hostDataBuffer, 0, 128 * sizeof(float));
   for (uint32_t x = 0; x < 128; x++) {
-    printf("%f\n", ((float*)(hostDataBuffer))[x]);
+    printf("%f\n", ((float *)(hostDataBuffer))[x]);
   }
   dataBuffer->unmapMemory();
 
