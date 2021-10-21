@@ -87,7 +87,7 @@ int main(void) {
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 2);
 
   std::ifstream computeFile(
-      Resource::findResource("resources/shaders/default.comp.spv"),
+      Resource::findResource("resources/shaders/shader.comp.spv"),
       std::ios::binary | std::ios::ate);
   std::streamsize computeFileSize = computeFile.tellg();
   computeFile.seekg(0, std::ios::beg);
