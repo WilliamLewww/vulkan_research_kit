@@ -1,6 +1,6 @@
 # Vulkan Research Kit
 
-The Vulkan Research Kit is an abstraction of the Vulkan API through libraries and headers. The project was made for creating quick prototypes of Vulkan applications/demos.
+The Vulkan Research Kit (VRK) is a thin wrapper of the Vulkan API. The project was made for creating quick prototypes of Vulkan applications/demos.
 
 ## Building
 
