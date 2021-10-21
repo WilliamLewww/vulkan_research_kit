@@ -105,7 +105,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo =
           {
-
               .sType =
                   VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
               .pNext = NULL,
@@ -141,7 +140,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineInputAssemblyStateCreateInfo
           pipelineInputAssemblyStateCreateInfo = {
-
               .sType =
                   VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
               .pNext = NULL,
@@ -170,7 +168,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineTessellationStateCreateInfo
           pipelineTessellationStateCreateInfo = {
-
               .sType =
                   VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
               .pNext = NULL,
@@ -195,7 +192,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
                   .pipelineViewportStateCreateInfoParamPtr;
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
-
           .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
           .pNext = NULL,
           .flags = 0,
@@ -227,7 +223,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineRasterizationStateCreateInfo
           pipelineRasterizationStateCreateInfo = {
-
               .sType =
                   VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
               .pNext = NULL,
@@ -274,7 +269,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo =
           {
-
               .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
               .pNext = NULL,
               .flags = 0,
@@ -310,7 +304,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
 
       VkPipelineDepthStencilStateCreateInfo
           pipelineDepthStencilStateCreateInfo = {
-
               .sType =
                   VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
               .pNext = NULL,
@@ -352,7 +345,6 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
                   .pipelineColorBlendStateCreateInfoParamPtr;
 
       VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {
-
           .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
           .pNext = NULL,
           .flags = 0,
