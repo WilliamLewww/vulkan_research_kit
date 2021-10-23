@@ -8,18 +8,19 @@ layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 0) uniform accelerationStructureEXT topLevelAS;
 
 void main() {
-  vec3 rayOrigin = vec3(0, 0, 0);
+  vec3 rayOrigin = vec3(-((gl_FragCoord.x / 800.0) - 0.5),
+                        ((gl_FragCoord.y / 600.0) - 0.5), 0.0);
   vec3 rayDirection = vec3(0, 0, 1);
 
   rayQueryEXT rayQuery;
-  rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsNoneEXT, 0xFF, rayOrigin, 0.0001f, rayDirection, 1000.0f);
+  rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsNoneEXT, 0xFF,
+                        rayOrigin, 0.0001f, rayDirection, 1000.0f);
 
-  while (rayQueryProceedEXT(rayQuery));
+  while (rayQueryProceedEXT(rayQuery))
+    ;
 
-  if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionNoneEXT) {
-    outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-  }
-  else {
-    outColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  }
+  vec2 barycentric = rayQueryGetIntersectionBarycentricsEXT(rayQuery, true);
+
+  outColor = vec4(barycentric.x, barycentric.y,
+                  1.0 - barycentric.x - barycentric.y, 1.0f);
 }

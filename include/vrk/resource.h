@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-#include <fstream>
 #include <cstdlib>
+#include <fstream>
+#include <string>
 
 class Resource {
 public:

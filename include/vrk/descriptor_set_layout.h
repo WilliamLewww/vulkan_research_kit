@@ -8,15 +8,17 @@
 
 class DescriptorSetLayout {
 public:
-  DescriptorSetLayout(VkDevice& deviceHandleRef,
+  DescriptorSetLayout(
+      VkDevice &deviceHandleRef,
       VkDescriptorSetLayoutCreateFlags descriptorSetLayoutCreateFlags,
       std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList);
 
   ~DescriptorSetLayout();
 
-  VkDescriptorSetLayout& getDescriptorSetLayoutHandleRef();
+  VkDescriptorSetLayout &getDescriptorSetLayoutHandleRef();
+
 private:
   VkDescriptorSetLayout descriptorSetLayoutHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

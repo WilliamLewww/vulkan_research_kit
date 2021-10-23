@@ -1,42 +1,36 @@
 #include "vrk/image.h"
 
-Image::Image(VkDevice& deviceHandleRef,
-    VkPhysicalDevice& physicalDeviceHandleRef,
-    VkImageCreateFlags imageCreateFlags,
-    VkImageType imageType,
-    VkFormat format,
-    VkExtent3D extent3D,
-    uint32_t mipLevels,
-    uint32_t arrayLayers,
-    VkSampleCountFlagBits sampleCountFlagBits,
-    VkImageTiling imageTiling,
-    VkImageUsageFlags imageUsageFlags,
-    VkSharingMode sharingMode,
-    std::vector<uint32_t> queueFamilyIndexList,
-    VkImageLayout initialImageLayout,
-    VkMemoryPropertyFlags memoryPropertyFlags) :
-    deviceHandleRef(deviceHandleRef) {
+Image::Image(VkDevice &deviceHandleRef,
+             VkPhysicalDevice &physicalDeviceHandleRef,
+             VkImageCreateFlags imageCreateFlags, VkImageType imageType,
+             VkFormat format, VkExtent3D extent3D, uint32_t mipLevels,
+             uint32_t arrayLayers, VkSampleCountFlagBits sampleCountFlagBits,
+             VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags,
+             VkSharingMode sharingMode,
+             std::vector<uint32_t> queueFamilyIndexList,
+             VkImageLayout initialImageLayout,
+             VkMemoryPropertyFlags memoryPropertyFlags)
+    : deviceHandleRef(deviceHandleRef) {
 
   VkImageCreateInfo imageCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = imageCreateFlags,
-    .imageType = imageType,
-    .format = format,
-    .extent = extent3D,
-    .mipLevels = mipLevels,
-    .arrayLayers = arrayLayers,
-    .samples = sampleCountFlagBits,
-    .tiling = imageTiling,
-    .usage = imageUsageFlags,
-    .sharingMode = sharingMode,
-    .queueFamilyIndexCount = (uint32_t)queueFamilyIndexList.size(),
-    .pQueueFamilyIndices = queueFamilyIndexList.data(),
-    .initialLayout = initialImageLayout
-  };
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .pNext = NULL,
+      .flags = imageCreateFlags,
+      .imageType = imageType,
+      .format = format,
+      .extent = extent3D,
+      .mipLevels = mipLevels,
+      .arrayLayers = arrayLayers,
+      .samples = sampleCountFlagBits,
+      .tiling = imageTiling,
+      .usage = imageUsageFlags,
+      .sharingMode = sharingMode,
+      .queueFamilyIndexCount = (uint32_t)queueFamilyIndexList.size(),
+      .pQueueFamilyIndices = queueFamilyIndexList.data(),
+      .initialLayout = initialImageLayout};
 
-  VkResult result = vkCreateImage(deviceHandleRef,
-      &imageCreateInfo, NULL, &this->imageHandle);
+  VkResult result = vkCreateImage(deviceHandleRef, &imageCreateInfo, NULL,
+                                  &this->imageHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateImage");
@@ -44,17 +38,17 @@ Image::Image(VkDevice& deviceHandleRef,
 
   VkMemoryRequirements memoryRequirements;
   vkGetImageMemoryRequirements(deviceHandleRef, this->imageHandle,
-      &memoryRequirements);
+                               &memoryRequirements);
 
   VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties =
       Device::getPhysicalDeviceMemoryProperties(physicalDeviceHandleRef);
 
   uint32_t memoryTypeIndex = -1;
   for (uint32_t x = 0; x < physicalDeviceMemoryProperties.memoryTypeCount;
-      x++) {
+       x++) {
     if ((memoryRequirements.memoryTypeBits & (1 << x)) &&
         (physicalDeviceMemoryProperties.memoryTypes[x].propertyFlags &
-        memoryPropertyFlags) == memoryPropertyFlags) {
+         memoryPropertyFlags) == memoryPropertyFlags) {
 
       memoryTypeIndex = x;
       break;
@@ -62,20 +56,19 @@ Image::Image(VkDevice& deviceHandleRef,
   }
 
   VkMemoryAllocateInfo memoryAllocateInfo = {
-    .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-    .pNext = NULL,
-    .allocationSize = memoryRequirements.size,
-    .memoryTypeIndex = memoryTypeIndex
-  };
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .pNext = NULL,
+      .allocationSize = memoryRequirements.size,
+      .memoryTypeIndex = memoryTypeIndex};
 
   result = vkAllocateMemory(deviceHandleRef, &memoryAllocateInfo, NULL,
-      &this->deviceMemoryHandle);
+                            &this->deviceMemoryHandle);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkAllocateMemory");
   }
 
   result = vkBindImageMemory(deviceHandleRef, this->imageHandle,
-      this->deviceMemoryHandle, 0);
+                             this->deviceMemoryHandle, 0);
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkBindImageMemory");
   }
@@ -86,6 +79,4 @@ Image::~Image() {
   vkFreeMemory(this->deviceHandleRef, this->deviceMemoryHandle, NULL);
 }
 
-VkImage& Image::getImageHandleRef() {
-  return this->imageHandle;
-}
+VkImage &Image::getImageHandleRef() { return this->imageHandle; }

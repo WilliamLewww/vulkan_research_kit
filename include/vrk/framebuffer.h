@@ -8,19 +8,17 @@
 
 class Framebuffer {
 public:
-  Framebuffer(VkDevice& deviceHandleRef,
-      VkRenderPass& renderPassHandleRef,
-      std::vector<VkImageView> imageViewHandleList,
-      VkFramebufferCreateFlags framebufferCreateFlags,
-      uint32_t width,
-      uint32_t height,
-      uint32_t layers);
+  Framebuffer(VkDevice &deviceHandleRef, VkRenderPass &renderPassHandleRef,
+              std::vector<VkImageView> imageViewHandleList,
+              VkFramebufferCreateFlags framebufferCreateFlags, uint32_t width,
+              uint32_t height, uint32_t layers);
 
   ~Framebuffer();
 
-  VkFramebuffer& getFramebufferHandleRef();
+  VkFramebuffer &getFramebufferHandleRef();
+
 private:
   VkFramebuffer framebufferHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

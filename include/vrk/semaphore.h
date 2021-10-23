@@ -6,14 +6,15 @@
 
 class Semaphore {
 public:
-  Semaphore(VkDevice& deviceHandleRef,
-      VkSemaphoreCreateFlags semaphoreCreateFlags);
+  Semaphore(VkDevice &deviceHandleRef,
+            VkSemaphoreCreateFlags semaphoreCreateFlags);
 
   ~Semaphore();
 
-  VkSemaphore& getSemaphoreHandleRef();
+  VkSemaphore &getSemaphoreHandleRef();
+
 private:
   VkSemaphore semaphoreHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

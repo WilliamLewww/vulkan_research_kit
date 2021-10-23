@@ -8,16 +8,17 @@
 
 class DescriptorPool {
 public:
-  DescriptorPool(VkDevice& deviceHandleRef,
-      VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
-      uint32_t maxSets,
-      std::vector<VkDescriptorPoolSize> descriptorPoolSizeList);
+  DescriptorPool(VkDevice &deviceHandleRef,
+                 VkDescriptorPoolCreateFlags descriptorPoolCreateFlags,
+                 uint32_t maxSets,
+                 std::vector<VkDescriptorPoolSize> descriptorPoolSizeList);
 
   ~DescriptorPool();
 
-  VkDescriptorPool& getDescriptorPoolHandleRef();
+  VkDescriptorPool &getDescriptorPoolHandleRef();
+
 private:
   VkDescriptorPool descriptorPoolHandle;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 };

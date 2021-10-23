@@ -1,48 +1,43 @@
 #include "vrk/wsi/swapchain.h"
 
-Swapchain::Swapchain(VkDevice& deviceHandleRef,
-    VkSwapchainCreateFlagsKHR swapchainCreateFlags,
-    VkSurfaceKHR& surfaceHandleRef,
-    uint32_t minImageCount,
-    VkFormat imageFormat,
-    VkColorSpaceKHR imageColorSpace,
-    VkExtent2D imageExtent2D,
-    uint32_t imageArrayLayers,
-    VkImageUsageFlags imageUsageFlags,
-    VkSharingMode imageSharingMode,
-    std::vector<uint32_t> queueFamilyIndexList,
-    VkSurfaceTransformFlagBitsKHR surfaceTransformFlagBits,
-    VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBits,
-    VkPresentModeKHR presentMode,
-    VkBool32 clipped,
-    VkSwapchainKHR oldSwapchainHandle) :
-    deviceHandleRef(deviceHandleRef) {
+Swapchain::Swapchain(VkDevice &deviceHandleRef,
+                     VkSwapchainCreateFlagsKHR swapchainCreateFlags,
+                     VkSurfaceKHR &surfaceHandleRef, uint32_t minImageCount,
+                     VkFormat imageFormat, VkColorSpaceKHR imageColorSpace,
+                     VkExtent2D imageExtent2D, uint32_t imageArrayLayers,
+                     VkImageUsageFlags imageUsageFlags,
+                     VkSharingMode imageSharingMode,
+                     std::vector<uint32_t> queueFamilyIndexList,
+                     VkSurfaceTransformFlagBitsKHR surfaceTransformFlagBits,
+                     VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBits,
+                     VkPresentModeKHR presentMode, VkBool32 clipped,
+                     VkSwapchainKHR oldSwapchainHandle)
+    : deviceHandleRef(deviceHandleRef) {
 
   this->swapchainHandle = VK_NULL_HANDLE;
 
   VkSwapchainCreateInfoKHR swapchainCreateInfo = {
-    .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-    .pNext = NULL,
-    .flags = swapchainCreateFlags,
-    .surface = surfaceHandleRef,
-    .minImageCount = minImageCount,
-    .imageFormat = imageFormat,
-    .imageColorSpace = imageColorSpace,
-    .imageExtent = imageExtent2D,
-    .imageArrayLayers = imageArrayLayers,
-    .imageUsage = imageUsageFlags,
-    .imageSharingMode = imageSharingMode,
-    .queueFamilyIndexCount = (uint32_t)queueFamilyIndexList.size(),
-    .pQueueFamilyIndices = queueFamilyIndexList.data(),
-    .preTransform = surfaceTransformFlagBits,
-    .compositeAlpha = compositeAlphaFlagBits,
-    .presentMode = presentMode,
-    .clipped = clipped,
-    .oldSwapchain = oldSwapchainHandle
-  };
+      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      .pNext = NULL,
+      .flags = swapchainCreateFlags,
+      .surface = surfaceHandleRef,
+      .minImageCount = minImageCount,
+      .imageFormat = imageFormat,
+      .imageColorSpace = imageColorSpace,
+      .imageExtent = imageExtent2D,
+      .imageArrayLayers = imageArrayLayers,
+      .imageUsage = imageUsageFlags,
+      .imageSharingMode = imageSharingMode,
+      .queueFamilyIndexCount = (uint32_t)queueFamilyIndexList.size(),
+      .pQueueFamilyIndices = queueFamilyIndexList.data(),
+      .preTransform = surfaceTransformFlagBits,
+      .compositeAlpha = compositeAlphaFlagBits,
+      .presentMode = presentMode,
+      .clipped = clipped,
+      .oldSwapchain = oldSwapchainHandle};
 
   VkResult result = vkCreateSwapchainKHR(deviceHandleRef, &swapchainCreateInfo,
-      NULL, &this->swapchainHandle);
+                                         NULL, &this->swapchainHandle);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkCreateSwapchainKHR");
@@ -53,12 +48,12 @@ Swapchain::~Swapchain() {
   vkDestroySwapchainKHR(this->deviceHandleRef, this->swapchainHandle, NULL);
 }
 
-VkResult Swapchain::getSwapchainStatus(VkInstance& instanceHandleRef) {
+VkResult Swapchain::getSwapchainStatus(VkInstance &instanceHandleRef) {
   LOAD_INSTANCE_FUNCTION(instanceHandleRef, vkGetSwapchainStatusKHR,
-      pvkGetSwapchainStatusKHR);
+                         pvkGetSwapchainStatusKHR);
 
-  VkResult result = pvkGetSwapchainStatusKHR(this->deviceHandleRef,
-      this->swapchainHandle);
+  VkResult result =
+      pvkGetSwapchainStatusKHR(this->deviceHandleRef, this->swapchainHandle);
 
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throwExceptionVulkanAPI(result, "vkGetSwapchainStatusKHR");
@@ -68,17 +63,14 @@ VkResult Swapchain::getSwapchainStatus(VkInstance& instanceHandleRef) {
 }
 
 uint32_t Swapchain::aquireNextImageIndex(uint64_t timeout,
-    VkSemaphore semaphoreHandle,
-    VkFence fenceHandle) {
+                                         VkSemaphore semaphoreHandle,
+                                         VkFence fenceHandle) {
 
   uint32_t imageIndex = 0;
 
-  VkResult result = vkAcquireNextImageKHR(this->deviceHandleRef,
-      this->swapchainHandle,
-      timeout,
-      semaphoreHandle,
-      fenceHandle,
-      &imageIndex);
+  VkResult result =
+      vkAcquireNextImageKHR(this->deviceHandleRef, this->swapchainHandle,
+                            timeout, semaphoreHandle, fenceHandle, &imageIndex);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkAcquireNextImageKHR");
@@ -90,16 +82,16 @@ uint32_t Swapchain::aquireNextImageIndex(uint64_t timeout,
 std::vector<VkImage> Swapchain::getSwapchainImageHandleList() {
   uint32_t imageCount = 0;
 
-  VkResult result = vkGetSwapchainImagesKHR(this->deviceHandleRef,
-      this->swapchainHandle, &imageCount, NULL);
+  VkResult result = vkGetSwapchainImagesKHR(
+      this->deviceHandleRef, this->swapchainHandle, &imageCount, NULL);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkGetSwapchainImagesKHR");
   }
 
   std::vector<VkImage> imageList(imageCount);
-  result = vkGetSwapchainImagesKHR(this->deviceHandleRef,
-      this->swapchainHandle, &imageCount, imageList.data());
+  result = vkGetSwapchainImagesKHR(this->deviceHandleRef, this->swapchainHandle,
+                                   &imageCount, imageList.data());
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkGetSwapchainImagesKHR");
@@ -108,6 +100,6 @@ std::vector<VkImage> Swapchain::getSwapchainImageHandleList() {
   return imageList;
 }
 
-VkSwapchainKHR& Swapchain::getSwapchainHandleRef() {
+VkSwapchainKHR &Swapchain::getSwapchainHandleRef() {
   return this->swapchainHandle;
 }

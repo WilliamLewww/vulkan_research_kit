@@ -25,7 +25,7 @@ public:
     VkAccessFlags dstMaskAccessFlags;
     uint32_t srcQueueFamilyIndex;
     uint32_t dstQueueFamilyIndex;
-    VkBuffer& bufferHandleRef;
+    VkBuffer &bufferHandleRef;
     VkDeviceSize offsetDeviceSize;
     VkDeviceSize sizeDeviceSize;
   };
@@ -37,42 +37,43 @@ public:
     VkImageLayout newImageLayout;
     uint32_t srcQueueFamilyIndex;
     uint32_t dstQueueFamilyIndex;
-    VkImage& imageHandleRef;
+    VkImage &imageHandleRef;
     VkImageSubresourceRange imageSubresourceRange;
   };
 
-  CommandBufferGroup(VkDevice& deviceHandleRef,
-      VkCommandPool& commandPoolHandleRef,
-      VkCommandBufferLevel commandBufferLevel,
-      uint32_t commandBufferCount);
+  CommandBufferGroup(VkDevice &deviceHandleRef,
+                     VkCommandPool &commandPoolHandleRef,
+                     VkCommandBufferLevel commandBufferLevel,
+                     uint32_t commandBufferCount);
 
   ~CommandBufferGroup();
 
   void beginRecording(uint32_t commandBufferIndex,
-      VkCommandBufferUsageFlagBits commandBufferUsageFlagBits);
+                      VkCommandBufferUsageFlagBits commandBufferUsageFlagBits);
 
   void endRecording(uint32_t commandBufferIndex);
 
-  void submit(VkQueue& queueHandleRef,
-      std::vector<SubmitInfoParam> submitInfoParamList,
-      VkFence fenceHandle);
+  void submit(VkQueue &queueHandleRef,
+              std::vector<SubmitInfoParam> submitInfoParamList,
+              VkFence fenceHandle);
 
   void reset(uint32_t commandBufferIndex,
-      VkCommandBufferResetFlags commandBufferResetFlags);
+             VkCommandBufferResetFlags commandBufferResetFlags);
 
-  void createPipelineBarrierCmd(uint32_t commandBufferIndex,
-      VkPipelineStageFlags srcPipelineStageFlags,
+  void createPipelineBarrierCmd(
+      uint32_t commandBufferIndex, VkPipelineStageFlags srcPipelineStageFlags,
       VkPipelineStageFlags dstPipelineStageFlags,
       VkDependencyFlags dependencyFlags,
       std::vector<MemoryBarrierParam> memoryBarrierParamList,
       std::vector<BufferMemoryBarrierParam> bufferMemoryBarrierParamList,
       std::vector<ImageMemoryBarrierParam> imageMemoryBarrierParamList);
 
-  VkCommandBuffer& getCommandBufferHandleRef(uint32_t index);
+  VkCommandBuffer &getCommandBufferHandleRef(uint32_t index);
+
 private:
   std::vector<VkCommandBuffer> commandBufferHandleList;
 
-  VkDevice& deviceHandleRef;
+  VkDevice &deviceHandleRef;
 
-  VkCommandPool& commandPoolHandleRef;
+  VkCommandPool &commandPoolHandleRef;
 };

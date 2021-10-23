@@ -4,24 +4,23 @@
 
 #include <vulkan/vulkan.h>
 
-#include <vector>
-#include <string>
 #include <algorithm>
+#include <string>
+#include <vector>
 
 class Instance {
 public:
   static std::vector<VkLayerProperties> getAvailableLayerPropertiesList();
 
-  static std::vector<VkExtensionProperties> getAvailableExtensionPropertiesList(
-      std::string layerName = "");
+  static std::vector<VkExtensionProperties>
+  getAvailableExtensionPropertiesList(std::string layerName = "");
 
   Instance(
       std::vector<VkValidationFeatureEnableEXT> validationFeatureEnableList,
       std::vector<VkValidationFeatureDisableEXT> validationFeatureDisableList,
       VkDebugUtilsMessageSeverityFlagBitsEXT debugUtilsMessageSeverityFlagBits,
       VkDebugUtilsMessageTypeFlagBitsEXT debugUtilsMessageTypeFlagBits,
-      std::string applicationName,
-      uint32_t applicationVersion,
+      std::string applicationName, uint32_t applicationVersion,
       std::vector<std::string> enabledLayerNameList,
       std::vector<std::string> enabledExtensionNameList);
 
@@ -29,7 +28,8 @@ public:
 
   std::string getVulkanVersionAPI();
 
-  VkInstance& getInstanceHandleRef();
+  VkInstance &getInstanceHandleRef();
+
 private:
   VkInstance instanceHandle;
 
