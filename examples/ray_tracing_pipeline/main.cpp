@@ -630,8 +630,8 @@ int main(void) {
       pipelineLayout->getPipelineLayoutHandleRef(), 0, {0}, {});
 
   commandBufferGroup->createPipelineBarrierCmd(
-      0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+      0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+      0, {}, {},
       {{VK_ACCESS_MEMORY_WRITE_BIT,
         VK_ACCESS_MEMORY_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
@@ -704,6 +704,32 @@ int main(void) {
   imageBuffer->mapMemory(&hostImageBuffer, 0, 800 * 600 * 4 * sizeof(float));
   saveImage("image.ppm", hostImageBuffer, 800, 600);
   imageBuffer->unmapMemory();
+
+  delete imageBuffer;
+  delete shaderBindingTableBuffer;
+  delete rayTracingPipelineGroup;
+  delete rayClosestHitShaderModule;
+  delete rayMissShaderModule;
+  delete rayGenerationShaderModule;
+  delete pipelineLayout;
+  delete descriptorSetLayout;
+  delete descriptorPool;
+  delete colorImageView;
+  delete colorImage;
+  delete topLevelAccelerationStructureScratchBuffer;
+  delete topLevelAccelerationStructure;
+  delete topLevelAccelerationStructureBuffer;
+  delete geometryInstanceBuffer;
+  delete fence;
+  delete accelerationStructureScratchBuffer;
+  delete accelerationStructure;
+  delete accelerationStructureBuffer;
+  delete indexBuffer;
+  delete vertexBuffer;
+  delete commandBufferGroup;
+  delete commandPool;
+  delete device;
+  delete instance;
 
   return 0;
 }
