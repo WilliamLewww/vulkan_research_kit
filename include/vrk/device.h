@@ -27,6 +27,10 @@ public:
   static VkPhysicalDeviceProperties
   getPhysicalDeviceProperties(VkPhysicalDevice &physicalDeviceHandleRef);
 
+  static VkPhysicalDeviceProperties2 getPhysicalDeviceProperties2(
+      VkPhysicalDevice &physicalDeviceHandleRef,
+      std::vector<void *> physicalDevicePropertiesChainList = {});
+
   static std::vector<VkQueueFamilyProperties>
   getQueueFamilyPropertiesList(VkPhysicalDevice &physicalDeviceHandleRef);
 

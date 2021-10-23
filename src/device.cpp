@@ -35,6 +35,36 @@ Device::getPhysicalDeviceProperties(VkPhysicalDevice &physicalDeviceHandleRef) {
   return physicalDeviceProperties;
 }
 
+VkPhysicalDeviceProperties2 Device::getPhysicalDeviceProperties2(
+    VkPhysicalDevice &physicalDeviceHandleRef,
+    std::vector<void *> physicalDevicePropertiesChainList) {
+
+  VkPhysicalDeviceProperties physicalDeviceProperties;
+
+  VkPhysicalDeviceProperties2 physicalDeviceProperties2 = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+      .pNext = NULL,
+      .properties = physicalDeviceProperties};
+
+  if (physicalDevicePropertiesChainList.size() > 0) {
+    BaseVulkanStructure *previousStructure =
+        (BaseVulkanStructure *)&physicalDeviceProperties2;
+
+    for (uint32_t x = 0; x < physicalDevicePropertiesChainList.size(); x++) {
+      BaseVulkanStructure *currentStructure =
+          (BaseVulkanStructure *)physicalDevicePropertiesChainList[x];
+
+      previousStructure->pNext = currentStructure;
+      previousStructure = currentStructure;
+    }
+  }
+
+  vkGetPhysicalDeviceProperties2(physicalDeviceHandleRef,
+                                 &physicalDeviceProperties2);
+
+  return physicalDeviceProperties2;
+}
+
 std::vector<VkQueueFamilyProperties> Device::getQueueFamilyPropertiesList(
     VkPhysicalDevice &physicalDeviceHandleRef) {
 

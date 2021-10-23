@@ -79,4 +79,19 @@ Image::~Image() {
   vkFreeMemory(this->deviceHandleRef, this->deviceMemoryHandle, NULL);
 }
 
+void Image::mapMemory(void **hostMemory, VkDeviceSize offset,
+                      VkDeviceSize size) {
+
+  VkResult result = vkMapMemory(this->deviceHandleRef, this->deviceMemoryHandle,
+                                offset, size, 0, hostMemory);
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkMapMemory");
+  }
+}
+
+void Image::unmapMemory() {
+  vkUnmapMemory(this->deviceHandleRef, this->deviceMemoryHandle);
+}
+
 VkImage &Image::getImageHandleRef() { return this->imageHandle; }

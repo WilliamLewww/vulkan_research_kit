@@ -22,6 +22,10 @@ public:
 
   VkImage &getImageHandleRef();
 
+  void mapMemory(void **hostMemory, VkDeviceSize offset, VkDeviceSize size);
+
+  void unmapMemory();
+
 private:
   VkImage imageHandle;
 
