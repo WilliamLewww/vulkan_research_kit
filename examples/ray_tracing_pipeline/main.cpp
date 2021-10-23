@@ -18,6 +18,7 @@
 #include "vrk/shader_module.h"
 
 #include "vrk/ray_tracing/acceleration_structure.h"
+#include "vrk/ray_tracing/ray_tracing_pipeline_group.h"
 
 #include <cstring>
 
@@ -105,7 +106,6 @@ int main(void) {
 
   VkPhysicalDeviceBufferDeviceAddressFeatures
       physicalDeviceBufferDeviceAddressFeatures = {
-
           .sType =
               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
           .pNext = NULL,
@@ -115,7 +115,6 @@ int main(void) {
 
   VkPhysicalDeviceAccelerationStructureFeaturesKHR
       physicalDeviceAccelerationStructureFeatures = {
-
           .sType =
               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
           .pNext = NULL,
@@ -125,22 +124,27 @@ int main(void) {
           .accelerationStructureHostCommands = VK_FALSE,
           .descriptorBindingAccelerationStructureUpdateAfterBind = VK_FALSE};
 
-  VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures = {
-
-      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
-      .pNext = NULL,
-      .rayQuery = VK_TRUE};
+  VkPhysicalDeviceRayTracingPipelineFeaturesKHR
+      physicalDeviceRayTracingPipelineFeatures = {
+          .sType =
+              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+          .pNext = NULL,
+          .rayTracingPipeline = VK_TRUE,
+          .rayTracingPipelineShaderGroupHandleCaptureReplay = VK_FALSE,
+          .rayTracingPipelineShaderGroupHandleCaptureReplayMixed = VK_FALSE,
+          .rayTracingPipelineTraceRaysIndirect = VK_FALSE,
+          .rayTraversalPrimitiveCulling = VK_FALSE};
 
   Device *device = new Device(
       activePhysicalDeviceHandle, {{0, queueFamilyIndex, 1, {1.0f}}}, {},
-      {"VK_KHR_ray_query", "VK_KHR_spirv_1_4", "VK_KHR_shader_float_controls",
-       "VK_KHR_acceleration_structure", "VK_EXT_descriptor_indexing",
-       "VK_KHR_maintenance3", "VK_KHR_buffer_device_address",
-       "VK_KHR_deferred_host_operations"},
+      {"VK_KHR_ray_tracing_pipeline", "VK_KHR_spirv_1_4",
+       "VK_KHR_shader_float_controls", "VK_KHR_acceleration_structure",
+       "VK_EXT_descriptor_indexing", "VK_KHR_maintenance3",
+       "VK_KHR_buffer_device_address", "VK_KHR_deferred_host_operations"},
       NULL,
       {&physicalDeviceBufferDeviceAddressFeatures,
        &physicalDeviceAccelerationStructureFeatures,
-       &physicalDeviceRayQueryFeatures});
+       &physicalDeviceRayTracingPipelineFeatures});
 
   CommandPool *commandPool = new CommandPool(
       device->getDeviceHandleRef(),
@@ -399,36 +403,13 @@ int main(void) {
 
   commandBufferGroup->reset(1, 0);
 
-  std::vector<VkAttachmentReference> attachmentReferenceList = {
-      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
-
-  RenderPass *renderPass = new RenderPass(
-      device->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
-      {{0, VK_FORMAT_R32G32B32A32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}},
-      {{
-          0,
-          VK_PIPELINE_BIND_POINT_GRAPHICS,
-          0,
-          NULL,
-          1,
-          attachmentReferenceList.data(),
-          NULL,
-          NULL,
-          0,
-          NULL,
-      }},
-      {});
-
-  Image *colorImage = new Image(
-      device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
-      VK_IMAGE_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT, {800, 600, 1}, 1, 1,
-      VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-      VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  Image *colorImage =
+      new Image(device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
+                VK_IMAGE_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT, {800, 600, 1},
+                1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex},
+                VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
   ImageView *colorImageView = new ImageView(
       device->getDeviceHandleRef(), colorImage->getImageHandleRef(), 0,
@@ -437,59 +418,18 @@ int main(void) {
        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
 
-  Framebuffer *framebuffer = new Framebuffer(
-      device->getDeviceHandleRef(), renderPass->getRenderPassHandleRef(),
-      {colorImageView->getImageViewHandleRef()}, (VkFramebufferCreateFlags)0,
-      800, 600, 1);
-
-  std::ifstream vertexFile(
-      Resource::findResource("resources/shaders/shader.vert.spv"),
-      std::ios::binary | std::ios::ate);
-  std::streamsize vertexFileSize = vertexFile.tellg();
-  vertexFile.seekg(0, std::ios::beg);
-  std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
-  vertexFile.read((char *)vertexShaderSource.data(), vertexFileSize);
-  vertexFile.close();
-
-  ShaderModule *vertexShaderModule =
-      new ShaderModule(device->getDeviceHandleRef(), vertexShaderSource);
-
-  std::ifstream fragmentFile(
-      Resource::findResource("resources/shaders/shader.frag.spv"),
-      std::ios::binary | std::ios::ate);
-  std::streamsize fragmentFileSize = fragmentFile.tellg();
-  fragmentFile.seekg(0, std::ios::beg);
-  std::vector<uint32_t> fragmentShaderSource(fragmentFileSize /
-                                             sizeof(uint32_t));
-  fragmentFile.read((char *)fragmentShaderSource.data(), fragmentFileSize);
-  fragmentFile.close();
-
-  ShaderModule *fragmentShaderModule =
-      new ShaderModule(device->getDeviceHandleRef(), fragmentShaderSource);
-
-  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam vertexStage = {
-      .pipelineShaderStageCreateFlags = 0,
-      .shaderStageFlagBits = VK_SHADER_STAGE_VERTEX_BIT,
-      .shaderModuleHandleRef = vertexShaderModule->getShaderModuleHandleRef(),
-      .entryPointName = "main",
-      .specializationInfoPtr = NULL};
-
-  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam fragmentStage = {
-      .pipelineShaderStageCreateFlags = 0,
-      .shaderStageFlagBits = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .shaderModuleHandleRef = fragmentShaderModule->getShaderModuleHandleRef(),
-      .entryPointName = "main",
-      .specializationInfoPtr = NULL};
-
   DescriptorPool *descriptorPool =
       new DescriptorPool(device->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}});
+                         {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1},
+                          {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}});
 
   DescriptorSetLayout *descriptorSetLayout = new DescriptorSetLayout(
       device->getDeviceHandleRef(), 0,
       {{0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
-        VK_SHADER_STAGE_FRAGMENT_BIT, NULL}});
+        VK_SHADER_STAGE_RAYGEN_BIT_KHR, NULL},
+       {1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR,
+        NULL}});
 
   DescriptorSetGroup *descriptorSetGroup = new DescriptorSetGroup(
       device->getDeviceHandleRef(),
@@ -507,139 +447,217 @@ int main(void) {
                                           ->getAccelerationStructureHandleRef(),
       };
 
+  auto descriptorImageInfo =
+      std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
+          .sampler = VK_NULL_HANDLE,
+          .imageView = colorImageView->getImageViewHandleRef(),
+          .imageLayout = VK_IMAGE_LAYOUT_GENERAL});
+
   descriptorSetGroup->updateDescriptorSets(
       {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, NULL, NULL,
-        NULL, &writeDescriptorSetAccelerationStructure}},
+        NULL, &writeDescriptorSetAccelerationStructure},
+       {0, 1, 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, descriptorImageInfo, NULL,
+        NULL, NULL}},
       {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
       device->getDeviceHandleRef(),
       {descriptorSetLayout->getDescriptorSetLayoutHandleRef()}, {});
 
-  auto pipelineVertexInputStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam{
+  std::ifstream rayGenerationFile(
+      Resource::findResource("resources/shaders/shader.rgen.spv"),
+      std::ios::binary | std::ios::ate);
+  std::streamsize rayGenerationFileSize = rayGenerationFile.tellg();
+  rayGenerationFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> rayGenerationShaderSource(rayGenerationFileSize /
+                                                  sizeof(uint32_t));
+  rayGenerationFile.read((char *)rayGenerationShaderSource.data(),
+                         rayGenerationFileSize);
+  rayGenerationFile.close();
 
-          .vertexInputBindingDescriptionList = {{0, sizeof(float) * 3,
-                                                 VK_VERTEX_INPUT_RATE_VERTEX}},
-          .vertexInputAttributeDescriptionList = {
-              {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}}});
+  ShaderModule *rayGenerationShaderModule =
+      new ShaderModule(device->getDeviceHandleRef(), rayGenerationShaderSource);
 
-  auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam{
+  std::ifstream rayMissFile(
+      Resource::findResource("resources/shaders/shader.rmiss.spv"),
+      std::ios::binary | std::ios::ate);
+  std::streamsize rayMissFileSize = rayMissFile.tellg();
+  rayMissFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> rayMissShaderSource(rayMissFileSize / sizeof(uint32_t));
+  rayMissFile.read((char *)rayMissShaderSource.data(), rayMissFileSize);
+  rayMissFile.close();
 
-          .primitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-          // .primitiveRestartEnable =
-      });
+  ShaderModule *rayMissShaderModule =
+      new ShaderModule(device->getDeviceHandleRef(), rayMissShaderSource);
 
-  auto pipelineViewportStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineViewportStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineViewportStateCreateInfoParam{
+  std::ifstream rayClosestHitFile(
+      Resource::findResource("resources/shaders/shader.rchit.spv"),
+      std::ios::binary | std::ios::ate);
+  std::streamsize rayClosestHitFileSize = rayClosestHitFile.tellg();
+  rayClosestHitFile.seekg(0, std::ios::beg);
+  std::vector<uint32_t> rayClosestHitShaderSource(rayClosestHitFileSize /
+                                                  sizeof(uint32_t));
+  rayClosestHitFile.read((char *)rayClosestHitShaderSource.data(),
+                         rayClosestHitFileSize);
+  rayClosestHitFile.close();
 
-          .viewportList = {{0, 0, 800, 600, 0, 1}},
-          .scissorRect2DList = {{{0, 0}, {800, 600}}}});
+  ShaderModule *rayClosestHitShaderModule =
+      new ShaderModule(device->getDeviceHandleRef(), rayClosestHitShaderSource);
 
-  auto pipelineRasterizationStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineRasterizationStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineRasterizationStateCreateInfoParam{
+  RayTracingPipelineGroup::PipelineShaderStageCreateInfoParam
+      rayGenerationStage = {
+          .pipelineShaderStageCreateFlags = 0,
+          .shaderStageFlagBits = VK_SHADER_STAGE_RAYGEN_BIT_KHR,
+          .shaderModuleHandleRef =
+              rayGenerationShaderModule->getShaderModuleHandleRef(),
+          .entryPointName = "main",
+          .specializationInfoPtr = NULL};
 
-          // .depthClampEnable = ,
-          // .rasterizerDiscardEnable = ,
-          // .polygonMode = ,
-          // .cullModeFlags = ,
-          // .frontFace = ,
-          // .depthBiasEnable = ,
-          // .depthBiasConstantFactor = ,
-          // .depthBiasClamp = ,
-          // .depthBiasSlopeFactor = ,
-          .lineWidth = 1.0});
+  RayTracingPipelineGroup::PipelineShaderStageCreateInfoParam rayMissStage = {
+      .pipelineShaderStageCreateFlags = 0,
+      .shaderStageFlagBits = VK_SHADER_STAGE_MISS_BIT_KHR,
+      .shaderModuleHandleRef = rayMissShaderModule->getShaderModuleHandleRef(),
+      .entryPointName = "main",
+      .specializationInfoPtr = NULL};
 
-  auto pipelineMultisampleStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineMultisampleStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineMultisampleStateCreateInfoParam{
+  RayTracingPipelineGroup::PipelineShaderStageCreateInfoParam
+      rayClosestHitStage = {
+          .pipelineShaderStageCreateFlags = 0,
+          .shaderStageFlagBits = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR,
+          .shaderModuleHandleRef =
+              rayClosestHitShaderModule->getShaderModuleHandleRef(),
+          .entryPointName = "main",
+          .specializationInfoPtr = NULL};
 
-          .rasterizationSampleCountFlagBits = VK_SAMPLE_COUNT_1_BIT,
-          // .sampleShadingEnable = ,
-          // .minSampleShading = ,
-          // .sampleMaskList = ,
-          // .alphaToCoverageEnable = ,
-          // .alphaToOneEnable =
-      });
+  RayTracingPipelineGroup *rayTracingPipelineGroup =
+      new RayTracingPipelineGroup(
+          device->getDeviceHandleRef(),
+          {{0,
+            {rayGenerationStage, rayMissStage, rayClosestHitStage},
+            {{VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR, 0,
+              VK_SHADER_UNUSED_KHR, VK_SHADER_UNUSED_KHR, VK_SHADER_UNUSED_KHR,
+              NULL},
+             {VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR, 1,
+              VK_SHADER_UNUSED_KHR, VK_SHADER_UNUSED_KHR, VK_SHADER_UNUSED_KHR,
+              NULL},
+             {VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR,
+              VK_SHADER_UNUSED_KHR, 2, VK_SHADER_UNUSED_KHR,
+              VK_SHADER_UNUSED_KHR, NULL}},
+            16,
+            NULL,
+            NULL,
+            NULL,
+            pipelineLayout->getPipelineLayoutHandleRef(),
+            VK_NULL_HANDLE,
+            0}});
 
-  VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {
-      .blendEnable = VK_FALSE,
-      .srcColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-      .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-      .colorBlendOp = VK_BLEND_OP_ADD,
-      .srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-      .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-      .alphaBlendOp = VK_BLEND_OP_ADD,
-      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT};
+  VkPhysicalDeviceRayTracingPipelinePropertiesKHR
+      physicalDeviceRayTracingPipelineProperties = {
+          .sType =
+              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR,
+          .pNext = NULL};
 
-  auto pipelineColorBlendStateCreateInfoParam = std::make_shared<
-      GraphicsPipelineGroup::PipelineColorBlendStateCreateInfoParam>(
-      GraphicsPipelineGroup::PipelineColorBlendStateCreateInfoParam{
+  device->getPhysicalDeviceProperties2(
+      activePhysicalDeviceHandle,
+      {&physicalDeviceRayTracingPipelineProperties});
 
-          .logicOpEnable = VK_FALSE,
-          .logicOp = VK_LOGIC_OP_COPY,
-          .pipelineColorBlendAttachmentStateList =
-              {pipelineColorBlendAttachmentState},
-          .blendConstants = {0, 0, 0, 0}});
+  VkDeviceSize shaderBindingTableSize =
+      physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize * 3;
 
-  GraphicsPipelineGroup *graphicsPipelineGroup =
-      new GraphicsPipelineGroup(device->getDeviceHandleRef(),
-                                {{0,
-                                  {vertexStage, fragmentStage},
-                                  pipelineVertexInputStateCreateInfoParam,
-                                  pipelineInputAssemblyStateCreateInfoParam,
-                                  NULL,
-                                  pipelineViewportStateCreateInfoParam,
-                                  pipelineRasterizationStateCreateInfoParam,
-                                  pipelineMultisampleStateCreateInfoParam,
-                                  NULL,
-                                  pipelineColorBlendStateCreateInfoParam,
-                                  NULL,
-                                  pipelineLayout->getPipelineLayoutHandleRef(),
-                                  renderPass->getRenderPassHandleRef(),
-                                  0,
-                                  VK_NULL_HANDLE,
-                                  0}});
+  Buffer *shaderBindingTableBuffer = new Buffer(
+      device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
+      shaderBindingTableSize,
+      VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR |
+          VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+      VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex},
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, {&memoryAllocateFlagsInfo});
+
+  std::shared_ptr<char> shaderHandleBuffer(new char[shaderBindingTableSize]);
+  rayTracingPipelineGroup->getRayTracingShaderGroupHandles(
+      0, 0, 3, shaderBindingTableSize, shaderHandleBuffer);
+
+  void *hostShaderBindingTableBuffer;
+  shaderBindingTableBuffer->mapMemory(&hostShaderBindingTableBuffer, 0,
+                                      shaderBindingTableSize);
+  for (uint32_t x = 0; x < 3; x++) {
+    memcpy(hostShaderBindingTableBuffer,
+           shaderHandleBuffer.get() +
+               x * physicalDeviceRayTracingPipelineProperties
+                       .shaderGroupHandleSize,
+           physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize);
+    hostShaderBindingTableBuffer =
+        (char *)hostShaderBindingTableBuffer +
+        physicalDeviceRayTracingPipelineProperties.shaderGroupBaseAlignment;
+  }
+  shaderBindingTableBuffer->unmapMemory();
+
+  VkDeviceSize progSize =
+      physicalDeviceRayTracingPipelineProperties.shaderGroupBaseAlignment;
+  VkDeviceSize sbtSize = progSize * (VkDeviceSize)4;
+  VkDeviceSize rayGenOffset = 0u * progSize;
+  VkDeviceSize missOffset = 1u * progSize;
+  VkDeviceSize hitGroupOffset = 2u * progSize;
+
+  const VkStridedDeviceAddressRegionKHR rgenShaderBindingTable = {
+      .deviceAddress =
+          shaderBindingTableBuffer->getBufferDeviceAddress() + 0u * progSize,
+      .stride = sbtSize,
+      .size = sbtSize * 1};
+
+  const VkStridedDeviceAddressRegionKHR rmissShaderBindingTable = {
+      .deviceAddress =
+          shaderBindingTableBuffer->getBufferDeviceAddress() + 1u * progSize,
+      .stride = sbtSize,
+      .size = sbtSize * 1};
+
+  const VkStridedDeviceAddressRegionKHR rchitShaderBindingTable = {
+      .deviceAddress =
+          shaderBindingTableBuffer->getBufferDeviceAddress() + 2u * progSize,
+      .stride = sbtSize,
+      .size = sbtSize * 1};
+
+  const VkStridedDeviceAddressRegionKHR callableShaderBindingTable = {};
 
   commandBufferGroup->beginRecording(
-      0, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+      0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-  renderPass->beginRenderPassCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0),
-      framebuffer->getFramebufferHandleRef(), {{0, 0}, {800, 600}},
-      {{{0.0, 0.0, 0.0, 1.0}}}, VK_SUBPASS_CONTENTS_INLINE);
-
-  graphicsPipelineGroup->bindPipelineCmd(
+  rayTracingPipelineGroup->bindPipelineCmd(
       0, commandBufferGroup->getCommandBufferHandleRef(0));
-
-  vertexBuffer->bindVertexBufferCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0), 0);
-  indexBuffer->bindIndexBufferCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0), VK_INDEX_TYPE_UINT32);
 
   descriptorSetGroup->bindDescriptorSetsCmd(
       commandBufferGroup->getCommandBufferHandleRef(0),
-      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
       pipelineLayout->getPipelineLayoutHandleRef(), 0, {0}, {});
 
-  graphicsPipelineGroup->drawIndexedCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0), 6, 1, 0, 0, 0);
+  commandBufferGroup->createPipelineBarrierCmd(
+      0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+      {{VK_ACCESS_MEMORY_WRITE_BIT,
+        VK_ACCESS_MEMORY_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_GENERAL,
+        queueFamilyIndex,
+        queueFamilyIndex,
+        colorImage->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
 
-  renderPass->endRenderPassCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0));
+  rayTracingPipelineGroup->traceRaysCmd(
+      commandBufferGroup->getCommandBufferHandleRef(0),
+      std::make_shared<VkStridedDeviceAddressRegionKHR>(rgenShaderBindingTable),
+      std::make_shared<VkStridedDeviceAddressRegionKHR>(
+          rmissShaderBindingTable),
+      std::make_shared<VkStridedDeviceAddressRegionKHR>(
+          rchitShaderBindingTable),
+      std::make_shared<VkStridedDeviceAddressRegionKHR>(
+          callableShaderBindingTable),
+      800, 600, 1);
 
   commandBufferGroup->createPipelineBarrierCmd(
-      0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      0, VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR,
       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {}, {},
-      {{VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      {{VK_ACCESS_MEMORY_WRITE_BIT,
         VK_ACCESS_TRANSFER_READ_BIT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         queueFamilyIndex,
         queueFamilyIndex,
@@ -686,32 +704,6 @@ int main(void) {
   imageBuffer->mapMemory(&hostImageBuffer, 0, 800 * 600 * 4 * sizeof(float));
   saveImage("image.ppm", hostImageBuffer, 800, 600);
   imageBuffer->unmapMemory();
-
-  delete imageBuffer;
-  delete graphicsPipelineGroup;
-  delete pipelineLayout;
-  delete descriptorSetLayout;
-  delete descriptorPool;
-  delete fragmentShaderModule;
-  delete vertexShaderModule;
-  delete framebuffer;
-  delete colorImageView;
-  delete colorImage;
-  delete renderPass;
-  delete topLevelAccelerationStructureScratchBuffer;
-  delete topLevelAccelerationStructure;
-  delete topLevelAccelerationStructureBuffer;
-  delete geometryInstanceBuffer;
-  delete fence;
-  delete accelerationStructureScratchBuffer;
-  delete accelerationStructure;
-  delete accelerationStructureBuffer;
-  delete indexBuffer;
-  delete vertexBuffer;
-  delete commandBufferGroup;
-  delete commandPool;
-  delete device;
-  delete instance;
 
   return 0;
 }

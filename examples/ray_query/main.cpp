@@ -105,7 +105,6 @@ int main(void) {
 
   VkPhysicalDeviceBufferDeviceAddressFeatures
       physicalDeviceBufferDeviceAddressFeatures = {
-
           .sType =
               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
           .pNext = NULL,
@@ -115,7 +114,6 @@ int main(void) {
 
   VkPhysicalDeviceAccelerationStructureFeaturesKHR
       physicalDeviceAccelerationStructureFeatures = {
-
           .sType =
               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
           .pNext = NULL,
@@ -126,7 +124,6 @@ int main(void) {
           .descriptorBindingAccelerationStructureUpdateAfterBind = VK_FALSE};
 
   VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures = {
-
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
       .pNext = NULL,
       .rayQuery = VK_TRUE};

@@ -64,6 +64,11 @@ public:
 
   ~RayTracingPipelineGroup();
 
+  void getRayTracingShaderGroupHandles(uint32_t pipelineIndex,
+                                       uint32_t firstGroup, uint32_t groupCount,
+                                       uint32_t dataSize,
+                                       std::shared_ptr<void> dataPtr);
+
   void bindPipelineCmd(uint32_t pipelineIndex,
                        VkCommandBuffer &commandBufferHandleRef);
 

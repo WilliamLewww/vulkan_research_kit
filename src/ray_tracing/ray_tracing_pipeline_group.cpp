@@ -211,6 +211,22 @@ RayTracingPipelineGroup::~RayTracingPipelineGroup() {
   }
 }
 
+void RayTracingPipelineGroup::getRayTracingShaderGroupHandles(
+    uint32_t pipelineIndex, uint32_t firstGroup, uint32_t groupCount,
+    uint32_t dataSize, std::shared_ptr<void> dataPtr) {
+
+  LOAD_DEVICE_FUNCTION(deviceHandleRef, vkGetRayTracingShaderGroupHandlesKHR,
+                       pvkGetRayTracingShaderGroupHandlesKHR);
+
+  VkResult result = pvkGetRayTracingShaderGroupHandlesKHR(
+      this->deviceHandleRef, this->pipelineHandleList[pipelineIndex],
+      firstGroup, groupCount, dataSize, dataPtr.get());
+
+  if (result != VK_SUCCESS) {
+    throwExceptionVulkanAPI(result, "vkGetRayTracingShaderGroupHandlesKHR");
+  }
+}
+
 void RayTracingPipelineGroup::bindPipelineCmd(
     uint32_t pipelineIndex, VkCommandBuffer &commandBufferHandleRef) {
 
@@ -231,8 +247,8 @@ void RayTracingPipelineGroup::traceRaysCmd(
 
   LOAD_DEVICE_FUNCTION(deviceHandleRef, vkCmdTraceRaysKHR, pvkCmdTraceRaysKHR);
 
-  vkCmdTraceRaysKHR(commandBufferHandleRef, raygenShaderBindingTablePtr.get(),
-                    missShaderBindingTablePtr.get(),
-                    hitShaderBindingTablePtr.get(),
-                    callableShaderBindingTablePtr.get(), width, height, depth);
+  pvkCmdTraceRaysKHR(commandBufferHandleRef, raygenShaderBindingTablePtr.get(),
+                     missShaderBindingTablePtr.get(),
+                     hitShaderBindingTablePtr.get(),
+                     callableShaderBindingTablePtr.get(), width, height, depth);
 }

@@ -28,7 +28,8 @@ public:
                          VkBuffer &dstBufferHandleRef,
                          std::vector<VkBufferCopy> bufferCopyList);
 
-  void mapMemory(void **hostMemory, VkDeviceSize offset, VkDeviceSize size);
+  void mapMemory(void **hostMemoryBuffer, VkDeviceSize offset,
+                 VkDeviceSize size);
 
   void unmapMemory();
 

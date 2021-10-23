@@ -104,23 +104,21 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
                   .pipelineVertexInputStateCreateInfoParamPtr;
 
       VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo =
-          {
-              .sType =
-                  VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-              .pNext = NULL,
-              .flags = 0,
-              .vertexBindingDescriptionCount =
-                  (uint32_t)pipelineVertexInputStateCreateInfoParamPtr
-                      ->vertexInputBindingDescriptionList.size(),
-              .pVertexBindingDescriptions =
-                  pipelineVertexInputStateCreateInfoParamPtr
-                      ->vertexInputBindingDescriptionList.data(),
-              .vertexAttributeDescriptionCount =
-                  (uint32_t)pipelineVertexInputStateCreateInfoParamPtr
-                      ->vertexInputAttributeDescriptionList.size(),
-              .pVertexAttributeDescriptions =
-                  pipelineVertexInputStateCreateInfoParamPtr
-                      ->vertexInputAttributeDescriptionList.data()};
+          {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+           .pNext = NULL,
+           .flags = 0,
+           .vertexBindingDescriptionCount =
+               (uint32_t)pipelineVertexInputStateCreateInfoParamPtr
+                   ->vertexInputBindingDescriptionList.size(),
+           .pVertexBindingDescriptions =
+               pipelineVertexInputStateCreateInfoParamPtr
+                   ->vertexInputBindingDescriptionList.data(),
+           .vertexAttributeDescriptionCount =
+               (uint32_t)pipelineVertexInputStateCreateInfoParamPtr
+                   ->vertexInputAttributeDescriptionList.size(),
+           .pVertexAttributeDescriptions =
+               pipelineVertexInputStateCreateInfoParamPtr
+                   ->vertexInputAttributeDescriptionList.data()};
 
       pipelineVertexInputStateCreateInfoList.push_back(
           pipelineVertexInputStateCreateInfo);
@@ -268,23 +266,21 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
                   .pipelineMultisampleStateCreateInfoParamPtr;
 
       VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo =
-          {
-              .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-              .pNext = NULL,
-              .flags = 0,
-              .rasterizationSamples = pipelineMultisampleStateCreateInfoParamPtr
-                                          ->rasterizationSampleCountFlagBits,
-              .sampleShadingEnable = pipelineMultisampleStateCreateInfoParamPtr
-                                         ->sampleShadingEnable,
-              .minSampleShading =
-                  pipelineMultisampleStateCreateInfoParamPtr->minSampleShading,
-              .pSampleMask = pipelineMultisampleStateCreateInfoParamPtr
-                                 ->sampleMaskList.data(),
-              .alphaToCoverageEnable =
-                  pipelineMultisampleStateCreateInfoParamPtr
-                      ->alphaToCoverageEnable,
-              .alphaToOneEnable =
-                  pipelineMultisampleStateCreateInfoParamPtr->alphaToOneEnable};
+          {.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+           .pNext = NULL,
+           .flags = 0,
+           .rasterizationSamples = pipelineMultisampleStateCreateInfoParamPtr
+                                       ->rasterizationSampleCountFlagBits,
+           .sampleShadingEnable =
+               pipelineMultisampleStateCreateInfoParamPtr->sampleShadingEnable,
+           .minSampleShading =
+               pipelineMultisampleStateCreateInfoParamPtr->minSampleShading,
+           .pSampleMask = pipelineMultisampleStateCreateInfoParamPtr
+                              ->sampleMaskList.data(),
+           .alphaToCoverageEnable = pipelineMultisampleStateCreateInfoParamPtr
+                                        ->alphaToCoverageEnable,
+           .alphaToOneEnable =
+               pipelineMultisampleStateCreateInfoParamPtr->alphaToOneEnable};
 
       pipelineMultisampleStateCreateInfoList.push_back(
           pipelineMultisampleStateCreateInfo);

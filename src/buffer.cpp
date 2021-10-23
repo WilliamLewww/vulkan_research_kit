@@ -107,11 +107,11 @@ void Buffer::copyFromBufferCmd(VkCommandBuffer &commandBufferHandleRef,
                   bufferCopyList.data());
 }
 
-void Buffer::mapMemory(void **hostMemory, VkDeviceSize offset,
+void Buffer::mapMemory(void **hostMemoryBuffer, VkDeviceSize offset,
                        VkDeviceSize size) {
 
   VkResult result = vkMapMemory(this->deviceHandleRef, this->deviceMemoryHandle,
-                                offset, size, 0, hostMemory);
+                                offset, size, 0, hostMemoryBuffer);
 
   if (result != VK_SUCCESS) {
     throwExceptionVulkanAPI(result, "vkMapMemory");
