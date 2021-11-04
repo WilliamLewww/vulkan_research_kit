@@ -8,6 +8,15 @@ case $i in
     -v=*|--version=*)
     VERSION="${i#*=}"
     ;;
+    -stv=*|--spirv-tools-version=*)
+    SPIRV_TOOLS_VERSION="${i#*=}"
+    ;;
+    -shv=*|--spirv-headers-version=*)
+    SPIRV_HEADERS_VERSION="${i#*=}"
+    ;;
+    -gv=*|--glslang-version=*)
+    GLSLANG_VERSION="${i#*=}"
+    ;;
     -t=*|--threads=*)
     THREADS="${i#*=}"
     ;;
@@ -21,13 +30,33 @@ done
 
 if [ "${VERSION}" == "" ]
 then
-  VERSION='sdk-1.2.189'
+  VERSION='main'
+fi
+
+if [ "${SPIRV_TOOLS_VERSION}" == "" ]
+then
+  SPIRV_TOOLS_VERSION='master'
+fi
+
+if [ "${SPIRV_HEADERS_VERSION}" == "" ]
+then
+  SPIRV_HEADERS_VERSION='master'
+fi
+
+if [ "${GLSLANG_VERSION}" == "" ]
+then
+  GLSLANG_VERSION='master'
 fi
 
 if [ "${THREADS}" == "" ]
 then
   THREADS='4'
 fi
+
+echo "Vulkan Version: ${VERSION}"
+echo "SPIRV Tools Version: ${SPIRV_TOOLS_VERSION}"
+echo "SPIRV Headers Version: ${SPIRV_HEADERS_VERSION}"
+echo "Threads: ${THREADS}"
 
 if [ ! -d "Vulkan-Headers" ]
 then
@@ -58,7 +87,7 @@ if [ ! -d "SPIRV-Headers" ]
 then
   git clone https://github.com/KhronosGroup/SPIRV-Headers
 
-  git --git-dir=SPIRV-Headers/.git --work-tree=SPIRV-Headers checkout ${VERSION}
+  git --git-dir=SPIRV-Headers/.git --work-tree=SPIRV-Headers checkout ${SPIRV_HEADERS_VERSION}
 
   mkdir SPIRV-Headers/build
   cmake -HSPIRV-Headers -BSPIRV-Headers/build \
@@ -70,7 +99,7 @@ if [ ! -d "glslang" ]
 then
   git clone https://github.com/KhronosGroup/glslang
 
-  git --git-dir=glslang/.git --work-tree=glslang checkout ${VERSION}
+  git --git-dir=glslang/.git --work-tree=glslang checkout ${GLSLANG_VERSION}
 
   mkdir glslang/build
   cmake -Hglslang -Bglslang/build \
@@ -82,7 +111,7 @@ if [ ! -d "SPIRV-Tools" ]
 then
   git clone https://github.com/KhronosGroup/SPIRV-Tools
 
-  git --git-dir=SPIRV-Tools/.git --work-tree=SPIRV-Tools checkout ${VERSION}
+  git --git-dir=SPIRV-Tools/.git --work-tree=SPIRV-Tools checkout ${SPIRV_TOOLS_VERSION}
   
   ln -sF $SCRIPTPATH/SPIRV-Headers $SCRIPTPATH/SPIRV-Tools/external
 
