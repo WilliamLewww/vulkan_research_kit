@@ -56,6 +56,7 @@ fi
 echo "Vulkan Version: ${VERSION}"
 echo "SPIRV Tools Version: ${SPIRV_TOOLS_VERSION}"
 echo "SPIRV Headers Version: ${SPIRV_HEADERS_VERSION}"
+echo "glslang Version: ${GLSLANG_VERSION}"
 echo "Threads: ${THREADS}"
 
 if [ ! -d "Vulkan-Headers" ]
@@ -95,18 +96,6 @@ then
   make install -j${THREADS} -C SPIRV-Headers/build
 fi
 
-if [ ! -d "glslang" ]
-then
-  git clone https://github.com/KhronosGroup/glslang
-
-  git --git-dir=glslang/.git --work-tree=glslang checkout ${GLSLANG_VERSION}
-
-  mkdir glslang/build
-  cmake -Hglslang -Bglslang/build \
-      -DCMAKE_INSTALL_PREFIX=glslang/build/install
-  make install -j${THREADS} -C glslang/build
-fi
-
 if [ ! -d "SPIRV-Tools" ]
 then
   git clone https://github.com/KhronosGroup/SPIRV-Tools
@@ -119,6 +108,20 @@ then
   cmake -HSPIRV-Tools -BSPIRV-Tools/build \
       -DCMAKE_INSTALL_PREFIX=SPIRV-Tools/build/install
   make install -j${THREADS} -C SPIRV-Tools/build
+fi
+
+if [ ! -d "glslang" ]
+then
+  git clone https://github.com/KhronosGroup/glslang
+
+  git --git-dir=glslang/.git --work-tree=glslang checkout ${GLSLANG_VERSION}
+
+  ln -sF $SCRIPTPATH/SPIRV-Tools $SCRIPTPATH/glslang/External/spirv-tools
+
+  mkdir glslang/build
+  cmake -Hglslang -Bglslang/build \
+      -DCMAKE_INSTALL_PREFIX=glslang/build/install
+  make install -j${THREADS} -C glslang/build
 fi
 
 if [ ! -d "Vulkan-ValidationLayers" ]
