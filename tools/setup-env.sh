@@ -1,4 +1,4 @@
-VRK_REPOSITORY_PATH=$(dirname $(realpath "${BASH_SOURCE[0]}"))
+VRK_REPOSITORY_PATH=$(dirname $(dirname $(realpath "${BASH_SOURCE[0]}")))
 
 if [ -d $VRK_REPOSITORY_PATH/build ]
 then
