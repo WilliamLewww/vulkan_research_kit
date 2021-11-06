@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vrk/device.h>
 #include <vrk/resource.h>
 #include <vrk/shader_module.h>
 
@@ -7,7 +8,8 @@
 
 class Material {
 public:
-  Material(std::string vertexFileName, std::string fragmentFileName);
+  Material(std::shared_ptr<Device> devicePtr, std::string vertexFileName,
+           std::string fragmentFileName);
 
   ~Material();
 
