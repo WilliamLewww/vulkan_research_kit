@@ -144,16 +144,16 @@ then
   make install -j${THREADS} -C Vulkan-ValidationLayers/build
 fi
 
-if [ ! -f "setup-env.sh" ]
+if [ ! -f "setup-vulkan-development-env.sh" ]
 then
-  touch setup-env.sh
-  echo 'export Vulkan_INCLUDE_DIRS="'${SCRIPTPATH}'/Vulkan-Headers/build/install/include"' >> setup-env.sh
-  echo 'export Vulkan_GLSLANG_VALIDATOR_EXECUTABLE="'${SCRIPTPATH}'/glslang/build/install/bin/glslangValidator"' >> setup-env.sh
+  touch setup-vulkan-development-env.sh
+  echo 'export Vulkan_INCLUDE_DIRS="'${SCRIPTPATH}'/Vulkan-Headers/build/install/include"' >> setup-vulkan-development-env.sh
+  echo 'export Vulkan_GLSLANG_VALIDATOR_EXECUTABLE="'${SCRIPTPATH}'/glslang/build/install/bin/glslangValidator"' >> setup-vulkan-development-env.sh
   
-  echo 'VK_LAYER_PATH="'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/share/vulkan/explicit_layer.d"' >> setup-env.sh
-  echo 'export VK_LAYER_PATH' >> setup-env.sh
+  echo 'VK_LAYER_PATH="'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/share/vulkan/explicit_layer.d"' >> setup-vulkan-development-env.sh
+  echo 'export VK_LAYER_PATH' >> setup-vulkan-development-env.sh
   
-  echo 'Vulkan_LIBRARIES="'${SCRIPTPATH}'/Vulkan-Loader/build/install/lib/libvulkan.so"' >> setup-env.sh
-  echo 'Vulkan_LIBRARIES="$Vulkan_LIBRARIES;'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/lib/libVkLayer_khronos_validation.so"' >> setup-env.sh
-  echo 'export Vulkan_LIBRARIES' >> setup-env.sh
+  echo 'Vulkan_LIBRARIES="'${SCRIPTPATH}'/Vulkan-Loader/build/install/lib/libvulkan.so"' >> setup-vulkan-development-env.sh
+  echo 'Vulkan_LIBRARIES="$Vulkan_LIBRARIES;'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/lib/libVkLayer_khronos_validation.so"' >> setup-vulkan-development-env.sh
+  echo 'export Vulkan_LIBRARIES' >> setup-vulkan-development-env.sh
 fi
