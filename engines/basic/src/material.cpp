@@ -1,7 +1,9 @@
 #include "basic/material.h"
 
-Material::Material(std::shared_ptr<Device> devicePtr,
-                   std::string vertexFileName, std::string fragmentFileName) {
+Material::Material(std::shared_ptr<Device> devicePtr, std::string name,
+                   std::string vertexFileName, std::string fragmentFileName)
+    : name(name) {
+
   std::ifstream vertexFile(Resource::findResource(vertexFileName),
                            std::ios::binary | std::ios::ate);
 
