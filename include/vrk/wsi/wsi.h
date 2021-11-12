@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 const std::vector<std::string> SWAPCHAIN_REQUIRED_INSTANCE_EXTENSION_LIST = {
     "VK_KHR_surface"};
 

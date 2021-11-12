@@ -72,7 +72,7 @@ int main(void) {
   std::vector<VkPhysicalDevice> deviceHandleList =
       Device::getPhysicalDevices(instance->getInstanceHandleRef());
 
-  VkPhysicalDevice activePhysicalDeviceHandle;
+  VkPhysicalDevice activePhysicalDeviceHandle = deviceHandleList[0];
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(deviceHandle);
