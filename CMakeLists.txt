@@ -48,16 +48,6 @@ include_directories(vrk ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(vrk ${Vulkan_LIBRARIES})
 target_link_libraries(vrk m)
 
-if(NOT DISABLE_RAY_TRACING)
-  file(GLOB SOURCES_RAY_TRACING "src/ray_tracing/*.cpp")
-
-  add_library(vrk-ray-tracing SHARED
-    ${SOURCES_RAY_TRACING}
-  )
-
-  target_link_libraries(vrk-ray-tracing vrk)
-endif()
-
 if(NOT DISABLE_WSI AND X11_FOUND)
   file(GLOB SOURCES_WSI "src/wsi/*.cpp")
 
@@ -70,6 +60,26 @@ if(NOT DISABLE_WSI AND X11_FOUND)
   include_directories(vrk-wsi ${X11_INCLUDE_DIR})
   target_link_libraries(vrk-wsi ${X11_LIBRARIES})
   target_compile_definitions(vrk-wsi PRIVATE -DX_LIB_SURFACE)
+endif()
+
+if(NOT DISABLE_DYNAMIC_RENDERING)
+  file(GLOB SOURCES_DYNAMIC_RENDERING "src/dynamic_rendering/*.cpp")
+
+  add_library(vrk-dynamic-rendering SHARED
+    ${SOURCES_DYNAMIC_RENDERING}
+  )
+
+  target_link_libraries(vrk-dynamic-rendering vrk)
+endif()
+
+if(NOT DISABLE_RAY_TRACING)
+  file(GLOB SOURCES_RAY_TRACING "src/ray_tracing/*.cpp")
+
+  add_library(vrk-ray-tracing SHARED
+    ${SOURCES_RAY_TRACING}
+  )
+
+  target_link_libraries(vrk-ray-tracing vrk)
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
