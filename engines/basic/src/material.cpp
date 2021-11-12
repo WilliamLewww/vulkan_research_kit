@@ -1,9 +1,12 @@
 #include "basic/material.h"
 
-Material::Material(std::string vertexFileName, std::string fragmentFileName) {
+Material::Material(std::shared_ptr<Device> devicePtr, std::string name,
+                   std::string vertexFileName, std::string fragmentFileName)
+    : name(name) {
+
   std::ifstream vertexFile(Resource::findResource(vertexFileName),
                            std::ios::binary | std::ios::ate);
-  
+
   std::streamsize vertexFileSize = vertexFile.tellg();
   vertexFile.seekg(0, std::ios::beg);
   std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
@@ -11,7 +14,7 @@ Material::Material(std::string vertexFileName, std::string fragmentFileName) {
   vertexFile.close();
 
   this->vertexShaderModulePtr = std::unique_ptr<ShaderModule>(
-      new ShaderModule(device->getDeviceHandleRef(), vertexShaderSource));
+      new ShaderModule(devicePtr->getDeviceHandleRef(), vertexShaderSource));
 
   std::ifstream fragmentFile(Resource::findResource(fragmentFileName),
                              std::ios::binary | std::ios::ate);
@@ -23,7 +26,7 @@ Material::Material(std::string vertexFileName, std::string fragmentFileName) {
   fragmentFile.close();
 
   this->fragmentShaderModulePtr = std::unique_ptr<ShaderModule>(
-      new ShaderModule(device->getDeviceHandleRef(), fragmentShaderSource));
+      new ShaderModule(devicePtr->getDeviceHandleRef(), fragmentShaderSource));
 }
 
 Material::~Material() {}

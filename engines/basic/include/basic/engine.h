@@ -30,6 +30,10 @@ public:
   void selectPhysicalDevice(std::string physicalDeviceName,
                             std::vector<std::string> deviceExtensionNameList);
 
+  std::shared_ptr<Material> createMaterial(std::string name,
+                                           std::string vertexFileName,
+                                           std::string fragmentFileName);
+
 private:
   std::unique_ptr<Instance> instancePtr;
 
@@ -39,7 +43,7 @@ private:
 
   std::unique_ptr<VkPhysicalDevice> physicalDeviceHandlePtr;
 
-  std::unique_ptr<Device> devicePtr;
+  std::shared_ptr<Device> devicePtr;
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList;
 
@@ -59,7 +63,9 @@ private:
 
   std::vector<VkImage> swapchainImageHandleList;
 
-  std::vector<ImageView *> swapchainImageViewList;
+  std::vector<std::unique_ptr<ImageView>> swapchainImageViewPtrList;
 
-  std::vector<Framebuffer *> framebufferList;
+  std::vector<std::unique_ptr<Framebuffer>> framebufferPtrList;
+
+  std::vector<std::shared_ptr<Material>> materialPtrList;
 };
