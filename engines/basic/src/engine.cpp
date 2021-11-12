@@ -101,7 +101,7 @@ void Engine::selectPhysicalDevice(
 
   deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-  this->devicePtr = std::unique_ptr<Device>(new Device(
+  this->devicePtr = std::shared_ptr<Device>(new Device(
       *this->physicalDeviceHandlePtr.get(), {{0, queueFamilyIndex, 1, {1.0f}}},
       {}, deviceExtensionNameList, NULL));
 
@@ -161,20 +161,32 @@ void Engine::selectPhysicalDevice(
   this->swapchainImageHandleList = swapchainPtr->getSwapchainImageHandleList();
 
   for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
-    this->swapchainImageViewList.push_back(new ImageView(
-        this->devicePtr->getDeviceHandleRef(), swapchainImageHandle, 0,
-        VK_IMAGE_VIEW_TYPE_2D, this->surfaceFormatList[0].format,
-        {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-         VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}));
+    this->swapchainImageViewPtrList.push_back(
+        std::unique_ptr<ImageView>(new ImageView(
+            this->devicePtr->getDeviceHandleRef(), swapchainImageHandle, 0,
+            VK_IMAGE_VIEW_TYPE_2D, this->surfaceFormatList[0].format,
+            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
 
-    this->framebufferList.push_back(new Framebuffer(
-        this->devicePtr->getDeviceHandleRef(),
-        this->renderPassPtr->getRenderPassHandleRef(),
-        {this->swapchainImageViewList[this->swapchainImageViewList.size() - 1]
-             ->getImageViewHandleRef()},
-        (VkFramebufferCreateFlags)0,
-        this->surfaceCapabilities.currentExtent.width,
-        this->surfaceCapabilities.currentExtent.height, 1));
+    this->framebufferPtrList.push_back(std::unique_ptr<Framebuffer>(
+        new Framebuffer(this->devicePtr->getDeviceHandleRef(),
+                        this->renderPassPtr->getRenderPassHandleRef(),
+                        {this->swapchainImageViewPtrList
+                             [this->swapchainImageViewPtrList.size() - 1]
+                                 ->getImageViewHandleRef()},
+                        (VkFramebufferCreateFlags)0,
+                        this->surfaceCapabilities.currentExtent.width,
+                        this->surfaceCapabilities.currentExtent.height, 1)));
   }
+}
+
+std::shared_ptr<Material> Engine::createMaterial(std::string name,
+                                                 std::string vertexFileName,
+                                                 std::string fragmentFileName) {
+
+  this->materialPtrList.push_back(std::shared_ptr<Material>(
+      new Material(this->devicePtr, name, vertexFileName, fragmentFileName)));
+
+  return this->materialPtrList[this->materialPtrList.size() - 1];
 }
