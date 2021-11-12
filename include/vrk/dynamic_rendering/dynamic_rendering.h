@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vrk/helper.h"
+
 #include <vulkan/vulkan.h>
 
 #include <memory>
@@ -26,7 +28,8 @@ struct RenderingAttachmentInfoParam {
   VkClearValue clearValue;
 };
 
-static void beginRenderingCmd(VkCommandBuffer &commandBufferHandleRef,
+static void beginRenderingCmd(VkDevice &deviceHandleRef,
+                              VkCommandBuffer &commandBufferHandleRef,
                               VkRenderingFlagsKHR renderingFlags,
                               VkRect2D rect2DRenderArea, uint32_t layerCount,
                               uint32_t viewMask, uint32_t colorAttachmentCount,
@@ -37,5 +40,6 @@ static void beginRenderingCmd(VkCommandBuffer &commandBufferHandleRef,
                               std::shared_ptr<RenderingAttachmentInfoParam>
                                   stencilRenderingAttachmentInfoParamPtr);
 
-static void endRenderingCmd(VkCommandBuffer &commandBufferHandleRef);
+static void endRenderingCmd(VkDevice &deviceHandleRef,
+                            VkCommandBuffer &commandBufferHandleRef);
 } // namespace DynamicRendering

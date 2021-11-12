@@ -1,9 +1,9 @@
 #include "vrk/dynamic_rendering/dynamic_rendering.h"
 
 void DynamicRendering::beginRenderingCmd(
-    VkCommandBuffer &commandBufferHandleRef, VkRenderingFlagsKHR renderingFlags,
-    VkRect2D rect2DRenderArea, uint32_t layerCount, uint32_t viewMask,
-    uint32_t colorAttachmentCount,
+    VkDevice &deviceHandleRef, VkCommandBuffer &commandBufferHandleRef,
+    VkRenderingFlagsKHR renderingFlags, VkRect2D rect2DRenderArea,
+    uint32_t layerCount, uint32_t viewMask, uint32_t colorAttachmentCount,
     std::vector<RenderingAttachmentInfoParam>
         colorRenderingAttachmentInfoParamList,
     std::shared_ptr<RenderingAttachmentInfoParam>
@@ -85,11 +85,17 @@ void DynamicRendering::beginRenderingCmd(
       .pDepthAttachment = depthRenderingAttachmentInfoPtr,
       .pStencilAttachment = stencilRenderingAttachmentInfoPtr};
 
-  vkCmdBeginRenderingKHR(commandBufferHandleRef, &renderingInfo);
+  LOAD_DEVICE_FUNCTION(deviceHandleRef, vkCmdBeginRenderingKHR,
+                       pvkCmdBeginRenderingKHR);
+
+  pvkCmdBeginRenderingKHR(commandBufferHandleRef, &renderingInfo);
 }
 
 void DynamicRendering::endRenderingCmd(
-    VkCommandBuffer &commandBufferHandleRef) {
+    VkDevice &deviceHandleRef, VkCommandBuffer &commandBufferHandleRef) {
 
-  vkCmdEndRenderingKHR(commandBufferHandleRef);
+  LOAD_DEVICE_FUNCTION(deviceHandleRef, vkCmdEndRenderingKHR,
+                       pvkCmdEndRenderingKHR);
+
+  pvkCmdEndRenderingKHR(commandBufferHandleRef);
 }
