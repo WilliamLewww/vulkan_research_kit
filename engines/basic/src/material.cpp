@@ -6,7 +6,6 @@ Material::Material(std::shared_ptr<Device> devicePtr, std::string name,
 
   std::ifstream vertexFile(Resource::findResource(vertexFileName),
                            std::ios::binary | std::ios::ate);
-
   std::streamsize vertexFileSize = vertexFile.tellg();
   vertexFile.seekg(0, std::ios::beg);
   std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
