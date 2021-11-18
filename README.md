@@ -29,7 +29,7 @@ cmake ..
 ### Building Examples
 An included source file can be used to set up the environment variables required for building the examples.
 ```bash
-source setup-env.sh
+source tools/setup-vrk-env.sh
 ```
 ## Libraries
 `vrk`: Provides the base Vulkan implementation. Can be used alone for a headless Vulkan application.
