@@ -38,5 +38,7 @@ source setup-env.sh
 
 `vrk-ray-tracing`: Provides support to the Vulkan ray tracing extensions.
 
+`vrk-dynamic-rendering`: Provides support to the Vulkan dynamic rendering extension.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
