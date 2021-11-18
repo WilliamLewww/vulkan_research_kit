@@ -28,18 +28,18 @@ struct RenderingAttachmentInfoParam {
   VkClearValue clearValue;
 };
 
-static void beginRenderingCmd(VkDevice &deviceHandleRef,
-                              VkCommandBuffer &commandBufferHandleRef,
-                              VkRenderingFlagsKHR renderingFlags,
-                              VkRect2D rect2DRenderArea, uint32_t layerCount,
-                              uint32_t viewMask, uint32_t colorAttachmentCount,
-                              std::vector<RenderingAttachmentInfoParam>
-                                  colorRenderingAttachmentInfoParamList,
-                              std::shared_ptr<RenderingAttachmentInfoParam>
-                                  depthRenderingAttachmentInfoParamPtr,
-                              std::shared_ptr<RenderingAttachmentInfoParam>
-                                  stencilRenderingAttachmentInfoParamPtr);
+void beginRenderingCmd(VkDevice &deviceHandleRef,
+                       VkCommandBuffer &commandBufferHandleRef,
+                       VkRenderingFlagsKHR renderingFlags,
+                       VkRect2D rect2DRenderArea, uint32_t layerCount,
+                       uint32_t viewMask, uint32_t colorAttachmentCount,
+                       std::vector<RenderingAttachmentInfoParam>
+                           colorRenderingAttachmentInfoParamList,
+                       std::shared_ptr<RenderingAttachmentInfoParam>
+                           depthRenderingAttachmentInfoParamPtr,
+                       std::shared_ptr<RenderingAttachmentInfoParam>
+                           stencilRenderingAttachmentInfoParamPtr);
 
-static void endRenderingCmd(VkDevice &deviceHandleRef,
-                            VkCommandBuffer &commandBufferHandleRef);
+void endRenderingCmd(VkDevice &deviceHandleRef,
+                     VkCommandBuffer &commandBufferHandleRef);
 } // namespace DynamicRendering

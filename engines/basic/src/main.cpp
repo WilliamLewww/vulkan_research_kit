@@ -24,5 +24,8 @@ int main() {
 
   engine->selectPhysicalDevice(physicalDeviceNameList[0], {});
 
+  std::shared_ptr<Material> material = engine->createMaterial(
+      "my-material", "material.vert.spv", "material.frag.spv");
+
   return 0;
 }

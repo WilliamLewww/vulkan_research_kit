@@ -89,11 +89,28 @@ GraphicsPipelineGroup::GraphicsPipelineGroup(
         .pColorBlendState = NULL,
         .pDynamicState = NULL,
         .layout = graphicsPipelineCreateInfoParam.pipelineLayoutHandleRef,
-        .renderPass = graphicsPipelineCreateInfoParam.renderPassHandleRef,
+        .renderPass = graphicsPipelineCreateInfoParam.renderPassHandle,
         .subpass = graphicsPipelineCreateInfoParam.subpass,
         .basePipelineHandle =
             graphicsPipelineCreateInfoParam.basePipelineHandle,
         .basePipelineIndex = graphicsPipelineCreateInfoParam.basePipelineIndex};
+
+    if (graphicsPipelineCreateInfoParam.graphicsPipelineCreateInfoChainList
+            .size() > 0) {
+      BaseVulkanStructure *previousStructure =
+          (BaseVulkanStructure *)&graphicsPipelineCreateInfo;
+
+      for (uint32_t x = 0; x < graphicsPipelineCreateInfoParam
+                                   .graphicsPipelineCreateInfoChainList.size();
+           x++) {
+        BaseVulkanStructure *currentStructure =
+            (BaseVulkanStructure *)graphicsPipelineCreateInfoParam
+                .graphicsPipelineCreateInfoChainList[x];
+
+        previousStructure->pNext = currentStructure;
+        previousStructure = currentStructure;
+      }
+    }
 
     if (graphicsPipelineCreateInfoParam
             .pipelineVertexInputStateCreateInfoParamPtr) {
