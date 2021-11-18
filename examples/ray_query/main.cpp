@@ -18,6 +18,7 @@
 #include "vrk/shader_module.h"
 
 #include "vrk/ray_tracing/acceleration_structure.h"
+#include "vrk/ray_tracing/ray_tracing.h"
 
 #include <cstring>
 
@@ -65,13 +66,21 @@ int main(void) {
           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
 
-  Instance *instance =
-      new Instance(validationFeatureEnableList, validationFeatureDisableList,
-                   debugUtilsMessageSeverityFlagBits,
-                   debugUtilsMessageTypeFlagBits, "Demo Application",
-                   VK_MAKE_VERSION(1, 0, 0), {"VK_LAYER_KHRONOS_validation"},
-                   {VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-                    VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
+  std::vector<std::string> instanceExtensionList = {
+      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+  instanceExtensionList.insert(
+      instanceExtensionList.end(),
+      RAY_QUERY_REQUIRED_INSTANCE_EXTENSION_LIST.begin(),
+      RAY_QUERY_REQUIRED_INSTANCE_EXTENSION_LIST.end());
+  instanceExtensionList.erase(
+      unique(instanceExtensionList.begin(), instanceExtensionList.end()),
+      instanceExtensionList.end());
+
+  Instance *instance = new Instance(
+      validationFeatureEnableList, validationFeatureDisableList,
+      debugUtilsMessageSeverityFlagBits, debugUtilsMessageTypeFlagBits,
+      "Demo Application", VK_MAKE_VERSION(1, 0, 0),
+      {"VK_LAYER_KHRONOS_validation"}, instanceExtensionList);
 
   std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str()
             << std::endl;
@@ -79,7 +88,7 @@ int main(void) {
   std::vector<VkPhysicalDevice> deviceHandleList =
       Device::getPhysicalDevices(instance->getInstanceHandleRef());
 
-  VkPhysicalDevice activePhysicalDeviceHandle;
+  VkPhysicalDevice activePhysicalDeviceHandle = deviceHandleList[0];
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(deviceHandle);
@@ -128,16 +137,20 @@ int main(void) {
       .pNext = NULL,
       .rayQuery = VK_TRUE};
 
-  Device *device = new Device(
-      activePhysicalDeviceHandle, {{0, queueFamilyIndex, 1, {1.0f}}}, {},
-      {"VK_KHR_ray_query", "VK_KHR_spirv_1_4", "VK_KHR_shader_float_controls",
-       "VK_KHR_acceleration_structure", "VK_EXT_descriptor_indexing",
-       "VK_KHR_maintenance3", "VK_KHR_buffer_device_address",
-       "VK_KHR_deferred_host_operations"},
-      NULL,
-      {&physicalDeviceBufferDeviceAddressFeatures,
-       &physicalDeviceAccelerationStructureFeatures,
-       &physicalDeviceRayQueryFeatures});
+  std::vector<std::string> deviceExtensionList;
+  deviceExtensionList.insert(deviceExtensionList.end(),
+                             RAY_QUERY_REQUIRED_DEVICE_EXTENSION_LIST.begin(),
+                             RAY_QUERY_REQUIRED_DEVICE_EXTENSION_LIST.end());
+  deviceExtensionList.erase(
+      unique(deviceExtensionList.begin(), deviceExtensionList.end()),
+      deviceExtensionList.end());
+
+  Device *device =
+      new Device(activePhysicalDeviceHandle, {{0, queueFamilyIndex, 1, {1.0f}}},
+                 {}, deviceExtensionList, NULL,
+                 {&physicalDeviceBufferDeviceAddressFeatures,
+                  &physicalDeviceAccelerationStructureFeatures,
+                  &physicalDeviceRayQueryFeatures});
 
   CommandPool *commandPool = new CommandPool(
       device->getDeviceHandleRef(),

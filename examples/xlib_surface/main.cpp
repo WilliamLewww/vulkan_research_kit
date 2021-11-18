@@ -18,6 +18,7 @@
 
 #include "vrk/wsi/surface.h"
 #include "vrk/wsi/swapchain.h"
+#include "vrk/wsi/wsi.h"
 
 #include <X11/Xlib.h>
 
@@ -55,13 +56,25 @@ int main(void) {
           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
 
-  Instance *instance =
-      new Instance(validationFeatureEnableList, validationFeatureDisableList,
-                   debugUtilsMessageSeverityFlagBits,
-                   debugUtilsMessageTypeFlagBits, "Demo Application",
-                   VK_MAKE_VERSION(1, 0, 0), {"VK_LAYER_KHRONOS_validation"},
-                   {VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-                    VK_KHR_SURFACE_EXTENSION_NAME, "VK_KHR_xlib_surface"});
+  std::vector<std::string> instanceExtensionList = {
+      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+  instanceExtensionList.insert(
+      instanceExtensionList.end(),
+      SWAPCHAIN_REQUIRED_INSTANCE_EXTENSION_LIST.begin(),
+      SWAPCHAIN_REQUIRED_INSTANCE_EXTENSION_LIST.end());
+  instanceExtensionList.insert(
+      instanceExtensionList.end(),
+      XLIB_SURFACE_REQUIRED_INSTANCE_EXTENSION_LIST.begin(),
+      XLIB_SURFACE_REQUIRED_INSTANCE_EXTENSION_LIST.end());
+  instanceExtensionList.erase(
+      unique(instanceExtensionList.begin(), instanceExtensionList.end()),
+      instanceExtensionList.end());
+
+  Instance *instance = new Instance(
+      validationFeatureEnableList, validationFeatureDisableList,
+      debugUtilsMessageSeverityFlagBits, debugUtilsMessageTypeFlagBits,
+      "Demo Application", VK_MAKE_VERSION(1, 0, 0),
+      {"VK_LAYER_KHRONOS_validation"}, instanceExtensionList);
 
   std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str()
             << std::endl;
@@ -77,7 +90,7 @@ int main(void) {
   std::vector<VkPhysicalDevice> deviceHandleList =
       Device::getPhysicalDevices(instance->getInstanceHandleRef());
 
-  VkPhysicalDevice activePhysicalDeviceHandle;
+  VkPhysicalDevice activePhysicalDeviceHandle = deviceHandleList[0];
   for (VkPhysicalDevice deviceHandle : deviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties =
         Device::getPhysicalDeviceProperties(deviceHandle);
@@ -104,9 +117,17 @@ int main(void) {
     }
   }
 
+  std::vector<std::string> deviceExtensionList;
+  deviceExtensionList.insert(deviceExtensionList.end(),
+                             SWAPCHAIN_REQUIRED_DEVICE_EXTENSION_LIST.begin(),
+                             SWAPCHAIN_REQUIRED_DEVICE_EXTENSION_LIST.end());
+  deviceExtensionList.erase(
+      unique(deviceExtensionList.begin(), deviceExtensionList.end()),
+      deviceExtensionList.end());
+
   Device *device =
       new Device(activePhysicalDeviceHandle, {{0, queueFamilyIndex, 1, {1.0f}}},
-                 {}, {VK_KHR_SWAPCHAIN_EXTENSION_NAME}, NULL);
+                 {}, deviceExtensionList, NULL);
 
   CommandPool *commandPool =
       new CommandPool(device->getDeviceHandleRef(), 0, queueFamilyIndex);

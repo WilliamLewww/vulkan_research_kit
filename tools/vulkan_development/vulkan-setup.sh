@@ -84,6 +84,19 @@ then
   make install -j${THREADS} -C Vulkan-Loader/build
 fi
 
+if [ ! -d "Vulkan-Tools" ]
+then
+  git clone https://github.com/KhronosGroup/Vulkan-Tools
+
+  git --git-dir=Vulkan-Tools/.git --work-tree=Vulkan-Tools checkout ${VERSION}
+
+  mkdir Vulkan-Tools/build
+  cmake -HVulkan-Tools -BVulkan-Tools/build \
+      -DCMAKE_INSTALL_PREFIX=Vulkan-Tools/build/install \
+      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install
+  make install -j${THREADS} -C Vulkan-Tools/build
+fi
+
 if [ ! -d "SPIRV-Headers" ]
 then
   git clone https://github.com/KhronosGroup/SPIRV-Headers

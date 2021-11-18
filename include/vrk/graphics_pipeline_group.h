@@ -117,10 +117,12 @@ public:
         pipelineDynamicStateCreateInfoParamPtr;
 
     VkPipelineLayout &pipelineLayoutHandleRef;
-    VkRenderPass &renderPassHandleRef;
+    VkRenderPass renderPassHandle;
     uint32_t subpass;
     VkPipeline basePipelineHandle;
     int32_t basePipelineIndex;
+
+    std::vector<void *> graphicsPipelineCreateInfoChainList;
   };
 
   GraphicsPipelineGroup(VkDevice &deviceHandleRef,

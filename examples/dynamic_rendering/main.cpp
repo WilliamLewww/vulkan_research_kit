@@ -3,18 +3,17 @@
 #include "vrk/command_pool.h"
 #include "vrk/device.h"
 #include "vrk/fence.h"
-#include "vrk/framebuffer.h"
 #include "vrk/graphics_pipeline_group.h"
 #include "vrk/image.h"
 #include "vrk/image_view.h"
 #include "vrk/instance.h"
 #include "vrk/pipeline_layout.h"
-#include "vrk/render_pass.h"
 #include "vrk/resource.h"
 #include "vrk/shader_module.h"
 
+#include "vrk/dynamic_rendering/dynamic_rendering.h"
+
 #include <cstring>
-#include <fstream>
 
 void saveImage(std::string filename, void *buffer, uint32_t width,
                uint32_t height) {
@@ -39,9 +38,9 @@ void saveImage(std::string filename, void *buffer, uint32_t width,
   image.close();
 }
 
-int main(void) {
+int main() {
   std::vector<VkValidationFeatureEnableEXT> validationFeatureEnableList = {
-      VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+      // VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
       VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
       VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
 
@@ -60,11 +59,21 @@ int main(void) {
           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
 
+  std::vector<std::string> instanceExtensionList = {
+      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+  instanceExtensionList.insert(
+      instanceExtensionList.end(),
+      DYNAMIC_RENDERING_REQUIRED_INSTANCE_EXTENSION_LIST.begin(),
+      DYNAMIC_RENDERING_REQUIRED_INSTANCE_EXTENSION_LIST.end());
+  instanceExtensionList.erase(
+      unique(instanceExtensionList.begin(), instanceExtensionList.end()),
+      instanceExtensionList.end());
+
   Instance *instance = new Instance(
       validationFeatureEnableList, validationFeatureDisableList,
       debugUtilsMessageSeverityFlagBits, debugUtilsMessageTypeFlagBits,
       "Demo Application", VK_MAKE_VERSION(1, 0, 0),
-      {"VK_LAYER_KHRONOS_validation"}, {VK_EXT_DEBUG_UTILS_EXTENSION_NAME});
+      {"VK_LAYER_KHRONOS_validation"}, instanceExtensionList);
 
   std::cout << "Vulkan API " << instance->getVulkanVersionAPI().c_str()
             << std::endl;
@@ -96,8 +105,25 @@ int main(void) {
     }
   }
 
-  Device *device = new Device(activePhysicalDeviceHandle,
-                              {{0, queueFamilyIndex, 1, {1.0f}}}, {}, {}, NULL);
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR
+      physicalDeviceDynamicRenderingFeatures = {
+          .sType =
+              VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR,
+          .pNext = NULL,
+          .dynamicRendering = VK_TRUE};
+
+  std::vector<std::string> deviceExtensionList;
+  deviceExtensionList.insert(
+      deviceExtensionList.end(),
+      DYNAMIC_RENDERING_REQUIRED_DEVICE_EXTENSION_LIST.begin(),
+      DYNAMIC_RENDERING_REQUIRED_DEVICE_EXTENSION_LIST.end());
+  deviceExtensionList.erase(
+      unique(deviceExtensionList.begin(), deviceExtensionList.end()),
+      deviceExtensionList.end());
+
+  Device *device = new Device(
+      activePhysicalDeviceHandle, {{0, queueFamilyIndex, 1, {1.0f}}}, {},
+      deviceExtensionList, NULL, {&physicalDeviceDynamicRenderingFeatures});
 
   CommandPool *commandPool =
       new CommandPool(device->getDeviceHandleRef(), 0, queueFamilyIndex);
@@ -105,49 +131,6 @@ int main(void) {
   CommandBufferGroup *commandBufferGroup = new CommandBufferGroup(
       device->getDeviceHandleRef(), commandPool->getCommandPoolHandleRef(),
       VK_COMMAND_BUFFER_LEVEL_PRIMARY, 2);
-
-  std::vector<VkAttachmentReference> attachmentReferenceList = {
-      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
-
-  RenderPass *renderPass = new RenderPass(
-      device->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
-      {{0, VK_FORMAT_R32G32B32A32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}},
-      {{
-          0,
-          VK_PIPELINE_BIND_POINT_GRAPHICS,
-          0,
-          NULL,
-          1,
-          attachmentReferenceList.data(),
-          NULL,
-          NULL,
-          0,
-          NULL,
-      }},
-      {});
-
-  Image *colorImage = new Image(
-      device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
-      VK_IMAGE_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT, {800, 600, 1}, 1, 1,
-      VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-      VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-  ImageView *colorImageView = new ImageView(
-      device->getDeviceHandleRef(), colorImage->getImageHandleRef(), 0,
-      VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT,
-      {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
-      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-
-  Framebuffer *framebuffer = new Framebuffer(
-      device->getDeviceHandleRef(), renderPass->getRenderPassHandleRef(),
-      {colorImageView->getImageViewHandleRef()}, (VkFramebufferCreateFlags)0,
-      800, 600, 1);
 
   std::ifstream vertexFile(Resource::findResource("shaders/default.vert.spv"),
                            std::ios::binary | std::ios::ate);
@@ -262,6 +245,18 @@ int main(void) {
               {pipelineColorBlendAttachmentState},
           .blendConstants = {0, 0, 0, 0}});
 
+  std::vector<VkFormat> colorAttachmentFormatList = {
+      VK_FORMAT_R32G32B32A32_SFLOAT};
+
+  VkPipelineRenderingCreateInfoKHR pipelineRenderingCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+      .pNext = NULL,
+      .viewMask = 0,
+      .colorAttachmentCount = 1,
+      .pColorAttachmentFormats = colorAttachmentFormatList.data(),
+      .depthAttachmentFormat = VK_FORMAT_UNDEFINED,
+      .stencilAttachmentFormat = VK_FORMAT_UNDEFINED};
+
   GraphicsPipelineGroup *graphicsPipelineGroup =
       new GraphicsPipelineGroup(device->getDeviceHandleRef(),
                                 {{0,
@@ -276,10 +271,11 @@ int main(void) {
                                   pipelineColorBlendStateCreateInfoParam,
                                   NULL,
                                   pipelineLayout->getPipelineLayoutHandleRef(),
-                                  renderPass->getRenderPassHandleRef(),
+                                  VK_NULL_HANDLE,
                                   0,
                                   VK_NULL_HANDLE,
-                                  0}});
+                                  0,
+                                  {&pipelineRenderingCreateInfo}}});
 
   float vertices[12] = {-0.5f, -0.5f, 0.0f, 0.5f,  -0.5f, 0.0f,
                         0.5f,  0.5f,  0.0f, -0.5f, 0.5f,  0.0f};
@@ -308,13 +304,38 @@ int main(void) {
   memcpy(hostIndexBuffer, indices, 6 * sizeof(uint32_t));
   indexBuffer->unmapMemory();
 
-  commandBufferGroup->beginRecording(
-      0, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+  Image *colorImage = new Image(
+      device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
+      VK_IMAGE_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT, {800, 600, 1}, 1, 1,
+      VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+      VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED,
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-  renderPass->beginRenderPassCmd(
-      commandBufferGroup->getCommandBufferHandleRef(0),
-      framebuffer->getFramebufferHandleRef(), {{0, 0}, {800, 600}},
-      {{{0.0, 0.0, 0.0, 1.0}}}, VK_SUBPASS_CONTENTS_INLINE);
+  ImageView *colorImageView = new ImageView(
+      device->getDeviceHandleRef(), colorImage->getImageHandleRef(), 0,
+      VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32G32B32A32_SFLOAT,
+      {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+
+  DynamicRendering::RenderingAttachmentInfoParam renderingAttachmentInfoParam =
+      {.imageViewHandle = colorImageView->getImageViewHandleRef(),
+       .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+       .resolveModeFlagBits = (VkResolveModeFlagBits)0,
+       .resolveImageViewHandle = VK_NULL_HANDLE,
+       .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+       .attachmentLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+       .attachmentStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
+       .clearValue = {.color = {{0, 0, 0, 0}}}};
+
+  commandBufferGroup->beginRecording(
+      0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+  DynamicRendering::beginRenderingCmd(
+      device->getDeviceHandleRef(),
+      commandBufferGroup->getCommandBufferHandleRef(0), 0, {{0, 0}, {800, 600}},
+      1, 0, 1, {renderingAttachmentInfoParam}, NULL, NULL);
 
   graphicsPipelineGroup->bindPipelineCmd(
       0, commandBufferGroup->getCommandBufferHandleRef(0));
@@ -327,15 +348,16 @@ int main(void) {
   graphicsPipelineGroup->drawIndexedCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), 6, 1, 0, 0, 0);
 
-  renderPass->endRenderPassCmd(
+  DynamicRendering::endRenderingCmd(
+      device->getDeviceHandleRef(),
       commandBufferGroup->getCommandBufferHandleRef(0));
 
   commandBufferGroup->createPipelineBarrierCmd(
-      0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      0, VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR,
       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {}, {},
-      {{VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      {{VK_ACCESS_MEMORY_WRITE_BIT,
         VK_ACCESS_TRANSFER_READ_BIT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         queueFamilyIndex,
         queueFamilyIndex,
@@ -385,23 +407,6 @@ int main(void) {
   imageBuffer->mapMemory(&hostImageBuffer, 0, 800 * 600 * 4 * sizeof(float));
   saveImage("image.ppm", hostImageBuffer, 800, 600);
   imageBuffer->unmapMemory();
-
-  delete imageBuffer;
-  delete indexBuffer;
-  delete vertexBuffer;
-  delete fence;
-  delete graphicsPipelineGroup;
-  delete pipelineLayout;
-  delete fragmentShaderModule;
-  delete vertexShaderModule;
-  delete framebuffer;
-  delete colorImageView;
-  delete colorImage;
-  delete renderPass;
-  delete commandBufferGroup;
-  delete commandPool;
-  delete device;
-  delete instance;
 
   return 0;
 }
