@@ -8,13 +8,13 @@
 
 class Material {
 public:
-  Material(std::shared_ptr<Device> devicePtr, std::string name,
+  Material(std::shared_ptr<Device> devicePtr, std::string materialName,
            std::string vertexFileName, std::string fragmentFileName);
 
   ~Material();
 
 private:
-  std::string name;
+  std::string materialName;
 
   std::unique_ptr<ShaderModule> vertexShaderModulePtr;
 

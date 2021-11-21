@@ -1,5 +1,6 @@
 #pragma once
 #include "basic/material.h"
+#include "basic/model.h"
 
 #include <vrk/command_buffer_group.h>
 #include <vrk/command_pool.h>
@@ -30,9 +31,13 @@ public:
   void selectPhysicalDevice(std::string physicalDeviceName,
                             std::vector<std::string> deviceExtensionNameList);
 
-  std::shared_ptr<Material> createMaterial(std::string name,
+  std::shared_ptr<Material> createMaterial(std::string materialName,
                                            std::string vertexFileName,
                                            std::string fragmentFileName);
+
+  std::shared_ptr<Model> createModel(std::string modelName,
+                                     std::string modelPath,
+                                     std::shared_ptr<Material> materialPtr);
 
 private:
   std::unique_ptr<Instance> instancePtr;
@@ -68,4 +73,6 @@ private:
   std::vector<std::unique_ptr<Framebuffer>> framebufferPtrList;
 
   std::vector<std::shared_ptr<Material>> materialPtrList;
+
+  std::vector<std::shared_ptr<Model>> modelPtrList;
 };

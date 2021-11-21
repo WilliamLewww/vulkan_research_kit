@@ -181,12 +181,22 @@ void Engine::selectPhysicalDevice(
   }
 }
 
-std::shared_ptr<Material> Engine::createMaterial(std::string name,
+std::shared_ptr<Material> Engine::createMaterial(std::string materialName,
                                                  std::string vertexFileName,
                                                  std::string fragmentFileName) {
 
-  this->materialPtrList.push_back(std::shared_ptr<Material>(
-      new Material(this->devicePtr, name, vertexFileName, fragmentFileName)));
+  this->materialPtrList.push_back(std::shared_ptr<Material>(new Material(
+      this->devicePtr, materialName, vertexFileName, fragmentFileName)));
 
   return this->materialPtrList[this->materialPtrList.size() - 1];
+}
+
+std::shared_ptr<Model>
+Engine::createModel(std::string modelName, std::string modelPath,
+                    std::shared_ptr<Material> materialPtr) {
+
+  this->modelPtrList.push_back(std::shared_ptr<Model>(
+      new Model(this->devicePtr, modelName, modelPath, materialPtr)));
+
+  return this->modelPtrList[this->modelPtrList.size() - 1];
 }
