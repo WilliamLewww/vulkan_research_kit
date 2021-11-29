@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include <memory>
 #include <vector>
 
 class CommandBufferGroup {
@@ -41,6 +42,15 @@ public:
     VkImageSubresourceRange imageSubresourceRange;
   };
 
+  struct CommandBufferInheritanceInfoParam {
+    VkRenderPass renderPassHandle;
+    uint32_t subpass;
+    VkFramebuffer framebufferHandle;
+    VkBool32 occlusionQueryEnable;
+    VkQueryControlFlags queryControlFlags;
+    VkQueryPipelineStatisticFlags queryPipelineStatisticFlags;
+  };
+
   CommandBufferGroup(VkDevice &deviceHandleRef,
                      VkCommandPool &commandPoolHandleRef,
                      VkCommandBufferLevel commandBufferLevel,
@@ -49,7 +59,9 @@ public:
   ~CommandBufferGroup();
 
   void beginRecording(uint32_t commandBufferIndex,
-                      VkCommandBufferUsageFlagBits commandBufferUsageFlagBits);
+                      VkCommandBufferUsageFlagBits commandBufferUsageFlagBits,
+                      std::shared_ptr<CommandBufferInheritanceInfoParam>
+                          commandBufferInheritanceInfoParamPtr = NULL);
 
   void endRecording(uint32_t commandBufferIndex);
 

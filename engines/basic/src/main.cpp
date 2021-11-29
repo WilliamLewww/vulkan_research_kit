@@ -11,7 +11,8 @@ int main() {
   XSelectInput(displayPtr, window, ExposureMask | KeyPressMask);
   XMapWindow(displayPtr, window);
 
-  Engine *engine = new Engine("Demo Application", true, {}, {});
+  std::shared_ptr<Engine> engine =
+      std::shared_ptr<Engine>(new Engine("Demo Application", true, {}, {}));
 
   engine->selectWindow(displayPtr, std::make_shared<Window>(window));
 

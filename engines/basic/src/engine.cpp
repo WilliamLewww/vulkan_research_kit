@@ -87,33 +87,34 @@ void Engine::selectPhysicalDevice(
   this->queueFamilyPropertiesList = Device::getQueueFamilyPropertiesList(
       *this->physicalDeviceHandlePtr.get());
 
-  uint32_t queueFamilyIndex = -1;
+  this->queueFamilyIndex = -1;
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
     if (queueFamilyPropertiesList[x].queueFlags & VK_QUEUE_GRAPHICS_BIT &&
         Surface::checkPhysicalDeviceSurfaceSupport(
             *this->physicalDeviceHandlePtr.get(), x,
             surfacePtr->getSurfaceHandleRef())) {
 
-      queueFamilyIndex = x;
+      this->queueFamilyIndex = x;
       break;
     }
   }
 
   deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-  this->devicePtr = std::shared_ptr<Device>(new Device(
-      *this->physicalDeviceHandlePtr.get(), {{0, queueFamilyIndex, 1, {1.0f}}},
-      {}, deviceExtensionNameList, NULL));
+  this->devicePtr = std::shared_ptr<Device>(
+      new Device(*this->physicalDeviceHandlePtr.get(),
+                 {{0, this->queueFamilyIndex, 1, {1.0f}}}, {},
+                 deviceExtensionNameList, NULL));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
-      this->devicePtr->getDeviceHandleRef(), 0, queueFamilyIndex));
+      this->devicePtr->getDeviceHandleRef(), 0, this->queueFamilyIndex));
 
   this->commandBufferGroupPtr =
       std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
           this->devicePtr->getDeviceHandleRef(),
           commandPoolPtr->getCommandPoolHandleRef(),
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          queueFamilyPropertiesList[queueFamilyIndex].queueCount));
+          queueFamilyPropertiesList[this->queueFamilyIndex].queueCount));
 
   this->surfaceCapabilities = surfacePtr->getPhysicalDeviceSurfaceCapabilities(
       *this->physicalDeviceHandlePtr.get());
@@ -131,7 +132,7 @@ void Engine::selectPhysicalDevice(
       this->surfaceFormatList[0].format, this->surfaceFormatList[0].colorSpace,
       this->surfaceCapabilities.currentExtent, 1,
       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {queueFamilyIndex}, this->surfaceCapabilities.currentTransform,
+      {this->queueFamilyIndex}, this->surfaceCapabilities.currentTransform,
       VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, this->presentModeList[0], VK_TRUE,
       VK_NULL_HANDLE));
 
@@ -186,7 +187,7 @@ std::shared_ptr<Material> Engine::createMaterial(std::string materialName,
                                                  std::string fragmentFileName) {
 
   this->materialPtrList.push_back(std::shared_ptr<Material>(new Material(
-      this->devicePtr, materialName, vertexFileName, fragmentFileName)));
+      shared_from_this(), materialName, vertexFileName, fragmentFileName)));
 
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
@@ -196,7 +197,7 @@ Engine::createModel(std::string modelName, std::string modelPath,
                     std::shared_ptr<Material> materialPtr) {
 
   this->modelPtrList.push_back(std::shared_ptr<Model>(
-      new Model(this->devicePtr, modelName, modelPath, materialPtr)));
+      new Model(shared_from_this(), modelName, modelPath, materialPtr)));
 
   return this->modelPtrList[this->modelPtrList.size() - 1];
 }

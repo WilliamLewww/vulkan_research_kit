@@ -16,7 +16,7 @@
 
 #include <X11/Xlib.h>
 
-class Engine {
+class Engine : public std::enable_shared_from_this<Engine> {
 public:
   Engine(std::string appName, bool enableValidation,
          std::vector<std::string> instanceLayerList,
@@ -48,6 +48,8 @@ private:
 
   std::unique_ptr<VkPhysicalDevice> physicalDeviceHandlePtr;
 
+  uint32_t queueFamilyIndex;
+
   std::shared_ptr<Device> devicePtr;
 
   std::vector<VkQueueFamilyProperties> queueFamilyPropertiesList;
@@ -75,4 +77,7 @@ private:
   std::vector<std::shared_ptr<Material>> materialPtrList;
 
   std::vector<std::shared_ptr<Model>> modelPtrList;
+
+  friend class Material;
+  friend class Model;
 };

@@ -65,5 +65,12 @@ foreach(SHADER ${SHADERS})
   target_sources(basic-engine PRIVATE resources/shaders/${SHADER_NAME}.spv)
 endforeach()
 
+
 add_executable(basic-engine-app src/main.cpp)
 target_link_libraries(basic-engine-app basic-engine)
+
+add_custom_target(copy_resources
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+)
+
+add_dependencies(basic-engine-app copy_resources)
