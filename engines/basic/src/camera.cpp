@@ -66,13 +66,17 @@ void Camera::updateViewMatrix() {
   viewMatrix[2] = -sinf(this->yaw);
   viewMatrix[3] = 0.0;
 
-  viewMatrix[4] = cosf(this->pitch) * sinf(this->yaw) * sinf(this->roll) - sinf(this->pitch) * cosf(roll);
-  viewMatrix[5] = sinf(this->pitch) * sinf(this->yaw) * sinf(this->roll) + cosf(this->pitch) * cosf(roll);
+  viewMatrix[4] = cosf(this->pitch) * sinf(this->yaw) * sinf(this->roll) -
+                  sinf(this->pitch) * cosf(roll);
+  viewMatrix[5] = sinf(this->pitch) * sinf(this->yaw) * sinf(this->roll) +
+                  cosf(this->pitch) * cosf(roll);
   viewMatrix[6] = cosf(this->yaw) * sinf(this->roll);
   viewMatrix[7] = 0.0;
 
-  viewMatrix[8] = cosf(this->pitch) * sinf(this->yaw) * cosf(this->roll) + sinf(this->pitch) * sinf(roll);
-  viewMatrix[9] = sinf(this->pitch) * sinf(this->yaw) * cosf(this->roll) - cosf(this->pitch) * sinf(roll);
+  viewMatrix[8] = cosf(this->pitch) * sinf(this->yaw) * cosf(this->roll) +
+                  sinf(this->pitch) * sinf(roll);
+  viewMatrix[9] = sinf(this->pitch) * sinf(this->yaw) * cosf(this->roll) -
+                  cosf(this->pitch) * sinf(roll);
   viewMatrix[10] = cosf(this->yaw) * cosf(this->roll);
   viewMatrix[11] = 0.0;
 

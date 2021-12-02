@@ -9,6 +9,6 @@ layout(set = 0, binding = 0) uniform Camera {
 camera;
 
 void main() {
-  gl_Position =
-      camera.projectionMatrix * inverse(camera.viewMatrix) * vec4(inPosition, 1.0);
+  gl_Position = camera.projectionMatrix * inverse(camera.viewMatrix) *
+                vec4(inPosition, 1.0);
 }
