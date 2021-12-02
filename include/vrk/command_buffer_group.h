@@ -80,6 +80,9 @@ public:
       std::vector<BufferMemoryBarrierParam> bufferMemoryBarrierParamList,
       std::vector<ImageMemoryBarrierParam> imageMemoryBarrierParamList);
 
+  void executeCommandsCmd(uint32_t commandBufferIndex,
+                          std::vector<VkCommandBuffer> commandBufferHandleList);
+
   VkCommandBuffer &getCommandBufferHandleRef(uint32_t index);
 
 private:

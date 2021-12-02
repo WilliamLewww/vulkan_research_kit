@@ -1,7 +1,11 @@
 #pragma once
+#include "basic/camera.h"
 
 #include "vrk/graphics_pipeline_group.h"
 #include "vrk/pipeline_layout.h"
+#include <vrk/descriptor_pool.h>
+#include <vrk/descriptor_set_group.h>
+#include <vrk/descriptor_set_layout.h>
 #include <vrk/device.h>
 #include <vrk/resource.h>
 #include <vrk/shader_module.h>
@@ -17,6 +21,8 @@ public:
 
   ~Material();
 
+  void updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr);
+
 private:
   std::shared_ptr<Engine> enginePtr;
 
@@ -26,7 +32,15 @@ private:
 
   std::unique_ptr<ShaderModule> fragmentShaderModulePtr;
 
+  std::unique_ptr<PipelineLayout> pipelineLayoutPtr;
+
   std::unique_ptr<GraphicsPipelineGroup> graphicsPipelineGroupPtr;
+
+  std::unique_ptr<DescriptorPool> descriptorPoolPtr;
+
+  std::unique_ptr<DescriptorSetLayout> descriptorSetLayoutPtr;
+
+  std::unique_ptr<DescriptorSetGroup> descriptorSetGroupPtr;
 
   friend class Model;
 };

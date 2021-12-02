@@ -1,6 +1,6 @@
 #pragma once
-#include "basic/material.h"
-#include "basic/model.h"
+#include "basic/camera.h"
+#include "basic/scene.h"
 
 #include <vrk/command_buffer_group.h>
 #include <vrk/command_pool.h>
@@ -15,6 +15,8 @@
 #include <vrk/wsi/swapchain.h>
 
 #include <X11/Xlib.h>
+
+#include <map>
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
@@ -31,13 +33,12 @@ public:
   void selectPhysicalDevice(std::string physicalDeviceName,
                             std::vector<std::string> deviceExtensionNameList);
 
-  std::shared_ptr<Material> createMaterial(std::string materialName,
-                                           std::string vertexFileName,
-                                           std::string fragmentFileName);
+  std::shared_ptr<Scene> createScene(std::string sceneName);
 
-  std::shared_ptr<Model> createModel(std::string modelName,
-                                     std::string modelPath,
-                                     std::shared_ptr<Material> materialPtr);
+  std::shared_ptr<Camera> createCamera(std::string cameraName);
+
+  uint32_t render(std::shared_ptr<Scene> scenePtr,
+                  std::shared_ptr<Camera> cameraPtr);
 
 private:
   std::unique_ptr<Instance> instancePtr;
@@ -58,6 +59,10 @@ private:
 
   std::unique_ptr<CommandBufferGroup> commandBufferGroupPtr;
 
+  uint32_t secondaryCommandBufferCount;
+
+  std::unique_ptr<CommandBufferGroup> secondaryCommandBufferGroupPtr;
+
   VkSurfaceCapabilitiesKHR surfaceCapabilities;
 
   std::vector<VkSurfaceFormatKHR> surfaceFormatList;
@@ -74,10 +79,20 @@ private:
 
   std::vector<std::unique_ptr<Framebuffer>> framebufferPtrList;
 
-  std::vector<std::shared_ptr<Material>> materialPtrList;
+  std::vector<std::unique_ptr<Fence>> imageAvailableFencePtrList;
 
-  std::vector<std::shared_ptr<Model>> modelPtrList;
+  std::vector<std::unique_ptr<Semaphore>> acquireImageSemaphorePtrList;
 
+  std::vector<std::unique_ptr<Semaphore>> writeImageSemaphorePtrList;
+
+  std::vector<std::shared_ptr<Scene>> scenePtrList;
+
+  std::vector<std::shared_ptr<Camera>> cameraPtrList;
+
+  uint32_t currentFrame;
+
+  friend class Scene;
+  friend class Camera;
   friend class Material;
   friend class Model;
 };

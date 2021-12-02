@@ -45,9 +45,25 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       .entryPointName = "main",
       .specializationInfoPtr = NULL};
 
-  PipelineLayout *pipelineLayout = new PipelineLayout(
+  this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
+      new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
+                         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
+                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}}));
+
+  this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
+      new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
+                              {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                                VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
+
+  this->descriptorSetGroupPtr =
+      std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
+          enginePtr->devicePtr->getDeviceHandleRef(),
+          this->descriptorPoolPtr->getDescriptorPoolHandleRef(),
+          {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}));
+
+  this->pipelineLayoutPtr = std::unique_ptr<PipelineLayout>(new PipelineLayout(
       enginePtr->devicePtr->getDeviceHandleRef(),
-      std::vector<VkDescriptorSetLayout>(), std::vector<VkPushConstantRange>());
+      {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}, {}));
 
   auto pipelineVertexInputStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam>(
@@ -135,7 +151,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
             NULL,
             pipelineColorBlendStateCreateInfoParam,
             NULL,
-            pipelineLayout->getPipelineLayoutHandleRef(),
+            this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),
             enginePtr->renderPassPtr->getRenderPassHandleRef(),
             0,
             VK_NULL_HANDLE,
@@ -143,3 +159,10 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
 }
 
 Material::~Material() {}
+
+void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
+  this->descriptorSetGroupPtr->updateDescriptorSets(
+      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+        cameraPtr->getCameraDescriptorBufferInfoPtr(), NULL}},
+      {});
+}

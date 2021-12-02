@@ -203,6 +203,15 @@ void CommandBufferGroup::createPipelineBarrierCmd(
       (uint32_t)imageMemoryBarrierList.size(), imageMemoryBarrierList.data());
 }
 
+void CommandBufferGroup::executeCommandsCmd(
+    uint32_t commandBufferIndex,
+    std::vector<VkCommandBuffer> commandBufferHandleList) {
+
+  vkCmdExecuteCommands(this->commandBufferHandleList[commandBufferIndex],
+                       commandBufferHandleList.size(),
+                       commandBufferHandleList.data());
+}
+
 VkCommandBuffer &CommandBufferGroup::getCommandBufferHandleRef(uint32_t index) {
 
   return this->commandBufferHandleList[index];

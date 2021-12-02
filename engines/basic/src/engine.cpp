@@ -107,7 +107,8 @@ void Engine::selectPhysicalDevice(
                  deviceExtensionNameList, NULL));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
-      this->devicePtr->getDeviceHandleRef(), 0, this->queueFamilyIndex));
+      this->devicePtr->getDeviceHandleRef(),
+      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, this->queueFamilyIndex));
 
   this->commandBufferGroupPtr =
       std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
@@ -115,6 +116,14 @@ void Engine::selectPhysicalDevice(
           commandPoolPtr->getCommandPoolHandleRef(),
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
           queueFamilyPropertiesList[this->queueFamilyIndex].queueCount));
+
+  this->secondaryCommandBufferCount = 128;
+
+  this->secondaryCommandBufferGroupPtr = std::unique_ptr<CommandBufferGroup>(
+      new CommandBufferGroup(this->devicePtr->getDeviceHandleRef(),
+                             commandPoolPtr->getCommandPoolHandleRef(),
+                             VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+                             this->secondaryCommandBufferCount));
 
   this->surfaceCapabilities = surfacePtr->getPhysicalDeviceSurfaceCapabilities(
       *this->physicalDeviceHandlePtr.get());
@@ -179,25 +188,71 @@ void Engine::selectPhysicalDevice(
                         (VkFramebufferCreateFlags)0,
                         this->surfaceCapabilities.currentExtent.width,
                         this->surfaceCapabilities.currentExtent.height, 1)));
+
+    this->imageAvailableFencePtrList.push_back(std::unique_ptr<Fence>(new Fence(
+        this->devicePtr->getDeviceHandleRef(), (VkFenceCreateFlagBits)0)));
+    this->acquireImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
+        new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
+    this->writeImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
+        new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
   }
+
+  this->currentFrame = 0;
 }
 
-std::shared_ptr<Material> Engine::createMaterial(std::string materialName,
-                                                 std::string vertexFileName,
-                                                 std::string fragmentFileName) {
+std::shared_ptr<Scene> Engine::createScene(std::string sceneName) {
+  this->scenePtrList.push_back(
+      std::shared_ptr<Scene>(new Scene(sceneName, shared_from_this())));
 
-  this->materialPtrList.push_back(std::shared_ptr<Material>(new Material(
-      shared_from_this(), materialName, vertexFileName, fragmentFileName)));
-
-  return this->materialPtrList[this->materialPtrList.size() - 1];
+  return this->scenePtrList[this->scenePtrList.size() - 1];
 }
 
-std::shared_ptr<Model>
-Engine::createModel(std::string modelName, std::string modelPath,
-                    std::shared_ptr<Material> materialPtr) {
+std::shared_ptr<Camera> Engine::createCamera(std::string cameraName) {
+  this->cameraPtrList.push_back(
+      std::shared_ptr<Camera>(new Camera(cameraName, shared_from_this())));
 
-  this->modelPtrList.push_back(std::shared_ptr<Model>(
-      new Model(shared_from_this(), modelName, modelPath, materialPtr)));
+  return this->cameraPtrList[this->cameraPtrList.size() - 1];
+}
 
-  return this->modelPtrList[this->modelPtrList.size() - 1];
+uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
+                        std::shared_ptr<Camera> cameraPtr) {
+
+  if (cameraPtr->getIsCameraBufferDirty()) {
+    for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
+      scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
+    }
+    cameraPtr->resetIsCameraBufferDirty();
+  }
+  scenePtr->recordCommandBuffer(this->currentFrame);
+
+  uint32_t currentImageIndex = this->swapchainPtr->aquireNextImageIndex(
+      UINT32_MAX,
+      this->acquireImageSemaphorePtrList[this->currentFrame]
+          ->getSemaphoreHandleRef(),
+      VK_NULL_HANDLE);
+
+  this->commandBufferGroupPtr->submit(
+      this->devicePtr->getQueueHandleRef(this->queueFamilyIndex, 0),
+      {{{this->acquireImageSemaphorePtrList[this->currentFrame]
+             ->getSemaphoreHandleRef()},
+        {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+        {currentImageIndex},
+        {this->writeImageSemaphorePtrList[currentImageIndex]
+             ->getSemaphoreHandleRef()}}},
+      this->imageAvailableFencePtrList[this->currentFrame]
+          ->getFenceHandleRef());
+
+  this->surfacePtr->queuePresentCmd(
+      this->devicePtr->getQueueHandleRef(this->queueFamilyIndex, 0),
+      {this->writeImageSemaphorePtrList[currentImageIndex]
+           ->getSemaphoreHandleRef()},
+      {this->swapchainPtr->getSwapchainHandleRef()}, {currentImageIndex}, NULL);
+
+  this->imageAvailableFencePtrList[this->currentFrame]->waitForSignal(
+      UINT32_MAX);
+  this->imageAvailableFencePtrList[this->currentFrame]->reset();
+
+  this->currentFrame =
+      (this->currentFrame + 1) % this->framebufferPtrList.size();
+  return this->currentFrame;
 }

@@ -4,9 +4,11 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tinyobjloader/tiny_obj_loader.h"
 
-Model::Model(std::shared_ptr<Engine> enginePtr, std::string modelName,
-             std::string modelPath, std::shared_ptr<Material> materialPtr)
-    : enginePtr(enginePtr), modelName(modelName), materialPtr(materialPtr) {
+Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
+             std::string modelName, std::string modelPath,
+             std::shared_ptr<Material> materialPtr)
+    : enginePtr(enginePtr), scenePtr(scenePtr), modelName(modelName),
+      materialPtr(materialPtr) {
 
   std::string modelDirectory = modelPath.substr(0, modelPath.find_last_of("/"));
 
@@ -70,30 +72,40 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::string modelName,
 
 Model::~Model() {}
 
-void Model::render(uint32_t frameIndex) {
-  this->enginePtr->commandBufferGroupPtr->beginRecording(
-      0, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
-
-  this->enginePtr->renderPassPtr->beginRenderPassCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0),
-      this->enginePtr->framebufferPtrList[frameIndex]
-          ->getFramebufferHandleRef(),
-      {{0, 0}, {800, 600}}, {{{0.0, 0.0, 0.0, 1.0}}},
-      VK_SUBPASS_CONTENTS_INLINE);
+void Model::render(
+    std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
+        commandBufferInheritanceInfoParamPtr,
+    uint32_t commandBufferIndex) {
+  this->enginePtr->secondaryCommandBufferGroupPtr->beginRecording(
+      commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
+      commandBufferInheritanceInfoParamPtr);
 
   this->materialPtr->graphicsPipelineGroupPtr->bindPipelineCmd(
-      0, this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0));
+      0, this->enginePtr->secondaryCommandBufferGroupPtr
+             ->getCommandBufferHandleRef(commandBufferIndex));
 
   this->vertexBufferPtr->bindVertexBufferCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0), 0);
+      this->enginePtr->secondaryCommandBufferGroupPtr
+          ->getCommandBufferHandleRef(commandBufferIndex),
+      0);
+
   this->indexBufferPtr->bindIndexBufferCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0),
+      this->enginePtr->secondaryCommandBufferGroupPtr
+          ->getCommandBufferHandleRef(commandBufferIndex),
       VK_INDEX_TYPE_UINT32);
 
+  this->materialPtr->descriptorSetGroupPtr->bindDescriptorSetsCmd(
+      this->enginePtr->secondaryCommandBufferGroupPtr
+          ->getCommandBufferHandleRef(commandBufferIndex),
+      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      this->materialPtr->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0,
+      {0}, {});
+
   this->materialPtr->graphicsPipelineGroupPtr->drawIndexedCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0),
+      this->enginePtr->secondaryCommandBufferGroupPtr
+          ->getCommandBufferHandleRef(commandBufferIndex),
       this->totalIndexCount, 1, 0, 0, 0);
 
-  this->enginePtr->renderPassPtr->endRenderPassCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(0));
+  this->enginePtr->secondaryCommandBufferGroupPtr->endRecording(
+      commandBufferIndex);
 }
