@@ -38,6 +38,13 @@ Scene::createModel(std::string modelName, std::string modelPath,
   return this->modelPtrList[this->modelPtrList.size() - 1];
 }
 
+std::shared_ptr<Light> Scene::createLight(std::string lightName) {
+  this->lightPtrList.push_back(
+      std::shared_ptr<Light>(new Light(this->enginePtr, lightName)));
+
+  return this->lightPtrList[this->lightPtrList.size() - 1];
+}
+
 void Scene::recordCommandBuffer(uint32_t frameIndex) {
   auto commandBufferInheritanceInfoParamPtr =
       std::make_shared<CommandBufferGroup::CommandBufferInheritanceInfoParam>(

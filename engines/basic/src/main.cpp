@@ -34,33 +34,30 @@ int main() {
   std::shared_ptr<Model> model =
       scene->createModel("my-model", "resources/models/model.obj", material);
 
+  std::shared_ptr<Light> light = scene->createLight("my-light");
+
   std::shared_ptr<Camera> camera = engine->createCamera("my-camera");
 
   XEvent event;
   while (true) {
     XNextEvent(displayPtr, &event);
-
     if (event.type == KeyPress) {
       // escape
       if (event.xkey.keycode == 9) {
         break;
       }
-
       // left
       if (event.xkey.keycode == 113) {
         camera->updateRotation(-0.05, 0.0, 0.0);
       }
-
       // down
       if (event.xkey.keycode == 116) {
         camera->updatePosition(0.0, 0.0, -0.05);
       }
-
       // up
       if (event.xkey.keycode == 111) {
         camera->updatePosition(0.0, 0.0, 0.05);
       }
-
       // right
       if (event.xkey.keycode == 114) {
         camera->updateRotation(0.05, 0.0, 0.0);
