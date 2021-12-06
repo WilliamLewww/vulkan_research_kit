@@ -1,5 +1,6 @@
 #include "basic/material.h"
 #include "basic/engine.h"
+#include "basic/scene.h"
 
 Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
                    std::string vertexFileName, std::string fragmentFileName)
@@ -48,12 +49,16 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}}));
+                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3}}));
 
   this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
       new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
                               {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-                                VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
+                                VK_SHADER_STAGE_VERTEX_BIT, NULL},
+                               {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+                               {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =
       std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
@@ -164,5 +169,19 @@ void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
       {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
         cameraPtr->getCameraDescriptorBufferInfoPtr(), NULL}},
+      {});
+}
+
+void Material::updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr) {
+  this->descriptorSetGroupPtr->updateDescriptorSets(
+      {{0, 1, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+        scenePtr->getSceneDescriptorBufferInfoPtr(), NULL}},
+      {});
+}
+
+void Material::updateLightsDescriptorSet(std::shared_ptr<Scene> scenePtr) {
+  this->descriptorSetGroupPtr->updateDescriptorSets(
+      {{0, 2, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+        scenePtr->getLightsDescriptorBufferInfoPtr(), NULL}},
       {});
 }

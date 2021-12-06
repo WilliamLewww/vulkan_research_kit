@@ -95,4 +95,5 @@ private:
   friend class Camera;
   friend class Material;
   friend class Model;
+  friend class Light;
 };

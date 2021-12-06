@@ -13,7 +13,9 @@ class Engine;
 
 class Scene : public std::enable_shared_from_this<Scene> {
 public:
-  struct SceneShaderStructure {};
+  struct SceneShaderStructure {
+    alignas(4) uint32_t lightCount;
+  };
 
   Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr);
 
@@ -27,11 +29,16 @@ public:
                                      std::string modelPath,
                                      std::shared_ptr<Material> materialPtr);
 
-  std::shared_ptr<Light> createLight(std::string lightName);
+  std::shared_ptr<Light> createLight(std::string lightName,
+                                     Light::LightType lightType);
 
   void recordCommandBuffer(uint32_t frameIndex);
 
   std::vector<std::shared_ptr<Material>> getMaterialPtrList();
+
+  std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
+
+  std::shared_ptr<VkDescriptorBufferInfo> getLightsDescriptorBufferInfoPtr();
 
 private:
   std::string sceneName;
@@ -46,5 +53,15 @@ private:
 
   std::vector<std::shared_ptr<Light>> lightPtrList;
 
+  SceneShaderStructure sceneShaderStructure;
+
+  std::unique_ptr<Buffer> sceneBufferPtr;
+
+  std::shared_ptr<VkDescriptorBufferInfo> sceneDescriptorBufferInfoPtr;
+
   uint32_t getNextAvailableModelIndex();
+
+  std::shared_ptr<Buffer> lightsBufferPtr;
+
+  std::shared_ptr<VkDescriptorBufferInfo> lightsDescriptorBufferInfoPtr;
 };

@@ -34,7 +34,8 @@ int main() {
   std::shared_ptr<Model> model =
       scene->createModel("my-model", "resources/models/model.obj", material);
 
-  std::shared_ptr<Light> light = scene->createLight("my-light");
+  std::shared_ptr<Light> light =
+      scene->createLight("my-light", Light::LightType::Directional);
 
   std::shared_ptr<Camera> camera = engine->createCamera("my-camera");
 

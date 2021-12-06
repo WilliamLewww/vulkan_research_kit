@@ -113,8 +113,8 @@ void Camera::updateViewMatrix() {
   void *hostCameraBuffer;
   this->cameraBufferPtr->mapMemory(&hostCameraBuffer, 0,
                                    sizeof(CameraShaderStructure));
-  memcpy(hostCameraBuffer, this->cameraShaderStructure.viewMatrix,
-         16 * sizeof(float));
+  memcpy(((CameraShaderStructure *)hostCameraBuffer)->viewMatrix,
+         this->cameraShaderStructure.viewMatrix, 16 * sizeof(float));
   this->cameraBufferPtr->unmapMemory();
 
   this->isCameraBufferDirty = true;
@@ -150,7 +150,7 @@ void Camera::updateProjectionMatrix() {
   void *hostCameraBuffer;
   this->cameraBufferPtr->mapMemory(&hostCameraBuffer, 0,
                                    sizeof(CameraShaderStructure));
-  memcpy((float *)hostCameraBuffer + 16,
+  memcpy(((CameraShaderStructure *)hostCameraBuffer)->projectionMatrix,
          this->cameraShaderStructure.projectionMatrix, 16 * sizeof(float));
   this->cameraBufferPtr->unmapMemory();
 

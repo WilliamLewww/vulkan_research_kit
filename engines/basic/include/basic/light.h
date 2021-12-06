@@ -9,18 +9,28 @@ class Engine;
 
 class Light {
 public:
-  struct LightShaderStructure {};
+  enum class LightType { Directional, Point };
 
-  Light(std::shared_ptr<Engine> enginePtr, std::string lightName);
+  struct LightShaderStructure {
+    alignas(16) float position[4];
+    alignas(16) float direction[4];
+    alignas(4) uint32_t type;
+  };
+
+  Light(std::shared_ptr<Engine> enginePtr,
+        std::shared_ptr<Buffer> lightsBufferPtr, uint32_t lightIndex,
+        std::string lightName, LightType lightType);
 
   ~Light();
 
 private:
   std::shared_ptr<Engine> enginePtr;
 
+  std::shared_ptr<Buffer> lightsBufferPtr;
+
+  uint32_t lightIndex;
+
   std::string lightName;
 
-  std::shared_ptr<Buffer> lightBufferPtr;
-
-  std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr;
+  LightShaderStructure lightShaderStructure;
 };

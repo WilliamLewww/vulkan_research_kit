@@ -13,6 +13,7 @@
 #include <memory>
 
 class Engine;
+class Scene;
 
 class Material {
 public:
@@ -22,6 +23,10 @@ public:
   ~Material();
 
   void updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr);
+
+  void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
+
+  void updateLightsDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
 private:
   std::shared_ptr<Engine> enginePtr;
