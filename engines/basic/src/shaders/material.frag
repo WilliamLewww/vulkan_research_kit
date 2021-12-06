@@ -8,15 +8,14 @@ scene;
 layout(set = 0, binding = 2) uniform Light {
   vec4 position;
   vec4 direction;
-  uint type;
+  int type;
 }
 lights[16];
 
-void main() { 
+void main() {
   if (lights[0].type == 0) {
     outColor = vec4(0.0, 1.0, 0.0, 1.0);
-  }
-  else {
+  } else {
     outColor = vec4(1.0, 0.0, 0.0, 1.0);
   }
 }

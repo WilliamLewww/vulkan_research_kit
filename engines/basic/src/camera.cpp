@@ -4,6 +4,8 @@
 Camera::Camera(std::string cameraName, std::shared_ptr<Engine> enginePtr)
     : cameraName(cameraName), enginePtr(enginePtr) {
 
+  this->cameraShaderStructure = {};
+
   this->position[0] = 0.0;
   this->position[1] = 0.0;
   this->position[2] = 0.0;

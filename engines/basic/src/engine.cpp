@@ -221,7 +221,10 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
     for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
       scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
       scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
-      scenePtr->getMaterialPtrList()[x]->updateLightsDescriptorSet(scenePtr);
+      for (uint32_t y = 0; y < scenePtr->getLightPtrList().size(); y++) {
+        scenePtr->getMaterialPtrList()[x]->updateLightDescriptorSet(
+            scenePtr->getLightPtrList()[y]);
+      }
     }
     cameraPtr->resetIsCameraBufferDirty();
   }

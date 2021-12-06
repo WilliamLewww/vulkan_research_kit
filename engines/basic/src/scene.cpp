@@ -4,6 +4,8 @@
 Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
     : sceneName(sceneName), enginePtr(enginePtr) {
 
+  this->sceneShaderStructure = {};
+
   this->sceneBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),
       *enginePtr->physicalDeviceHandlePtr.get(), 0,
@@ -23,12 +25,6 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
       sizeof(Light::LightShaderStructure) * 16,
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
       {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
-
-  this->lightsDescriptorBufferInfoPtr =
-      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
-          .buffer = this->lightsBufferPtr->getBufferHandleRef(),
-          .offset = 0,
-          .range = VK_WHOLE_SIZE});
 
   void *hostSceneBuffer;
   this->sceneBufferPtr->mapMemory(&hostSceneBuffer, 0,
@@ -140,12 +136,11 @@ std::vector<std::shared_ptr<Material>> Scene::getMaterialPtrList() {
   return this->materialPtrList;
 }
 
-std::shared_ptr<VkDescriptorBufferInfo>
-Scene::getSceneDescriptorBufferInfoPtr() {
-  return this->sceneDescriptorBufferInfoPtr;
+std::vector<std::shared_ptr<Light>> Scene::getLightPtrList() {
+  return this->lightPtrList;
 }
 
 std::shared_ptr<VkDescriptorBufferInfo>
-Scene::getLightsDescriptorBufferInfoPtr() {
-  return this->lightsDescriptorBufferInfoPtr;
+Scene::getSceneDescriptorBufferInfoPtr() {
+  return this->sceneDescriptorBufferInfoPtr;
 }

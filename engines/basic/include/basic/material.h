@@ -14,6 +14,7 @@
 
 class Engine;
 class Scene;
+class Light;
 
 class Material {
 public:
@@ -26,7 +27,7 @@ public:
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
-  void updateLightsDescriptorSet(std::shared_ptr<Scene> scenePtr);
+  void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
 
 private:
   std::shared_ptr<Engine> enginePtr;

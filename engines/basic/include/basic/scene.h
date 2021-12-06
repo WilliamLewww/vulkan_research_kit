@@ -36,9 +36,9 @@ public:
 
   std::vector<std::shared_ptr<Material>> getMaterialPtrList();
 
-  std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
+  std::vector<std::shared_ptr<Light>> getLightPtrList();
 
-  std::shared_ptr<VkDescriptorBufferInfo> getLightsDescriptorBufferInfoPtr();
+  std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
 private:
   std::string sceneName;
@@ -62,6 +62,4 @@ private:
   uint32_t getNextAvailableModelIndex();
 
   std::shared_ptr<Buffer> lightsBufferPtr;
-
-  std::shared_ptr<VkDescriptorBufferInfo> lightsDescriptorBufferInfoPtr;
 };

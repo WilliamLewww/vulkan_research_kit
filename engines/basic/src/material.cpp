@@ -49,7 +49,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3}}));
+                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 18}}));
 
   this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
       new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
@@ -57,7 +57,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
                                 VK_SHADER_STAGE_VERTEX_BIT, NULL},
                                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-                               {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                               {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =
@@ -179,9 +179,9 @@ void Material::updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr) {
       {});
 }
 
-void Material::updateLightsDescriptorSet(std::shared_ptr<Scene> scenePtr) {
+void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
       {{0, 2, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
-        scenePtr->getLightsDescriptorBufferInfoPtr(), NULL}},
+        lightPtr->getLightDescriptorBufferInfoPtr(), NULL}},
       {});
 }
