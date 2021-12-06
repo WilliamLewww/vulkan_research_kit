@@ -9,7 +9,7 @@ class Engine;
 
 class Light {
 public:
-  enum LightType { LIGHT_TYPE_DIRECTIONAL, LIGHT_TYPE_Point };
+  enum LightType { LIGHT_TYPE_DIRECTIONAL, LIGHT_TYPE_POINT };
 
   struct LightShaderStructure {
     alignas(16) float position[4];
