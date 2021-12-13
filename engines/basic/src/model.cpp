@@ -64,10 +64,6 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     }
   }
 
-  for (uint32_t x = 0; x < this->vertexList.size(); x++) {
-    std::cout << this->vertexList[x].positions[0] << std::endl;
-  }
-
   this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),
       *enginePtr->physicalDeviceHandlePtr.get(), 0,

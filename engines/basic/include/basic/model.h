@@ -33,6 +33,18 @@ public:
 private:
   struct CompareVertex {
     bool operator()(const Vertex &a, const Vertex &b) const {
+      if (std::memcmp(a.positions, b.positions, sizeof(float) * 3) == 0 &&
+          std::memcmp(a.normals, b.normals, sizeof(float) * 3) == 0) {
+
+        return std::memcmp(a.textureCoordinates, b.textureCoordinates,
+                           sizeof(float) * 2);
+      }
+
+      if (std::memcmp(a.positions, b.positions, sizeof(float) * 3) == 0) {
+        return std::memcmp(a.normals, b.normals, sizeof(float) * 3);
+      }
+
+      return std::memcmp(a.positions, b.positions, sizeof(float) * 3);
     }
   };
 
