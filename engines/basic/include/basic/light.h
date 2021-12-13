@@ -11,7 +11,7 @@ class Light {
 public:
   enum LightType { LIGHT_TYPE_DIRECTIONAL, LIGHT_TYPE_POINT };
 
-  struct LightShaderStructure {
+  struct alignas(64) LightShaderStructure {
     alignas(16) float position[4];
     alignas(16) float direction[4];
     alignas(4) int type;
@@ -24,6 +24,8 @@ public:
   ~Light();
 
   std::shared_ptr<VkDescriptorBufferInfo> getLightDescriptorBufferInfoPtr();
+
+  uint32_t getLightIndex();
 
 private:
   std::shared_ptr<Engine> enginePtr;

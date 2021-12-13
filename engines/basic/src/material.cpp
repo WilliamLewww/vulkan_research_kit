@@ -74,10 +74,14 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam>(
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam{
 
-          .vertexInputBindingDescriptionList = {{0, sizeof(float) * 3,
+          .vertexInputBindingDescriptionList = {{0, sizeof(Model::Vertex),
                                                  VK_VERTEX_INPUT_RATE_VERTEX}},
           .vertexInputAttributeDescriptionList = {
-              {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}}});
+              {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+              {1, 0, VK_FORMAT_R32G32B32_SFLOAT,
+               offsetof(Model::Vertex, normals)},
+              {2, 0, VK_FORMAT_R32G32_SFLOAT,
+               offsetof(Model::Vertex, textureCoordinates)}}});
 
   auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
@@ -179,9 +183,24 @@ void Material::updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr) {
       {});
 }
 
+void Material::updateEmptyLightDescriptors(std::shared_ptr<Buffer> bufferPtr) {
+  for (uint32_t x = 0; x < 16; x++) {
+    std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
+        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+            .buffer = bufferPtr->getBufferHandleRef(),
+            .offset = x * sizeof(Light::LightShaderStructure),
+            .range = sizeof(Light::LightShaderStructure)});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 2, x, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+          lightDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
+}
+
 void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{0, 2, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
-        lightPtr->getLightDescriptorBufferInfoPtr(), NULL}},
+      {{0, 2, lightPtr->getLightIndex(), 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        NULL, lightPtr->getLightDescriptorBufferInfoPtr(), NULL}},
       {});
 }

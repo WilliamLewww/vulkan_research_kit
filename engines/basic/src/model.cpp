@@ -31,42 +31,69 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
   auto &shapes = reader.GetShapes();
   auto &materials = reader.GetMaterials();
 
+  for (uint32_t s = 0; s < shapes.size(); s++) {
+    uint32_t index_offset = 0;
+    for (uint32_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+      uint32_t fv = uint32_t(shapes[s].mesh.num_face_vertices[f]);
+      for (uint32_t v = 0; v < fv; v++) {
+        tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+
+        float vx = attrib.vertices[3 * uint32_t(idx.vertex_index) + 0];
+        float vy = attrib.vertices[3 * uint32_t(idx.vertex_index) + 1];
+        float vz = attrib.vertices[3 * uint32_t(idx.vertex_index) + 2];
+
+        float nx = attrib.normals[3 * uint32_t(idx.normal_index) + 0];
+        float ny = attrib.normals[3 * uint32_t(idx.normal_index) + 1];
+        float nz = attrib.normals[3 * uint32_t(idx.normal_index) + 2];
+
+        float tx = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 0];
+        float ty = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 1];
+
+        Vertex vertex = {.positions = {vx, vy, vz},
+                         .normals = {nx, ny, nz},
+                         .textureCoordinates = {tx, ty}};
+
+        if (this->vertexMap.count(vertex) == 0) {
+          this->vertexMap[vertex] = this->vertexList.size();
+          this->vertexList.push_back(vertex);
+        }
+
+        this->indexList.push_back(this->vertexMap[vertex]);
+      }
+      index_offset += fv;
+    }
+  }
+
+  for (uint32_t x = 0; x < this->vertexList.size(); x++) {
+    std::cout << this->vertexList[x].positions[0] << std::endl;
+  }
+
   this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),
       *enginePtr->physicalDeviceHandlePtr.get(), 0,
-      sizeof(float) * attrib.vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      sizeof(Vertex) * this->vertexList.size(),
+      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
+      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   void *hostVertexBuffer;
   this->vertexBufferPtr->mapMemory(&hostVertexBuffer, 0,
-                                   sizeof(float) * attrib.vertices.size());
-  memcpy(hostVertexBuffer, attrib.vertices.data(),
-         sizeof(float) * attrib.vertices.size());
+                                   sizeof(Vertex) * this->vertexList.size());
+  memcpy(hostVertexBuffer, this->vertexList.data(),
+         sizeof(Vertex) * this->vertexList.size());
   this->vertexBufferPtr->unmapMemory();
 
-  this->totalIndexCount = 0;
-  for (uint32_t x = 0; x < shapes.size(); x++) {
-    this->totalIndexCount += shapes[x].mesh.indices.size();
-  }
   this->indexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),
       *enginePtr->physicalDeviceHandlePtr.get(), 0,
-      sizeof(uint32_t) * this->totalIndexCount,
+      sizeof(uint32_t) * this->indexList.size(),
       VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
       {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   void *hostIndexBuffer;
   this->indexBufferPtr->mapMemory(&hostIndexBuffer, 0,
-                                  sizeof(uint32_t) * this->totalIndexCount);
-  uint32_t currentIndexOffset = 0;
-  for (uint32_t x = 0; x < shapes.size(); x++) {
-    for (uint32_t y = 0; y < shapes[x].mesh.indices.size(); y++) {
-      ((uint32_t *)hostIndexBuffer)[currentIndexOffset + y] =
-          shapes[x].mesh.indices[y].vertex_index;
-    }
-    currentIndexOffset += shapes[x].mesh.indices.size();
-  }
+                                  sizeof(uint32_t) * this->indexList.size());
+  memcpy(hostIndexBuffer, this->indexList.data(),
+         sizeof(uint32_t) * this->indexList.size());
   this->indexBufferPtr->unmapMemory();
 }
 
@@ -104,7 +131,7 @@ void Model::render(
   this->materialPtr->graphicsPipelineGroupPtr->drawIndexedCmd(
       this->enginePtr->secondaryCommandBufferGroupPtr
           ->getCommandBufferHandleRef(commandBufferIndex),
-      this->totalIndexCount, 1, 0, 0, 0);
+      this->indexList.size(), 1, 0, 0, 0);
 
   this->enginePtr->secondaryCommandBufferGroupPtr->endRecording(
       commandBufferIndex);

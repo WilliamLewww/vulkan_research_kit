@@ -43,6 +43,9 @@ std::shared_ptr<Material> Scene::createMaterial(std::string materialName,
   this->materialPtrList.push_back(std::shared_ptr<Material>(new Material(
       this->enginePtr, materialName, vertexFileName, fragmentFileName)));
 
+  this->materialPtrList[materialPtrList.size() - 1]
+      ->updateEmptyLightDescriptors(this->lightsBufferPtr);
+
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
 

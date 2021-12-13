@@ -5,6 +5,7 @@
 #include <vrk/command_buffer_group.h>
 #include <vrk/device.h>
 
+#include <map>
 #include <string>
 
 class Engine;
@@ -12,6 +13,12 @@ class Scene;
 
 class Model : public std::enable_shared_from_this<Model> {
 public:
+  struct Vertex {
+    float positions[3];
+    float normals[3];
+    float textureCoordinates[2];
+  };
+
   Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         std::string modelName, std::string modelPath,
         std::shared_ptr<Material> materialPtr);
@@ -24,17 +31,26 @@ public:
          uint32_t commandBufferIndex);
 
 private:
+  struct CompareVertex {
+    bool operator()(const Vertex &a, const Vertex &b) const {
+    }
+  };
+
   std::shared_ptr<Engine> enginePtr;
 
   std::shared_ptr<Scene> scenePtr;
 
   std::string modelName;
 
+  std::map<Vertex, uint32_t, CompareVertex> vertexMap;
+
+  std::vector<Vertex> vertexList;
+
+  std::vector<uint32_t> indexList;
+
   std::shared_ptr<Material> materialPtr;
 
   std::unique_ptr<Buffer> vertexBufferPtr;
-
-  uint32_t totalIndexCount;
 
   std::unique_ptr<Buffer> indexBufferPtr;
 };

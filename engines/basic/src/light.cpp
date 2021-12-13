@@ -29,3 +29,5 @@ std::shared_ptr<VkDescriptorBufferInfo>
 Light::getLightDescriptorBufferInfoPtr() {
   return this->lightDescriptorBufferInfoPtr;
 }
+
+uint32_t Light::getLightIndex() { return this->lightIndex; }

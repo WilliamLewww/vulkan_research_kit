@@ -27,6 +27,8 @@ public:
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
+  void updateEmptyLightDescriptors(std::shared_ptr<Buffer> bufferPtr);
+
   void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
 
 private:
