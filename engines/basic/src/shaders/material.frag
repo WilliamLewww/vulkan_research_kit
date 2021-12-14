@@ -15,5 +15,6 @@ layout(set = 0, binding = 2) uniform Light {
 lights[16];
 
 void main() {
-  outColor = vec4(abs(inNormal), 1.0);
+  vec3 color = abs(inNormal);
+  outColor = vec4(color, 1.0);
 }
