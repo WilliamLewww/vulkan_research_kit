@@ -37,14 +37,14 @@ private:
           std::memcmp(a.normals, b.normals, sizeof(float) * 3) == 0) {
 
         return std::memcmp(a.textureCoordinates, b.textureCoordinates,
-                           sizeof(float) * 2);
+                           sizeof(float) * 2) < 0;
       }
 
       if (std::memcmp(a.positions, b.positions, sizeof(float) * 3) == 0) {
-        return std::memcmp(a.normals, b.normals, sizeof(float) * 3);
+        return std::memcmp(a.normals, b.normals, sizeof(float) * 3) < 0;
       }
 
-      return std::memcmp(a.positions, b.positions, sizeof(float) * 3);
+      return std::memcmp(a.positions, b.positions, sizeof(float) * 3) < 0;
     }
   };
 
