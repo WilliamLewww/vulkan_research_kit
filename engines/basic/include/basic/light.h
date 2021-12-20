@@ -23,6 +23,14 @@ public:
 
   ~Light();
 
+  void setPosition(float x, float y, float z);
+
+  void setDirection(float x, float y, float z);
+
+  bool getIsLightBufferDirty();
+
+  void resetIsLightBufferDirty();
+
   std::shared_ptr<VkDescriptorBufferInfo> getLightDescriptorBufferInfoPtr();
 
   uint32_t getLightIndex();
@@ -35,6 +43,8 @@ private:
   uint32_t lightIndex;
 
   std::string lightName;
+
+  bool isLightBufferDirty;
 
   LightShaderStructure lightShaderStructure;
 

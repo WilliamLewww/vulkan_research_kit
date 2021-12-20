@@ -217,16 +217,19 @@ std::shared_ptr<Camera> Engine::createCamera(std::string cameraName) {
 uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
                         std::shared_ptr<Camera> cameraPtr) {
 
-  if (cameraPtr->getIsCameraBufferDirty()) {
-    for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
+  for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
+    if (cameraPtr->getIsCameraBufferDirty()) {
       scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
-      scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
-      for (uint32_t y = 0; y < scenePtr->getLightPtrList().size(); y++) {
+      cameraPtr->resetIsCameraBufferDirty();
+    }
+    for (uint32_t y = 0; y < scenePtr->getLightPtrList().size(); y++) {
+      if (scenePtr->getLightPtrList()[x]->getIsLightBufferDirty()) {
         scenePtr->getMaterialPtrList()[x]->updateLightDescriptorSet(
             scenePtr->getLightPtrList()[y]);
+        scenePtr->getLightPtrList()[x]->resetIsLightBufferDirty();
       }
     }
-    cameraPtr->resetIsCameraBufferDirty();
+    scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
   }
   scenePtr->recordCommandBuffer(this->currentFrame);
 

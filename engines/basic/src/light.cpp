@@ -7,7 +7,8 @@ Light::Light(std::shared_ptr<Engine> enginePtr,
     : enginePtr(enginePtr), lightsBufferPtr(lightsBufferPtr),
       lightIndex(lightIndex), lightName(lightName) {
 
-  this->lightShaderStructure = {.type = lightType};
+  this->lightShaderStructure = {
+      .position = {0, 0, 0, 1}, .direction = {0, -1, 0, 0}, .type = lightType};
 
   this->lightDescriptorBufferInfoPtr =
       std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
@@ -18,12 +19,42 @@ Light::Light(std::shared_ptr<Engine> enginePtr,
   void *hostLightsBuffer;
   this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,
                                    16 * sizeof(LightShaderStructure));
-  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex].type,
-         &this->lightShaderStructure.type, 1 * sizeof(int));
+  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex],
+         &this->lightShaderStructure, sizeof(LightShaderStructure));
   this->lightsBufferPtr->unmapMemory();
 }
 
 Light::~Light() {}
+
+void Light::setPosition(float x, float y, float z) {
+  this->lightShaderStructure.position[0] = x;
+  this->lightShaderStructure.position[1] = y;
+  this->lightShaderStructure.position[2] = z;
+
+  void *hostLightsBuffer;
+  this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,
+                                   16 * sizeof(LightShaderStructure));
+  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex],
+         &this->lightShaderStructure, sizeof(LightShaderStructure));
+  this->lightsBufferPtr->unmapMemory();
+}
+
+void Light::setDirection(float x, float y, float z) {
+  this->lightShaderStructure.direction[0] = x;
+  this->lightShaderStructure.direction[1] = y;
+  this->lightShaderStructure.direction[2] = z;
+
+  void *hostLightsBuffer;
+  this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,
+                                   16 * sizeof(LightShaderStructure));
+  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex],
+         &this->lightShaderStructure, sizeof(LightShaderStructure));
+  this->lightsBufferPtr->unmapMemory();
+}
+
+bool Light::getIsLightBufferDirty() { return this->isLightBufferDirty; }
+
+void Light::resetIsLightBufferDirty() { this->isLightBufferDirty = false; }
 
 std::shared_ptr<VkDescriptorBufferInfo>
 Light::getLightDescriptorBufferInfoPtr() {
