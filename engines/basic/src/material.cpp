@@ -125,6 +125,21 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
           // .alphaToOneEnable =
       });
 
+  auto pipelineDepthStencilStateCreateInfoParam = std::make_shared<
+      GraphicsPipelineGroup::PipelineDepthStencilStateCreateInfoParam>(
+      GraphicsPipelineGroup::PipelineDepthStencilStateCreateInfoParam{
+
+          .depthTestEnable = VK_TRUE,
+          .depthWriteEnable = VK_TRUE,
+          .depthCompareOp = VK_COMPARE_OP_LESS,
+          .depthBoundsTestEnable = VK_FALSE,
+          .stencilTestEnable = VK_FALSE,
+          // .frontStencilOpState = ,
+          // .backStencilOpState = ,
+          // .minDepthBounds = ,
+          // .maxDepthBounds =
+      });
+
   VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {
       .blendEnable = VK_FALSE,
       .srcColorBlendFactor = VK_BLEND_FACTOR_ZERO,
@@ -157,7 +172,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
             pipelineViewportStateCreateInfoParam,
             pipelineRasterizationStateCreateInfoParam,
             pipelineMultisampleStateCreateInfoParam,
-            NULL,
+            pipelineDepthStencilStateCreateInfoParam,
             pipelineColorBlendStateCreateInfoParam,
             NULL,
             this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),

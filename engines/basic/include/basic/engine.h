@@ -77,6 +77,10 @@ private:
 
   std::vector<std::unique_ptr<ImageView>> swapchainImageViewPtrList;
 
+  std::vector<std::unique_ptr<Image>> depthImagePtrList;
+
+  std::vector<std::unique_ptr<ImageView>> depthImageViewPtrList;
+
   std::vector<std::unique_ptr<Framebuffer>> framebufferPtrList;
 
   std::vector<std::unique_ptr<Fence>> imageAvailableFencePtrList;

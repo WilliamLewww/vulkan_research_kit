@@ -146,23 +146,29 @@ void Engine::selectPhysicalDevice(
       VK_NULL_HANDLE));
 
   std::vector<VkAttachmentReference> attachmentReferenceList = {
-      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
+      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+      {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
 
   this->renderPassPtr = std::unique_ptr<RenderPass>(new RenderPass(
       this->devicePtr->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
       {{0, this->surfaceFormatList[0].format, VK_SAMPLE_COUNT_1_BIT,
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}},
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
+       {0, VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
       {{
           0,
           VK_PIPELINE_BIND_POINT_GRAPHICS,
           0,
           NULL,
           1,
-          attachmentReferenceList.data(),
+          &attachmentReferenceList[0],
           NULL,
-          NULL,
+          &attachmentReferenceList[1],
           0,
           NULL,
       }},
@@ -170,24 +176,44 @@ void Engine::selectPhysicalDevice(
 
   this->swapchainImageHandleList = swapchainPtr->getSwapchainImageHandleList();
 
-  for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
+  for (uint32_t x = 0; x < this->swapchainImageHandleList.size(); x++) {
     this->swapchainImageViewPtrList.push_back(
         std::unique_ptr<ImageView>(new ImageView(
-            this->devicePtr->getDeviceHandleRef(), swapchainImageHandle, 0,
-            VK_IMAGE_VIEW_TYPE_2D, this->surfaceFormatList[0].format,
+            this->devicePtr->getDeviceHandleRef(),
+            this->swapchainImageHandleList[x], 0, VK_IMAGE_VIEW_TYPE_2D,
+            this->surfaceFormatList[0].format,
             {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
              VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
 
-    this->framebufferPtrList.push_back(std::unique_ptr<Framebuffer>(
-        new Framebuffer(this->devicePtr->getDeviceHandleRef(),
-                        this->renderPassPtr->getRenderPassHandleRef(),
-                        {this->swapchainImageViewPtrList
-                             [this->swapchainImageViewPtrList.size() - 1]
-                                 ->getImageViewHandleRef()},
-                        (VkFramebufferCreateFlags)0,
-                        this->surfaceCapabilities.currentExtent.width,
-                        this->surfaceCapabilities.currentExtent.height, 1)));
+    this->depthImagePtrList.push_back(std::unique_ptr<Image>(new Image(
+        this->devicePtr->getDeviceHandleRef(),
+        *this->physicalDeviceHandlePtr.get(), 0, VK_IMAGE_TYPE_2D,
+        VK_FORMAT_D32_SFLOAT,
+        {this->surfaceCapabilities.currentExtent.width,
+         this->surfaceCapabilities.currentExtent.height, 1},
+        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        {this->queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED, 0)));
+
+    this->depthImageViewPtrList.push_back(
+        std::unique_ptr<ImageView>(new ImageView(
+            this->devicePtr->getDeviceHandleRef(),
+            this->depthImagePtrList[x]->getImageHandleRef(), 0,
+            VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT,
+            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+            {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1})));
+
+    this->framebufferPtrList.push_back(
+        std::unique_ptr<Framebuffer>(new Framebuffer(
+            this->devicePtr->getDeviceHandleRef(),
+            this->renderPassPtr->getRenderPassHandleRef(),
+            {this->swapchainImageViewPtrList[x]->getImageViewHandleRef(),
+             this->depthImageViewPtrList[x]->getImageViewHandleRef()},
+            (VkFramebufferCreateFlags)0,
+            this->surfaceCapabilities.currentExtent.width,
+            this->surfaceCapabilities.currentExtent.height, 1)));
 
     this->imageAvailableFencePtrList.push_back(std::unique_ptr<Fence>(new Fence(
         this->devicePtr->getDeviceHandleRef(), (VkFenceCreateFlagBits)0)));
@@ -195,6 +221,9 @@ void Engine::selectPhysicalDevice(
         new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
     this->writeImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
         new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
+  }
+
+  for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
   }
 
   this->currentFrame = 0;

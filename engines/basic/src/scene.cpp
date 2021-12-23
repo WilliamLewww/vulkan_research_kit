@@ -117,12 +117,16 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
   this->enginePtr->commandBufferGroupPtr->beginRecording(
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
+  VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
+
+  VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
+
   this->enginePtr->renderPassPtr->beginRenderPassCmd(
       this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(
           frameIndex),
       this->enginePtr->framebufferPtrList[frameIndex]
           ->getFramebufferHandleRef(),
-      {{0, 0}, {800, 600}}, {{{0.0, 0.0, 0.0, 1.0}}},
+      {{0, 0}, {800, 600}}, {clearColor, clearDepth},
       VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
   this->enginePtr->commandBufferGroupPtr->executeCommandsCmd(
