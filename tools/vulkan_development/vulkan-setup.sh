@@ -30,7 +30,7 @@ done
 
 if [ "${VERSION}" == "" ]
 then
-  VERSION='main'
+  VERSION='v1.2.201'
 fi
 
 if [ "${SPIRV_TOOLS_VERSION}" == "" ]
