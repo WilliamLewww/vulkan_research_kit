@@ -20,6 +20,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install Dependencies
+      run: sudo apt install libwayland-dev libxrandr-dev
+
     - name: Setup Vulkan Environment
       working-directory: ./tools/vulkan_development
       run: bash vulkan-setup.sh
