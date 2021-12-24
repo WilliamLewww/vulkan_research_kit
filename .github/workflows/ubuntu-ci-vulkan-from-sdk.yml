@@ -11,7 +11,7 @@ env:
   Vulkan_INCLUDE_DIRS: /usr/include/
   Vulkan_GLSLANG_VALIDATOR_EXECUTABLE: /usr/bin/glslangValidator
   VK_LAYER_PATH: /etc/vulkan/explicit_layer.d
-  Vulkan_LIBRARIES: /usr/lib/x86_64-linux-gnu/libvulkan.so
+  Vulkan_LIBRARIES: /usr/lib/x86_64-linux-gnu/libvulkan.so;/usr/lib/x86_64-linux-gnu/libVkLayer_khronos_validation.so
 
 jobs:
   build:
