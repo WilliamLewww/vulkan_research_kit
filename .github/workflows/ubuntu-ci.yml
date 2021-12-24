@@ -27,7 +27,9 @@ jobs:
 
     - name: Setup Vulkan Environment
       working-directory: ./tools/vulkan_development
-      run: bash vulkan-setup.sh --no-vulkan-tools
+      run: |
+        bash vulkan-setup.sh --no-vulkan-tools
+        source setup-vulkan-development-env.sh
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
