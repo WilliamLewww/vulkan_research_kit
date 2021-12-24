@@ -21,7 +21,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install Dependencies
-      run: sudo apt install libwayland-dev libxrandr-dev
+      run: |
+        sudo apt-get -qq update
+        sudo apt install libwayland-dev libxrandr-dev libx11-xcb-dev libmirclient-dev libxkbcommon-dev
 
     - name: Setup Vulkan Environment
       working-directory: ./tools/vulkan_development
