@@ -8,6 +8,9 @@ on:
 
 env:
   BUILD_TYPE: Release
+  Vulkan_INCLUDE_DIRS: /usr/include/
+  VK_LAYER_PATH: /etc/vulkan/explicit_layer.d
+  Vulkan_LIBRARIES: /usr/lib/x86_64-linux-gnu/libvulkan.so
 
 jobs:
   build:
