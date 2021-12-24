@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
@@ -20,8 +21,8 @@ case $i in
     -t=*|--threads=*)
     THREADS="${i#*=}"
     ;;
-    --default)
-    DEFAULT=YES
+    -nvt|--no-vulkan-tools)
+    NO_VULKAN_TOOLS=1
     ;;
     *)
     ;;
@@ -30,7 +31,7 @@ done
 
 if [ "${VERSION}" == "" ]
 then
-  VERSION='main'
+  VERSION='v1.2.201'
 fi
 
 if [ "${SPIRV_TOOLS_VERSION}" == "" ]
@@ -58,6 +59,12 @@ echo "SPIRV Tools Version: ${SPIRV_TOOLS_VERSION}"
 echo "SPIRV Headers Version: ${SPIRV_HEADERS_VERSION}"
 echo "glslang Version: ${GLSLANG_VERSION}"
 echo "Threads: ${THREADS}"
+echo ""
+echo "Flags:"
+if [ "${NO_VULKAN_TOOLS}" == 1 ]
+then
+  echo "  No Vulkan Tools"
+fi
 
 if [ ! -d "Vulkan-Headers" ]
 then
@@ -84,7 +91,7 @@ then
   make install -j${THREADS} -C Vulkan-Loader/build
 fi
 
-if [ ! -d "Vulkan-Tools" ]
+if [ ! -d "Vulkan-Tools" ] && [ "${NO_VULKAN_TOOLS}" != "1" ]
 then
   git clone https://github.com/KhronosGroup/Vulkan-Tools
 
