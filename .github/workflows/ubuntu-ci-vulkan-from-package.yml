@@ -9,6 +9,7 @@ on:
 env:
   BUILD_TYPE: Release
   Vulkan_INCLUDE_DIRS: /usr/include/
+  Vulkan_GLSLANG_VALIDATOR_EXECUTABLE: /usr/bin/glslangValidator
   VK_LAYER_PATH: /etc/vulkan/explicit_layer.d
   Vulkan_LIBRARIES: /usr/lib/x86_64-linux-gnu/libvulkan.so
 
@@ -22,7 +23,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get -qq update
-        sudo apt install libwayland-dev libxrandr-dev libx11-xcb-dev libmirclient-dev libxkbcommon-dev libvulkan-dev
+        sudo apt install libwayland-dev libxrandr-dev libx11-xcb-dev libmirclient-dev libxkbcommon-dev libvulkan-dev glslang-tools
 
     - name: Configure CMake
       run: |
