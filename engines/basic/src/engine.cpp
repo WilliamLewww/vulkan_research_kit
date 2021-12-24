@@ -87,33 +87,43 @@ void Engine::selectPhysicalDevice(
   this->queueFamilyPropertiesList = Device::getQueueFamilyPropertiesList(
       *this->physicalDeviceHandlePtr.get());
 
-  uint32_t queueFamilyIndex = -1;
+  this->queueFamilyIndex = -1;
   for (uint32_t x = 0; x < queueFamilyPropertiesList.size(); x++) {
     if (queueFamilyPropertiesList[x].queueFlags & VK_QUEUE_GRAPHICS_BIT &&
         Surface::checkPhysicalDeviceSurfaceSupport(
             *this->physicalDeviceHandlePtr.get(), x,
             surfacePtr->getSurfaceHandleRef())) {
 
-      queueFamilyIndex = x;
+      this->queueFamilyIndex = x;
       break;
     }
   }
 
   deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-  this->devicePtr = std::shared_ptr<Device>(new Device(
-      *this->physicalDeviceHandlePtr.get(), {{0, queueFamilyIndex, 1, {1.0f}}},
-      {}, deviceExtensionNameList, NULL));
+  this->devicePtr = std::shared_ptr<Device>(
+      new Device(*this->physicalDeviceHandlePtr.get(),
+                 {{0, this->queueFamilyIndex, 1, {1.0f}}}, {},
+                 deviceExtensionNameList, NULL));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
-      this->devicePtr->getDeviceHandleRef(), 0, queueFamilyIndex));
+      this->devicePtr->getDeviceHandleRef(),
+      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, this->queueFamilyIndex));
 
   this->commandBufferGroupPtr =
       std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
           this->devicePtr->getDeviceHandleRef(),
           commandPoolPtr->getCommandPoolHandleRef(),
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          queueFamilyPropertiesList[queueFamilyIndex].queueCount));
+          queueFamilyPropertiesList[this->queueFamilyIndex].queueCount));
+
+  this->secondaryCommandBufferCount = 128;
+
+  this->secondaryCommandBufferGroupPtr = std::unique_ptr<CommandBufferGroup>(
+      new CommandBufferGroup(this->devicePtr->getDeviceHandleRef(),
+                             commandPoolPtr->getCommandPoolHandleRef(),
+                             VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+                             this->secondaryCommandBufferCount));
 
   this->surfaceCapabilities = surfacePtr->getPhysicalDeviceSurfaceCapabilities(
       *this->physicalDeviceHandlePtr.get());
@@ -131,28 +141,34 @@ void Engine::selectPhysicalDevice(
       this->surfaceFormatList[0].format, this->surfaceFormatList[0].colorSpace,
       this->surfaceCapabilities.currentExtent, 1,
       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {queueFamilyIndex}, this->surfaceCapabilities.currentTransform,
+      {this->queueFamilyIndex}, this->surfaceCapabilities.currentTransform,
       VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, this->presentModeList[0], VK_TRUE,
       VK_NULL_HANDLE));
 
   std::vector<VkAttachmentReference> attachmentReferenceList = {
-      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
+      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+      {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
 
   this->renderPassPtr = std::unique_ptr<RenderPass>(new RenderPass(
       this->devicePtr->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
       {{0, this->surfaceFormatList[0].format, VK_SAMPLE_COUNT_1_BIT,
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}},
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
+       {0, VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
       {{
           0,
           VK_PIPELINE_BIND_POINT_GRAPHICS,
           0,
           NULL,
           1,
-          attachmentReferenceList.data(),
+          &attachmentReferenceList[0],
           NULL,
-          NULL,
+          &attachmentReferenceList[1],
           0,
           NULL,
       }},
@@ -160,33 +176,120 @@ void Engine::selectPhysicalDevice(
 
   this->swapchainImageHandleList = swapchainPtr->getSwapchainImageHandleList();
 
-  for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
+  for (uint32_t x = 0; x < this->swapchainImageHandleList.size(); x++) {
     this->swapchainImageViewPtrList.push_back(
         std::unique_ptr<ImageView>(new ImageView(
-            this->devicePtr->getDeviceHandleRef(), swapchainImageHandle, 0,
-            VK_IMAGE_VIEW_TYPE_2D, this->surfaceFormatList[0].format,
+            this->devicePtr->getDeviceHandleRef(),
+            this->swapchainImageHandleList[x], 0, VK_IMAGE_VIEW_TYPE_2D,
+            this->surfaceFormatList[0].format,
             {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
              VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
 
-    this->framebufferPtrList.push_back(std::unique_ptr<Framebuffer>(
-        new Framebuffer(this->devicePtr->getDeviceHandleRef(),
-                        this->renderPassPtr->getRenderPassHandleRef(),
-                        {this->swapchainImageViewPtrList
-                             [this->swapchainImageViewPtrList.size() - 1]
-                                 ->getImageViewHandleRef()},
-                        (VkFramebufferCreateFlags)0,
-                        this->surfaceCapabilities.currentExtent.width,
-                        this->surfaceCapabilities.currentExtent.height, 1)));
+    this->depthImagePtrList.push_back(std::unique_ptr<Image>(new Image(
+        this->devicePtr->getDeviceHandleRef(),
+        *this->physicalDeviceHandlePtr.get(), 0, VK_IMAGE_TYPE_2D,
+        VK_FORMAT_D32_SFLOAT,
+        {this->surfaceCapabilities.currentExtent.width,
+         this->surfaceCapabilities.currentExtent.height, 1},
+        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        {this->queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED, 0)));
+
+    this->depthImageViewPtrList.push_back(
+        std::unique_ptr<ImageView>(new ImageView(
+            this->devicePtr->getDeviceHandleRef(),
+            this->depthImagePtrList[x]->getImageHandleRef(), 0,
+            VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT,
+            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+            {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1})));
+
+    this->framebufferPtrList.push_back(
+        std::unique_ptr<Framebuffer>(new Framebuffer(
+            this->devicePtr->getDeviceHandleRef(),
+            this->renderPassPtr->getRenderPassHandleRef(),
+            {this->swapchainImageViewPtrList[x]->getImageViewHandleRef(),
+             this->depthImageViewPtrList[x]->getImageViewHandleRef()},
+            (VkFramebufferCreateFlags)0,
+            this->surfaceCapabilities.currentExtent.width,
+            this->surfaceCapabilities.currentExtent.height, 1)));
+
+    this->imageAvailableFencePtrList.push_back(std::unique_ptr<Fence>(new Fence(
+        this->devicePtr->getDeviceHandleRef(), (VkFenceCreateFlagBits)0)));
+    this->acquireImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
+        new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
+    this->writeImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
+        new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
   }
+
+  for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
+  }
+
+  this->currentFrame = 0;
 }
 
-std::shared_ptr<Material> Engine::createMaterial(std::string name,
-                                                 std::string vertexFileName,
-                                                 std::string fragmentFileName) {
+std::shared_ptr<Scene> Engine::createScene(std::string sceneName) {
+  this->scenePtrList.push_back(
+      std::shared_ptr<Scene>(new Scene(sceneName, shared_from_this())));
 
-  this->materialPtrList.push_back(std::shared_ptr<Material>(
-      new Material(this->devicePtr, name, vertexFileName, fragmentFileName)));
+  return this->scenePtrList[this->scenePtrList.size() - 1];
+}
 
-  return this->materialPtrList[this->materialPtrList.size() - 1];
+std::shared_ptr<Camera> Engine::createCamera(std::string cameraName) {
+  this->cameraPtrList.push_back(
+      std::shared_ptr<Camera>(new Camera(cameraName, shared_from_this())));
+
+  return this->cameraPtrList[this->cameraPtrList.size() - 1];
+}
+
+uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
+                        std::shared_ptr<Camera> cameraPtr) {
+
+  for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
+    if (cameraPtr->getIsCameraBufferDirty()) {
+      scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
+      cameraPtr->resetIsCameraBufferDirty();
+    }
+    for (uint32_t y = 0; y < scenePtr->getLightPtrList().size(); y++) {
+      if (scenePtr->getLightPtrList()[x]->getIsLightBufferDirty()) {
+        scenePtr->getMaterialPtrList()[x]->updateLightDescriptorSet(
+            scenePtr->getLightPtrList()[y]);
+        scenePtr->getLightPtrList()[x]->resetIsLightBufferDirty();
+      }
+    }
+    scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
+  }
+  scenePtr->recordCommandBuffer(this->currentFrame);
+
+  uint32_t currentImageIndex = this->swapchainPtr->aquireNextImageIndex(
+      UINT32_MAX,
+      this->acquireImageSemaphorePtrList[this->currentFrame]
+          ->getSemaphoreHandleRef(),
+      VK_NULL_HANDLE);
+
+  this->commandBufferGroupPtr->submit(
+      this->devicePtr->getQueueHandleRef(this->queueFamilyIndex, 0),
+      {{{this->acquireImageSemaphorePtrList[this->currentFrame]
+             ->getSemaphoreHandleRef()},
+        {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+        {currentImageIndex},
+        {this->writeImageSemaphorePtrList[currentImageIndex]
+             ->getSemaphoreHandleRef()}}},
+      this->imageAvailableFencePtrList[this->currentFrame]
+          ->getFenceHandleRef());
+
+  this->surfacePtr->queuePresentCmd(
+      this->devicePtr->getQueueHandleRef(this->queueFamilyIndex, 0),
+      {this->writeImageSemaphorePtrList[currentImageIndex]
+           ->getSemaphoreHandleRef()},
+      {this->swapchainPtr->getSwapchainHandleRef()}, {currentImageIndex}, NULL);
+
+  this->imageAvailableFencePtrList[this->currentFrame]->waitForSignal(
+      UINT32_MAX);
+  this->imageAvailableFencePtrList[this->currentFrame]->reset();
+
+  this->currentFrame =
+      (this->currentFrame + 1) % this->framebufferPtrList.size();
+  return this->currentFrame;
 }

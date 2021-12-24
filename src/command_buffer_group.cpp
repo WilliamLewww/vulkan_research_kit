@@ -34,13 +34,33 @@ CommandBufferGroup::~CommandBufferGroup() {
 
 void CommandBufferGroup::beginRecording(
     uint32_t commandBufferIndex,
-    VkCommandBufferUsageFlagBits commandBufferUsageFlagBits) {
+    VkCommandBufferUsageFlagBits commandBufferUsageFlagBits,
+    std::shared_ptr<CommandBufferInheritanceInfoParam>
+        commandBufferInheritanceInfoParamPtr) {
+
+  VkCommandBufferInheritanceInfo commandBufferInheritanceInfo;
+  VkCommandBufferInheritanceInfo *commandBufferInheritanceInfoPtr = NULL;
+  if (commandBufferInheritanceInfoParamPtr) {
+    commandBufferInheritanceInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+        .pNext = NULL,
+        .renderPass = commandBufferInheritanceInfoParamPtr->renderPassHandle,
+        .subpass = commandBufferInheritanceInfoParamPtr->subpass,
+        .framebuffer = commandBufferInheritanceInfoParamPtr->framebufferHandle,
+        .occlusionQueryEnable =
+            commandBufferInheritanceInfoParamPtr->occlusionQueryEnable,
+        .queryFlags = commandBufferInheritanceInfoParamPtr->queryControlFlags,
+        .pipelineStatistics =
+            commandBufferInheritanceInfoParamPtr->queryPipelineStatisticFlags};
+
+    commandBufferInheritanceInfoPtr = &commandBufferInheritanceInfo;
+  }
 
   VkCommandBufferBeginInfo commandBufferBeginInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .pNext = NULL,
       .flags = commandBufferUsageFlagBits,
-      .pInheritanceInfo = NULL};
+      .pInheritanceInfo = commandBufferInheritanceInfoPtr};
 
   VkResult result =
       vkBeginCommandBuffer(this->commandBufferHandleList[commandBufferIndex],
@@ -181,6 +201,15 @@ void CommandBufferGroup::createPipelineBarrierCmd(
       (uint32_t)memoryBarrierList.size(), memoryBarrierList.data(),
       (uint32_t)bufferMemoryBarrierList.size(), bufferMemoryBarrierList.data(),
       (uint32_t)imageMemoryBarrierList.size(), imageMemoryBarrierList.data());
+}
+
+void CommandBufferGroup::executeCommandsCmd(
+    uint32_t commandBufferIndex,
+    std::vector<VkCommandBuffer> commandBufferHandleList) {
+
+  vkCmdExecuteCommands(this->commandBufferHandleList[commandBufferIndex],
+                       commandBufferHandleList.size(),
+                       commandBufferHandleList.data());
 }
 
 VkCommandBuffer &CommandBufferGroup::getCommandBufferHandleRef(uint32_t index) {
