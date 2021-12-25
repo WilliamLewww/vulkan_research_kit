@@ -25,7 +25,11 @@ public:
 
   void setPosition(float x, float y, float z);
 
+  void updatePosition(float x, float y, float z);
+
   void setDirection(float x, float y, float z);
+
+  void updateDirection(float x, float y, float z);
 
   bool getIsLightBufferDirty();
 

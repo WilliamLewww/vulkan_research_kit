@@ -51,7 +51,10 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
 
         Vertex vertex = {.positions = {vx, vy, vz},
                          .normals = {nx, ny, nz},
-                         .textureCoordinates = {tx, ty}};
+                         .textureCoordinates = {tx, ty},
+                         .materialPropertiesIndex =
+                             (int)materialPtr->getMaterialPropertiesCount() +
+                             shapes[s].mesh.material_ids[f]};
 
         if (this->vertexMap.count(vertex) == 0) {
           this->vertexMap[vertex] = this->vertexList.size();
@@ -62,6 +65,31 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
       }
       index_offset += fv;
     }
+  }
+
+  for (uint32_t x = 0; x < materials.size(); x++) {
+    Material::Properties materialProperties = {
+        .ambient = {materials[x].ambient[0], materials[x].ambient[1],
+                    materials[x].ambient[2], 1},
+        .diffuse = {materials[x].diffuse[0], materials[x].diffuse[1],
+                    materials[x].diffuse[2], 1},
+        .specular = {materials[x].specular[0], materials[x].specular[1],
+                     materials[x].specular[2], 1},
+        .transmittance = {materials[x].transmittance[0],
+                          materials[x].transmittance[1],
+                          materials[x].transmittance[2], 1},
+        .emission = {materials[x].emission[0], materials[x].emission[1],
+                     materials[x].emission[2], 1},
+        .shininess = materials[x].shininess,
+        .ior = materials[x].ior,
+        .dissolve = materials[x].dissolve,
+        .illum = materials[x].illum,
+
+        .ambientTextureIndex = -1,
+        .diffuseTextureIndex = -1,
+        .specularTextureIndex = -1};
+
+    this->materialPropertiesList.push_back(materialProperties);
   }
 
   this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(

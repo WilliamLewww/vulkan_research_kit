@@ -17,6 +17,7 @@ public:
     float positions[3];
     float normals[3];
     float textureCoordinates[2];
+    int materialPropertiesIndex;
   };
 
   Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
@@ -61,6 +62,8 @@ private:
   std::vector<uint32_t> indexList;
 
   std::shared_ptr<Material> materialPtr;
+
+  std::vector<Material::Properties> materialPropertiesList;
 
   std::unique_ptr<Buffer> vertexBufferPtr;
 

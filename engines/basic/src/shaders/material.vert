@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec2 inTextureCoordinate;
+layout(location = 3) in int inMaterialPropertiesIndex;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;

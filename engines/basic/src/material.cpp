@@ -46,10 +46,10 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       .entryPointName = "main",
       .specializationInfoPtr = NULL};
 
-  this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
-      new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
-                         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 18}}));
+  this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(new DescriptorPool(
+      enginePtr->devicePtr->getDeviceHandleRef(),
+      VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
+      {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32}}));
 
   this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
       new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
@@ -58,6 +58,8 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
                                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
                                {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
+                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+                               {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =
@@ -81,7 +83,9 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
               {1, 0, VK_FORMAT_R32G32B32_SFLOAT,
                offsetof(Model::Vertex, normals)},
               {2, 0, VK_FORMAT_R32G32_SFLOAT,
-               offsetof(Model::Vertex, textureCoordinates)}}});
+               offsetof(Model::Vertex, textureCoordinates)},
+              {3, 0, VK_FORMAT_R32_SINT,
+               offsetof(Model::Vertex, materialPropertiesIndex)}}});
 
   auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
@@ -180,9 +184,21 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
             0,
             VK_NULL_HANDLE,
             0}}));
+
+  this->materialPropertiesCount = 0;
+
+  this->materialPropertiesBufferPtr = std::unique_ptr<Buffer>(new Buffer(
+      enginePtr->devicePtr->getDeviceHandleRef(),
+      *enginePtr->physicalDeviceHandlePtr.get(), 0, sizeof(Properties) * 32,
+      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
+      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 }
 
 Material::~Material() {}
+
+uint32_t Material::getMaterialPropertiesCount() {
+  return this->materialPropertiesCount;
+}
 
 void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
@@ -219,3 +235,6 @@ void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
         NULL, lightPtr->getLightDescriptorBufferInfoPtr(), NULL}},
       {});
 }
+
+void Material::appendMaterialsPropertiesBuffer(
+    std::vector<Properties> propertiesList) {}
