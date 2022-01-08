@@ -39,10 +39,36 @@ void Light::setPosition(float x, float y, float z) {
   this->lightsBufferPtr->unmapMemory();
 }
 
+void Light::updatePosition(float x, float y, float z) {
+  this->lightShaderStructure.position[0] += x;
+  this->lightShaderStructure.position[1] += y;
+  this->lightShaderStructure.position[2] += z;
+
+  void *hostLightsBuffer;
+  this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,
+                                   16 * sizeof(LightShaderStructure));
+  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex],
+         &this->lightShaderStructure, sizeof(LightShaderStructure));
+  this->lightsBufferPtr->unmapMemory();
+}
+
 void Light::setDirection(float x, float y, float z) {
   this->lightShaderStructure.direction[0] = x;
   this->lightShaderStructure.direction[1] = y;
   this->lightShaderStructure.direction[2] = z;
+
+  void *hostLightsBuffer;
+  this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,
+                                   16 * sizeof(LightShaderStructure));
+  memcpy(&((LightShaderStructure *)hostLightsBuffer)[lightIndex],
+         &this->lightShaderStructure, sizeof(LightShaderStructure));
+  this->lightsBufferPtr->unmapMemory();
+}
+
+void Light::updateDirection(float x, float y, float z) {
+  this->lightShaderStructure.direction[0] += x;
+  this->lightShaderStructure.direction[1] += y;
+  this->lightShaderStructure.direction[2] += z;
 
   void *hostLightsBuffer;
   this->lightsBufferPtr->mapMemory(&hostLightsBuffer, 0,

@@ -46,6 +46,9 @@ std::shared_ptr<Material> Scene::createMaterial(std::string materialName,
   this->materialPtrList[materialPtrList.size() - 1]
       ->updateEmptyLightDescriptors(this->lightsBufferPtr);
 
+  this->materialPtrList[materialPtrList.size() - 1]
+      ->updateEmptyMaterialPropertiesDescriptors();
+
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
 
@@ -118,7 +121,6 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
   VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
-
   VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
 
   this->enginePtr->renderPassPtr->beginRenderPassCmd(
