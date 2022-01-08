@@ -92,6 +92,9 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     this->materialPropertiesList.push_back(materialProperties);
   }
 
+  materialPtr->appendMaterialPropertiesDescriptors(
+      this->materialPropertiesList);
+
   this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),
       *enginePtr->physicalDeviceHandlePtr.get(), 0,

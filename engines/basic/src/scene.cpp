@@ -46,6 +46,9 @@ std::shared_ptr<Material> Scene::createMaterial(std::string materialName,
   this->materialPtrList[materialPtrList.size() - 1]
       ->updateEmptyLightDescriptors(this->lightsBufferPtr);
 
+  this->materialPtrList[materialPtrList.size() - 1]
+      ->updateEmptyMaterialPropertiesDescriptors();
+
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
 

@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
+layout(location = 2) flat in int inMaterialPropertiesIndex;
 
 layout(location = 0) out vec4 outColor;
 
@@ -21,8 +22,28 @@ layout(set = 0, binding = 2) uniform Light {
 }
 lights[16];
 
+layout(set = 0, binding = 3) buffer MaterialPropertiesBuffer {
+  float ambient[4];
+  float diffuse[4];
+  float specular[4];
+  float transmittance[4];
+  float emission[4];
+  float shininess;
+  float ior;
+  float dissolve;
+  int illum;
+
+  int ambientTextureIndex;
+  int diffuseTextureIndex;
+  int specularTextureIndex;
+}
+materialPropertiesBuffer[32];
+
 void main() {
-  vec3 color = vec3(1, 1, 1);
+  vec3 color =
+      vec3(materialPropertiesBuffer[inMaterialPropertiesIndex].diffuse[0],
+           materialPropertiesBuffer[inMaterialPropertiesIndex].diffuse[1],
+           materialPropertiesBuffer[inMaterialPropertiesIndex].diffuse[2]);
 
   for (uint x = 0; x < scene.lightCount; x++) {
     if (lights[x].type == 1) {

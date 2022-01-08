@@ -49,7 +49,10 @@ public:
 
   void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
 
-  void appendMaterialsPropertiesBuffer(std::vector<Properties> propertiesList);
+  void updateEmptyMaterialPropertiesDescriptors();
+
+  void
+  appendMaterialPropertiesDescriptors(std::vector<Properties> propertiesList);
 
 private:
   std::shared_ptr<Engine> enginePtr;

@@ -236,5 +236,55 @@ void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
       {});
 }
 
-void Material::appendMaterialsPropertiesBuffer(
-    std::vector<Properties> propertiesList) {}
+void Material::updateEmptyMaterialPropertiesDescriptors() {
+  for (uint32_t x = 0; x < 32; x++) {
+    std::shared_ptr<VkDescriptorBufferInfo>
+        materialPropertiesDescriptorBufferInfoPtr =
+            std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+                .buffer =
+                    this->materialPropertiesBufferPtr->getBufferHandleRef(),
+                .offset = x * sizeof(Properties),
+                .range = sizeof(Properties)});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 3, x, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NULL,
+          materialPropertiesDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
+}
+
+void Material::appendMaterialPropertiesDescriptors(
+    std::vector<Properties> propertiesList) {
+
+  void *hostMaterialPropertiesBuffer;
+  this->materialPropertiesBufferPtr->mapMemory(&hostMaterialPropertiesBuffer, 0,
+                                               32 * sizeof(Properties));
+
+  for (uint32_t x = 0; x < propertiesList.size(); x++) {
+    memcpy(
+        &((Properties *)
+              hostMaterialPropertiesBuffer)[this->materialPropertiesCount + x],
+        &propertiesList[x], sizeof(Properties));
+  }
+
+  this->materialPropertiesBufferPtr->unmapMemory();
+
+  for (uint32_t x = 0; x < propertiesList.size(); x++) {
+    std::shared_ptr<VkDescriptorBufferInfo>
+        materialPropertiesDescriptorBufferInfoPtr =
+            std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+                .buffer =
+                    this->materialPropertiesBufferPtr->getBufferHandleRef(),
+                .offset =
+                    this->materialPropertiesCount + x * sizeof(Properties),
+                .range = sizeof(Properties)});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 3, this->materialPropertiesCount + x, 1,
+          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NULL,
+          materialPropertiesDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
+
+  this->materialPropertiesCount += propertiesList.size();
+}
