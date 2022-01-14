@@ -49,7 +49,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(new DescriptorPool(
       enginePtr->devicePtr->getDeviceHandleRef(),
       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-      {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32}}));
+      {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32 + 1 + 32}}));
 
   this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
       new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
@@ -60,6 +60,10 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
                                {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
                                {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
+                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+                               {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1,
+                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+                               {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
                                 VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =

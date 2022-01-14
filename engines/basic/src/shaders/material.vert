@@ -7,7 +7,8 @@ layout(location = 3) in int inMaterialPropertiesIndex;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;
-layout(location = 2) flat out int outMaterialPropertiesIndex;
+layout(location = 2) out vec2 outTextureCoordinate;
+layout(location = 3) flat out int outMaterialPropertiesIndex;
 
 layout(set = 0, binding = 0) uniform Camera {
   mat4 viewMatrix;
@@ -21,4 +22,6 @@ void main() {
 
   outPosition = inPosition;
   outNormal = inNormal;
+  outTextureCoordinate = inTextureCoordinate;
+  outMaterialPropertiesIndex = inMaterialPropertiesIndex;
 }
