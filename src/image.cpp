@@ -79,6 +79,28 @@ Image::~Image() {
   vkFreeMemory(this->deviceHandleRef, this->deviceMemoryHandle, NULL);
 }
 
+void Image::copyFromBufferCmd(
+    VkCommandBuffer &commandBufferHandleRef, VkBuffer &srcBufferHandleRef,
+    VkImageLayout imageLayout,
+    std::vector<VkBufferImageCopy> bufferImageCopyList) {
+
+  vkCmdCopyBufferToImage(commandBufferHandleRef, srcBufferHandleRef,
+                         this->imageHandle, imageLayout,
+                         (uint32_t)bufferImageCopyList.size(),
+                         bufferImageCopyList.data());
+}
+
+void Image::copyFromImageCmd(VkCommandBuffer &commandBufferHandleRef,
+                             VkImage &srcImageHandleRef,
+                             VkImageLayout srcImageLayout,
+                             VkImageLayout dstImageLayout,
+                             std::vector<VkImageCopy> imageCopyList) {
+
+  vkCmdCopyImage(commandBufferHandleRef, srcImageHandleRef, srcImageLayout,
+                 this->imageHandle, dstImageLayout,
+                 (uint32_t)imageCopyList.size(), imageCopyList.data());
+}
+
 void Image::mapMemory(void **hostMemory, VkDeviceSize offset,
                       VkDeviceSize size) {
 

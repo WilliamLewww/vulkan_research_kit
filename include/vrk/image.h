@@ -20,6 +20,17 @@ public:
 
   ~Image();
 
+  void copyFromBufferCmd(VkCommandBuffer &commandBufferHandleRef,
+                         VkBuffer &srcBufferHandleRef,
+                         VkImageLayout imageLayout,
+                         std::vector<VkBufferImageCopy> bufferImageCopyList);
+
+  void copyFromImageCmd(VkCommandBuffer &commandBufferHandleRef,
+                        VkImage &srcImageHandleRef,
+                        VkImageLayout srcImageLayout,
+                        VkImageLayout dstImageLayout,
+                        std::vector<VkImageCopy> imageCopyList);
+
   VkImage &getImageHandleRef();
 
   void mapMemory(void **hostMemory, VkDeviceSize offset, VkDeviceSize size);

@@ -1,3 +1,6 @@
+[![Ubuntu CI - Vulkan from SDK](https://github.com/WilliamLewww/vulkan_research_kit/actions/workflows/ubuntu-ci-vulkan-from-sdk.yml/badge.svg)](https://github.com/WilliamLewww/vulkan_research_kit/actions/workflows/ubuntu-ci-vulkan-from-sdk.yml)
+[![Ubuntu CI - Vulkan from Source](https://github.com/WilliamLewww/vulkan_research_kit/actions/workflows/ubuntu-ci-vulkan-from-source.yml/badge.svg)](https://github.com/WilliamLewww/vulkan_research_kit/actions/workflows/ubuntu-ci-vulkan-from-source.yml)
+
 # Vulkan Research Kit
 
 The Vulkan Research Kit (VRK) is a thin wrapper of the Vulkan API. The project was made for creating quick prototypes of Vulkan applications/demos.
