@@ -81,23 +81,24 @@ Image::~Image() {
 
 void Image::copyFromBufferCmd(
     VkCommandBuffer &commandBufferHandleRef, VkBuffer &srcBufferHandleRef,
-    VkImageLayout imageLayout, uint32_t regionCount,
+    VkImageLayout imageLayout,
     std::vector<VkBufferImageCopy> bufferImageCopyList) {
 
   vkCmdCopyBufferToImage(commandBufferHandleRef, srcBufferHandleRef,
-                         this->imageHandle, imageLayout, regionCount,
+                         this->imageHandle, imageLayout,
+                         (uint32_t)bufferImageCopyList.size(),
                          bufferImageCopyList.data());
 }
 
 void Image::copyFromImageCmd(VkCommandBuffer &commandBufferHandleRef,
                              VkImage &srcImageHandleRef,
                              VkImageLayout srcImageLayout,
-                             VkImageLayout dstImageLayout, uint32_t regionCount,
+                             VkImageLayout dstImageLayout,
                              std::vector<VkImageCopy> imageCopyList) {
 
   vkCmdCopyImage(commandBufferHandleRef, srcImageHandleRef, srcImageLayout,
-                 this->imageHandle, dstImageLayout, regionCount,
-                 imageCopyList.data());
+                 this->imageHandle, dstImageLayout,
+                 (uint32_t)imageCopyList.size(), imageCopyList.data());
 }
 
 void Image::mapMemory(void **hostMemory, VkDeviceSize offset,

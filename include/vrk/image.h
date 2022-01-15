@@ -22,13 +22,13 @@ public:
 
   void copyFromBufferCmd(VkCommandBuffer &commandBufferHandleRef,
                          VkBuffer &srcBufferHandleRef,
-                         VkImageLayout imageLayout, uint32_t regionCount,
+                         VkImageLayout imageLayout,
                          std::vector<VkBufferImageCopy> bufferImageCopyList);
 
   void copyFromImageCmd(VkCommandBuffer &commandBufferHandleRef,
                         VkImage &srcImageHandleRef,
                         VkImageLayout srcImageLayout,
-                        VkImageLayout dstImageLayout, uint32_t regionCount,
+                        VkImageLayout dstImageLayout,
                         std::vector<VkImageCopy> imageCopyList);
 
   VkImage &getImageHandleRef();
