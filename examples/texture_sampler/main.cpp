@@ -106,8 +106,9 @@ int main(void) {
   Device *device = new Device(activePhysicalDeviceHandle,
                               {{0, queueFamilyIndex, 1, {1.0f}}}, {}, {}, NULL);
 
-  CommandPool *commandPool =
-      new CommandPool(device->getDeviceHandleRef(), 0, queueFamilyIndex);
+  CommandPool *commandPool = new CommandPool(
+      device->getDeviceHandleRef(),
+      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueFamilyIndex);
 
   CommandBufferGroup *commandBufferGroup = new CommandBufferGroup(
       device->getDeviceHandleRef(), commandPool->getCommandPoolHandleRef(),
@@ -242,53 +243,116 @@ int main(void) {
   memcpy(hostImageBuffer, pixels, imageSize);
   imageBuffer->unmapMemory();
 
+  ImageView *imageView = new ImageView(
+      device->getDeviceHandleRef(), image->getImageHandleRef(), 0,
+      VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+      {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+
+  Fence *fence =
+      new Fence(device->getDeviceHandleRef(), (VkFenceCreateFlagBits)0);
+
   commandBufferGroup->beginRecording(
       1, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-  imageOutBuffer->copyFromImageCmd(
-      commandBufferGroup->getCommandBufferHandleRef(1),
-      colorImage->getImageHandleRef(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-      {{0,
-        0,
-        0,
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-        {0, 0, 0},
-        {800, 600, 1}}});
+  commandBufferGroup->createPipelineBarrierCmd(
+      1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {}, {},
+      {{VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        queueFamilyIndex,
+        queueFamilyIndex,
+        image->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
 
   commandBufferGroup->endRecording(1);
 
   commandBufferGroup->submit(device->getQueueHandleRef(queueFamilyIndex, 0),
                              {{{}, {}, {1}, {}}}, fence->getFenceHandleRef());
 
-  Fence *fence =
-      new Fence(device->getDeviceHandleRef(), (VkFenceCreateFlagBits)0);
+  fence->waitForSignal(UINT32_MAX);
+  fence->reset();
+
+  commandBufferGroup->beginRecording(
+      1, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+  image->copyFromBufferCmd(commandBufferGroup->getCommandBufferHandleRef(1),
+                           imageBuffer->getBufferHandleRef(),
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           {{0,
+                             0,
+                             0,
+                             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+                             {0, 0, 0},
+                             {250, 250, 1}}});
+
+  commandBufferGroup->endRecording(1);
+
+  commandBufferGroup->submit(device->getQueueHandleRef(queueFamilyIndex, 0),
+                             {{{}, {}, {1}, {}}}, fence->getFenceHandleRef());
 
   fence->waitForSignal(UINT32_MAX);
   fence->reset();
 
-  std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
+  commandBufferGroup->beginRecording(
+      1, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+  commandBufferGroup->createPipelineBarrierCmd(
+      1, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+      0, {}, {},
+      {{VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_ACCESS_SHADER_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        queueFamilyIndex,
+        queueFamilyIndex,
+        image->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+  commandBufferGroup->endRecording(1);
+
+  commandBufferGroup->submit(device->getQueueHandleRef(queueFamilyIndex, 0),
+                             {{{}, {}, {1}, {}}}, fence->getFenceHandleRef());
+
+  fence->waitForSignal(UINT32_MAX);
+  fence->reset();
+
+  std::shared_ptr<VkDescriptorImageInfo> descriptorSamplerImageInfoPtr =
       std::make_shared<VkDescriptorImageInfo>(
           VkDescriptorImageInfo{.sampler = sampler->getSamplerHandleRef(),
                                 .imageView = VK_NULL_HANDLE,
                                 .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED});
 
+  std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
+      std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
+          .sampler = VK_NULL_HANDLE,
+          .imageView = imageView->getImageViewHandleRef(),
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+
   descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLER, descriptorImageInfoPtr, NULL,
-        NULL}},
+      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLER, descriptorSamplerImageInfoPtr,
+        NULL, NULL},
+       {0, 1, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorImageInfoPtr,
+        NULL, NULL}},
       {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
-      device->getDeviceHandleRef(), std::vector<VkDescriptorSetLayout>(),
+      device->getDeviceHandleRef(),
+      {descriptorSetLayout->getDescriptorSetLayoutHandleRef()},
       std::vector<VkPushConstantRange>());
 
   auto pipelineVertexInputStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam>(
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam{
 
-          .vertexInputBindingDescriptionList = {{0, sizeof(float) * 3,
+          .vertexInputBindingDescriptionList = {{0, sizeof(float) * 5,
                                                  VK_VERTEX_INPUT_RATE_VERTEX}},
           .vertexInputAttributeDescriptionList = {
-              {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}}});
+              {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+              {1, 0, VK_FORMAT_R32G32_SFLOAT, sizeof(float) * 3}}});
 
   auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
@@ -372,20 +436,21 @@ int main(void) {
                                   VK_NULL_HANDLE,
                                   0}});
 
-  float vertices[12] = {-0.5f, -0.5f, 0.0f, 0.5f,  -0.5f, 0.0f,
-                        0.5f,  0.5f,  0.0f, -0.5f, 0.5f,  0.0f};
+  float vertices[20] = {-0.5f, -0.5f, 0.0f, 0.0,  0.0,  0.5f, -0.5f,
+                        0.0f,  1.0,   0.0,  0.5f, 0.5f, 0.0f, 1.0,
+                        1.0,   -0.5f, 0.5f, 0.0f, 0.0,  1.0};
 
   uint32_t indices[6] = {0, 1, 2, 2, 3, 0};
 
   Buffer *vertexBuffer =
       new Buffer(device->getDeviceHandleRef(), activePhysicalDeviceHandle, 0,
-                 sizeof(float) * 12, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                 sizeof(float) * 20, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                  VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex},
                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
   void *hostVertexBuffer;
-  vertexBuffer->mapMemory(&hostVertexBuffer, 0, 12 * sizeof(float));
-  memcpy(hostVertexBuffer, vertices, 12 * sizeof(float));
+  vertexBuffer->mapMemory(&hostVertexBuffer, 0, 20 * sizeof(float));
+  memcpy(hostVertexBuffer, vertices, 20 * sizeof(float));
   vertexBuffer->unmapMemory();
 
   Buffer *indexBuffer =
@@ -414,6 +479,11 @@ int main(void) {
       commandBufferGroup->getCommandBufferHandleRef(0), 0);
   indexBuffer->bindIndexBufferCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), VK_INDEX_TYPE_UINT32);
+
+  descriptorSetGroup->bindDescriptorSetsCmd(
+      commandBufferGroup->getCommandBufferHandleRef(0),
+      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      pipelineLayout->getPipelineLayoutHandleRef(), 0, {0}, {});
 
   graphicsPipelineGroup->drawIndexedCmd(
       commandBufferGroup->getCommandBufferHandleRef(0), 6, 1, 0, 0, 0);
@@ -478,9 +548,16 @@ int main(void) {
   delete imageOutBuffer;
   delete indexBuffer;
   delete vertexBuffer;
-  delete fence;
   delete graphicsPipelineGroup;
   delete pipelineLayout;
+  delete fence;
+  delete imageView;
+  delete imageBuffer;
+  delete image;
+  delete sampler;
+  delete descriptorSetGroup;
+  delete descriptorSetLayout;
+  delete descriptorPool;
   delete fragmentShaderModule;
   delete vertexShaderModule;
   delete framebuffer;
