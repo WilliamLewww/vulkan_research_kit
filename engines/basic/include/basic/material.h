@@ -8,6 +8,7 @@
 #include <vrk/descriptor_set_layout.h>
 #include <vrk/device.h>
 #include <vrk/resource.h>
+#include <vrk/sampler.h>
 #include <vrk/shader_module.h>
 
 #include <memory>
@@ -45,11 +46,7 @@ public:
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
-  void updateEmptyLightDescriptors(std::shared_ptr<Buffer> bufferPtr);
-
   void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
-
-  void updateEmptyMaterialPropertiesDescriptors();
 
   void
   appendMaterialPropertiesDescriptors(std::vector<Properties> propertiesList);
@@ -76,6 +73,8 @@ private:
   uint32_t materialPropertiesCount;
 
   std::unique_ptr<Buffer> materialPropertiesBufferPtr;
+
+  std::unique_ptr<Sampler> samplerPtr;
 
   friend class Model;
 };
