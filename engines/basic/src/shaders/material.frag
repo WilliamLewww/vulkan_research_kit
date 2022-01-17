@@ -67,7 +67,7 @@ void main() {
     if (lights[x].type == 1) {
       vec4 surfaceToLight =
           normalize(lights[x].position - vec4(inPosition, 1.0));
-      color = color * dot(vec4(inNormal, 0.0), surfaceToLight);
+      color = color * dot(vec4(-inNormal, 0.0), surfaceToLight);
     }
   }
 
