@@ -70,23 +70,24 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     }
   }
 
-  std::map<std::string, int> textureIndexMap;
-  textureIndexMap[""] = -1;
   for (uint32_t x = 0; x < materials.size(); x++) {
-    if (textureIndexMap.find(materials[x].ambient_texname) ==
-        textureIndexMap.end()) {
+    if (materialPtr->textureNameIndexMap.find(materials[x].ambient_texname) ==
+        materialPtr->textureNameIndexMap.end()) {
 
-      textureIndexMap[materials[x].ambient_texname] = textureIndexMap.size();
+      materialPtr->textureNameIndexMap[materials[x].ambient_texname] =
+          materialPtr->textureNameIndexMap.size();
     }
-    if (textureIndexMap.find(materials[x].diffuse_texname) ==
-        textureIndexMap.end()) {
+    if (materialPtr->textureNameIndexMap.find(materials[x].diffuse_texname) ==
+        materialPtr->textureNameIndexMap.end()) {
 
-      textureIndexMap[materials[x].diffuse_texname] = textureIndexMap.size();
+      materialPtr->textureNameIndexMap[materials[x].diffuse_texname] =
+          materialPtr->textureNameIndexMap.size();
     }
-    if (textureIndexMap.find(materials[x].specular_texname) ==
-        textureIndexMap.end()) {
+    if (materialPtr->textureNameIndexMap.find(materials[x].specular_texname) ==
+        materialPtr->textureNameIndexMap.end()) {
 
-      textureIndexMap[materials[x].specular_texname] = textureIndexMap.size();
+      materialPtr->textureNameIndexMap[materials[x].specular_texname] =
+          materialPtr->textureNameIndexMap.size();
     }
 
     Material::Properties materialProperties = {
@@ -106,9 +107,12 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         .dissolve = materials[x].dissolve,
         .illum = materials[x].illum,
 
-        .ambientTextureIndex = textureIndexMap[materials[x].ambient_texname],
-        .diffuseTextureIndex = textureIndexMap[materials[x].diffuse_texname],
-        .specularTextureIndex = textureIndexMap[materials[x].specular_texname]};
+        .ambientTextureIndex =
+            materialPtr->textureNameIndexMap[materials[x].ambient_texname],
+        .diffuseTextureIndex =
+            materialPtr->textureNameIndexMap[materials[x].diffuse_texname],
+        .specularTextureIndex =
+            materialPtr->textureNameIndexMap[materials[x].specular_texname]};
 
     this->materialPropertiesList.push_back(materialProperties);
   }
@@ -116,8 +120,7 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
   materialPtr->appendMaterialPropertiesDescriptors(
       this->materialPropertiesList);
 
-  // TODO: import textures using stb_image
-  for (auto pair : textureIndexMap) {
+  for (auto pair : materialPtr->textureNameIndexMap) {
     if (pair.second != -1) {
       std::string texturePath = modelDirectory + "/" + pair.first;
 
@@ -203,7 +206,7 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
             0,
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
             {0, 0, 0},
-            {250, 250, 1}}});
+            {(uint32_t)texWidth, (uint32_t)texHeight, 1}}});
 
       enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
 

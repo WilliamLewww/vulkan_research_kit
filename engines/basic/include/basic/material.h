@@ -12,6 +12,7 @@
 #include <vrk/sampler.h>
 #include <vrk/shader_module.h>
 
+#include <map>
 #include <memory>
 
 class Engine;
@@ -81,6 +82,8 @@ private:
   std::unique_ptr<Sampler> samplerPtr;
 
   uint32_t textureCount;
+
+  std::map<std::string, int> textureNameIndexMap;
 
   friend class Model;
 };

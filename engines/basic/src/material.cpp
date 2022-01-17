@@ -209,6 +209,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       VK_FALSE));
 
   this->textureCount = 0;
+  this->textureNameIndexMap[""] = -1;
 
   for (uint32_t x = 0; x < 16; x++) {
     std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
