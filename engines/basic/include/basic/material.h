@@ -44,6 +44,8 @@ public:
 
   uint32_t getMaterialPropertiesCount();
 
+  uint32_t getTextureCount();
+
   void updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr);
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
@@ -82,8 +84,6 @@ private:
   std::unique_ptr<Sampler> samplerPtr;
 
   uint32_t textureCount;
-
-  std::map<std::string, int> textureNameIndexMap;
 
   friend class Model;
 };

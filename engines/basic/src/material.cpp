@@ -209,8 +209,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       VK_FALSE));
 
   this->textureCount = 0;
-  this->textureNameIndexMap[""] = -1;
-
+  
   for (uint32_t x = 0; x < 16; x++) {
     std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
         std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
@@ -263,6 +262,10 @@ Material::~Material() {}
 
 uint32_t Material::getMaterialPropertiesCount() {
   return this->materialPropertiesCount;
+}
+
+uint32_t Material::getTextureCount() {
+  return this->textureCount;
 }
 
 void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
