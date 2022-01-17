@@ -7,9 +7,12 @@
 #include <vrk/descriptor_set_group.h>
 #include <vrk/descriptor_set_layout.h>
 #include <vrk/device.h>
+#include <vrk/image_view.h>
 #include <vrk/resource.h>
+#include <vrk/sampler.h>
 #include <vrk/shader_module.h>
 
+#include <map>
 #include <memory>
 
 class Engine;
@@ -41,18 +44,19 @@ public:
 
   uint32_t getMaterialPropertiesCount();
 
+  uint32_t getTextureCount();
+
   void updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr);
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
-  void updateEmptyLightDescriptors(std::shared_ptr<Buffer> bufferPtr);
-
   void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
-
-  void updateEmptyMaterialPropertiesDescriptors();
 
   void
   appendMaterialPropertiesDescriptors(std::vector<Properties> propertiesList);
+
+  void appendTextureDescriptors(
+      std::vector<std::shared_ptr<ImageView>> imageViewPtrList);
 
 private:
   std::shared_ptr<Engine> enginePtr;
@@ -76,6 +80,10 @@ private:
   uint32_t materialPropertiesCount;
 
   std::unique_ptr<Buffer> materialPropertiesBufferPtr;
+
+  std::unique_ptr<Sampler> samplerPtr;
+
+  uint32_t textureCount;
 
   friend class Model;
 };

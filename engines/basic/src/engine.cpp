@@ -101,10 +101,17 @@ void Engine::selectPhysicalDevice(
 
   deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-  this->devicePtr = std::shared_ptr<Device>(
-      new Device(*this->physicalDeviceHandlePtr.get(),
-                 {{0, this->queueFamilyIndex, 1, {1.0f}}}, {},
-                 deviceExtensionNameList, NULL));
+  VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+      .pNext = NULL,
+      .robustBufferAccess2 = VK_FALSE,
+      .robustImageAccess2 = VK_FALSE,
+      .nullDescriptor = VK_TRUE};
+
+  this->devicePtr = std::shared_ptr<Device>(new Device(
+      *this->physicalDeviceHandlePtr.get(),
+      {{0, this->queueFamilyIndex, 1, {1.0f}}}, {}, deviceExtensionNameList,
+      NULL, {&physicalDeviceRobustness2Features}));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
       this->devicePtr->getDeviceHandleRef(),
@@ -124,6 +131,14 @@ void Engine::selectPhysicalDevice(
                              commandPoolPtr->getCommandPoolHandleRef(),
                              VK_COMMAND_BUFFER_LEVEL_SECONDARY,
                              this->secondaryCommandBufferCount));
+
+  this->utilityCommandBufferCount = 3;
+
+  this->utilityCommandBufferGroupPtr =
+      std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
+          this->devicePtr->getDeviceHandleRef(),
+          commandPoolPtr->getCommandPoolHandleRef(),
+          VK_COMMAND_BUFFER_LEVEL_PRIMARY, this->utilityCommandBufferCount));
 
   this->surfaceCapabilities = surfacePtr->getPhysicalDeviceSurfaceCapabilities(
       *this->physicalDeviceHandlePtr.get());

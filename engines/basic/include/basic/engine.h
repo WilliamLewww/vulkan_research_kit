@@ -63,6 +63,10 @@ private:
 
   std::unique_ptr<CommandBufferGroup> secondaryCommandBufferGroupPtr;
 
+  uint32_t utilityCommandBufferCount;
+
+  std::unique_ptr<CommandBufferGroup> utilityCommandBufferGroupPtr;
+
   VkSurfaceCapabilitiesKHR surfaceCapabilities;
 
   std::vector<VkSurfaceFormatKHR> surfaceFormatList;

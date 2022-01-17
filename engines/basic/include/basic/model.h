@@ -4,6 +4,8 @@
 #include <vrk/buffer.h>
 #include <vrk/command_buffer_group.h>
 #include <vrk/device.h>
+#include <vrk/image.h>
+#include <vrk/image_view.h>
 
 #include <map>
 #include <string>
@@ -68,4 +70,8 @@ private:
   std::unique_ptr<Buffer> vertexBufferPtr;
 
   std::unique_ptr<Buffer> indexBufferPtr;
+
+  std::vector<std::unique_ptr<Image>> imagePtrList;
+
+  std::vector<std::shared_ptr<ImageView>> imageViewPtrList;
 };
