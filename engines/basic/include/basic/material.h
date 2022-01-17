@@ -7,6 +7,7 @@
 #include <vrk/descriptor_set_group.h>
 #include <vrk/descriptor_set_layout.h>
 #include <vrk/device.h>
+#include <vrk/image_view.h>
 #include <vrk/resource.h>
 #include <vrk/sampler.h>
 #include <vrk/shader_module.h>
@@ -51,6 +52,9 @@ public:
   void
   appendMaterialPropertiesDescriptors(std::vector<Properties> propertiesList);
 
+  void appendTextureDescriptors(
+      std::vector<std::shared_ptr<ImageView>> imageViewPtrList);
+
 private:
   std::shared_ptr<Engine> enginePtr;
 
@@ -75,6 +79,8 @@ private:
   std::unique_ptr<Buffer> materialPropertiesBufferPtr;
 
   std::unique_ptr<Sampler> samplerPtr;
+
+  uint32_t textureCount;
 
   friend class Model;
 };

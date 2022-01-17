@@ -208,6 +208,8 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       VK_COMPARE_OP_NEVER, 0, 0, VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
       VK_FALSE));
 
+  this->textureCount = 0;
+
   for (uint32_t x = 0; x < 16; x++) {
     std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
         std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
@@ -317,4 +319,23 @@ void Material::appendMaterialPropertiesDescriptors(
   }
 
   this->materialPropertiesCount += propertiesList.size();
+}
+
+void Material::appendTextureDescriptors(
+    std::vector<std::shared_ptr<ImageView>> imageViewPtrList) {
+
+  for (uint32_t x = 0; x < imageViewPtrList.size(); x++) {
+    std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
+        std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
+            .sampler = VK_NULL_HANDLE,
+            .imageView = imageViewPtrList[x]->getImageViewHandleRef(),
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 5, this->textureCount + x, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+          descriptorImageInfoPtr, NULL, NULL}},
+        {});
+  }
+
+  this->textureCount += imageViewPtrList.size();
 }

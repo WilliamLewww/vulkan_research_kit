@@ -132,6 +132,14 @@ void Engine::selectPhysicalDevice(
                              VK_COMMAND_BUFFER_LEVEL_SECONDARY,
                              this->secondaryCommandBufferCount));
 
+  this->utilityCommandBufferCount = 3;
+
+  this->utilityCommandBufferGroupPtr =
+      std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
+          this->devicePtr->getDeviceHandleRef(),
+          commandPoolPtr->getCommandPoolHandleRef(),
+          VK_COMMAND_BUFFER_LEVEL_PRIMARY, this->utilityCommandBufferCount));
+
   this->surfaceCapabilities = surfacePtr->getPhysicalDeviceSurfaceCapabilities(
       *this->physicalDeviceHandlePtr.get());
 

@@ -4,6 +4,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tinyobjloader/tiny_obj_loader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
+
 Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
              std::string modelName, std::string modelPath,
              std::shared_ptr<Material> materialPtr)
@@ -67,7 +70,25 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     }
   }
 
+  std::map<std::string, int> textureIndexMap;
+  textureIndexMap[""] = -1;
   for (uint32_t x = 0; x < materials.size(); x++) {
+    if (textureIndexMap.find(materials[x].ambient_texname) ==
+        textureIndexMap.end()) {
+
+      textureIndexMap[materials[x].ambient_texname] = textureIndexMap.size();
+    }
+    if (textureIndexMap.find(materials[x].diffuse_texname) ==
+        textureIndexMap.end()) {
+
+      textureIndexMap[materials[x].diffuse_texname] = textureIndexMap.size();
+    }
+    if (textureIndexMap.find(materials[x].specular_texname) ==
+        textureIndexMap.end()) {
+
+      textureIndexMap[materials[x].specular_texname] = textureIndexMap.size();
+    }
+
     Material::Properties materialProperties = {
         .ambient = {materials[x].ambient[0], materials[x].ambient[1],
                     materials[x].ambient[2], 1},
@@ -85,15 +106,144 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         .dissolve = materials[x].dissolve,
         .illum = materials[x].illum,
 
-        .ambientTextureIndex = -1,
-        .diffuseTextureIndex = -1,
-        .specularTextureIndex = -1};
+        .ambientTextureIndex = textureIndexMap[materials[x].ambient_texname],
+        .diffuseTextureIndex = textureIndexMap[materials[x].diffuse_texname],
+        .specularTextureIndex = textureIndexMap[materials[x].specular_texname]};
 
     this->materialPropertiesList.push_back(materialProperties);
   }
 
   materialPtr->appendMaterialPropertiesDescriptors(
       this->materialPropertiesList);
+
+  // TODO: import textures using stb_image
+  for (auto pair : textureIndexMap) {
+    if (pair.second != -1) {
+      std::string texturePath = modelDirectory + "/" + pair.first;
+
+      int texWidth, texHeight, texChannels;
+      stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight,
+                                  &texChannels, STBI_rgb_alpha);
+      VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+      if (!pixels) {
+        std::cerr << "Could not load texture: " << texturePath << std::endl;
+      }
+
+      this->imagePtrList.push_back(std::unique_ptr<Image>(new Image(
+          enginePtr->devicePtr->getDeviceHandleRef(),
+          *enginePtr->physicalDeviceHandlePtr.get(), 0, VK_IMAGE_TYPE_2D,
+          VK_FORMAT_R8G8B8A8_SRGB, {(uint32_t)texWidth, (uint32_t)texHeight, 1},
+          1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+          VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
+          VK_IMAGE_LAYOUT_UNDEFINED, 0)));
+
+      this->imageViewPtrList.push_back(std::shared_ptr<ImageView>(new ImageView(
+          enginePtr->devicePtr->getDeviceHandleRef(),
+          this->imagePtrList[this->imagePtrList.size() - 1]
+              ->getImageHandleRef(),
+          0, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+          {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+           VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+          {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
+
+      std::shared_ptr<Buffer> imageBufferPtr = std::shared_ptr<Buffer>(
+          new Buffer(enginePtr->devicePtr->getDeviceHandleRef(),
+                     *enginePtr->physicalDeviceHandlePtr.get(), 0, imageSize,
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
+      void *hostImageBuffer;
+      imageBufferPtr->mapMemory(&hostImageBuffer, 0, imageSize);
+      memcpy(hostImageBuffer, pixels, imageSize);
+      imageBufferPtr->unmapMemory();
+
+      std::shared_ptr<Fence> fencePtr = std::shared_ptr<Fence>(
+          new Fence(enginePtr->devicePtr->getDeviceHandleRef(),
+                    (VkFenceCreateFlagBits)0));
+
+      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+          0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+      enginePtr->utilityCommandBufferGroupPtr->createPipelineBarrierCmd(
+          0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+          VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {}, {},
+          {{VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_TRANSFER_READ_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            enginePtr->queueFamilyIndex,
+            enginePtr->queueFamilyIndex,
+            this->imagePtrList[this->imagePtrList.size() - 1]
+                ->getImageHandleRef(),
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+
+      enginePtr->utilityCommandBufferGroupPtr->submit(
+          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
+                                                  0),
+          {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
+
+      fencePtr->waitForSignal(UINT32_MAX);
+      fencePtr->reset();
+
+      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+          0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+      this->imagePtrList[this->imagePtrList.size() - 1]->copyFromBufferCmd(
+          enginePtr->utilityCommandBufferGroupPtr->getCommandBufferHandleRef(0),
+          imageBufferPtr->getBufferHandleRef(),
+          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+          {{0,
+            0,
+            0,
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+            {0, 0, 0},
+            {250, 250, 1}}});
+
+      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+
+      enginePtr->utilityCommandBufferGroupPtr->submit(
+          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
+                                                  0),
+          {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
+
+      fencePtr->waitForSignal(UINT32_MAX);
+      fencePtr->reset();
+
+      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+          0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+      enginePtr->utilityCommandBufferGroupPtr->createPipelineBarrierCmd(
+          0, VK_PIPELINE_STAGE_TRANSFER_BIT,
+          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, {}, {},
+          {{VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            enginePtr->queueFamilyIndex,
+            enginePtr->queueFamilyIndex,
+            this->imagePtrList[this->imagePtrList.size() - 1]
+                ->getImageHandleRef(),
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+
+      enginePtr->utilityCommandBufferGroupPtr->submit(
+          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
+                                                  0),
+          {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
+
+      fencePtr->waitForSignal(UINT32_MAX);
+      fencePtr->reset();
+    }
+  }
+
+  materialPtr->appendTextureDescriptors(this->imageViewPtrList);
 
   this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
       enginePtr->devicePtr->getDeviceHandleRef(),

@@ -31,8 +31,8 @@ int main() {
       "my-material", "resources/shaders/material.vert.spv",
       "resources/shaders/material.frag.spv");
 
-  std::shared_ptr<Model> model =
-      scene->createModel("my-model", "resources/models/model.obj", material);
+  std::shared_ptr<Model> model = scene->createModel(
+      "my-model", "resources/models/color_cube/color_cube.obj", material);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);
