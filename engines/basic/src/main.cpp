@@ -28,11 +28,22 @@ int main() {
   std::shared_ptr<Scene> scene = engine->createScene("my-scene");
 
   std::shared_ptr<Material> material = scene->createMaterial(
-      "my-material", "resources/shaders/material.vert.spv",
-      "resources/shaders/material.frag.spv");
+      "material1",
+      {{Material::ShaderStage::VERTEX, "resources/shaders/voxels.vert.spv"},
+       {Material::ShaderStage::GEOMETRY, "resources/shaders/voxels.geom.spv"},
+       {Material::ShaderStage::FRAGMENT, "resources/shaders/voxels.frag.spv"}});
+
+  std::shared_ptr<Material> material2 = scene->createMaterial(
+      "material2",
+      {{Material::ShaderStage::VERTEX, "resources/shaders/material.vert.spv"},
+       {Material::ShaderStage::FRAGMENT,
+        "resources/shaders/material.frag.spv"}});
 
   std::shared_ptr<Model> model = scene->createModel(
-      "my-model", "resources/models/color_cube/color_cube.obj", material);
+      "model1", "resources/models/utah_teapot/utah_teapot.obj", material);
+
+  std::shared_ptr<Model> model2 = scene->createModel(
+      "model2", "resources/models/color_cube/color_cube.obj", material2);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);

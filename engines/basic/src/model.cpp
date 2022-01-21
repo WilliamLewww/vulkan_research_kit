@@ -45,12 +45,18 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         float vy = attrib.vertices[3 * uint32_t(idx.vertex_index) + 1];
         float vz = attrib.vertices[3 * uint32_t(idx.vertex_index) + 2];
 
-        float nx = attrib.normals[3 * uint32_t(idx.normal_index) + 0];
-        float ny = attrib.normals[3 * uint32_t(idx.normal_index) + 1];
-        float nz = attrib.normals[3 * uint32_t(idx.normal_index) + 2];
+        float nx = 0.0, ny = 0.0, nz = 0.0;
+        if (idx.normal_index >= 0) {
+          nx = attrib.normals[3 * uint32_t(idx.normal_index) + 0];
+          ny = attrib.normals[3 * uint32_t(idx.normal_index) + 1];
+          nz = attrib.normals[3 * uint32_t(idx.normal_index) + 2];
+        }
 
-        float tx = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 0];
-        float ty = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 1];
+        float tx = 0.0, ty = 0.0;
+        if (idx.texcoord_index >= 0) {
+          tx = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 0];
+          ty = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 1];
+        }
 
         Vertex vertex = {.positions = {vx, vy, vz},
                          .normals = {nx, ny, nz},
@@ -285,6 +291,7 @@ void Model::render(
     std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
         commandBufferInheritanceInfoParamPtr,
     uint32_t commandBufferIndex) {
+
   this->enginePtr->secondaryCommandBufferGroupPtr->beginRecording(
       commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
       commandBufferInheritanceInfoParamPtr);

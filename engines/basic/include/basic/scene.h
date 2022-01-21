@@ -21,9 +21,9 @@ public:
 
   ~Scene();
 
-  std::shared_ptr<Material> createMaterial(std::string materialName,
-                                           std::string vertexFileName,
-                                           std::string fragmentFileName);
+  std::shared_ptr<Material> createMaterial(
+      std::string materialName,
+      std::map<Material::ShaderStage, std::string> shaderStageNameMap);
 
   std::shared_ptr<Model> createModel(std::string modelName,
                                      std::string modelPath,

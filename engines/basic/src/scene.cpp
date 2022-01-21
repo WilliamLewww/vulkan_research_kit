@@ -36,12 +36,12 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
 
 Scene::~Scene() {}
 
-std::shared_ptr<Material> Scene::createMaterial(std::string materialName,
-                                                std::string vertexFileName,
-                                                std::string fragmentFileName) {
+std::shared_ptr<Material> Scene::createMaterial(
+    std::string materialName,
+    std::map<Material::ShaderStage, std::string> shaderStageNameMap) {
 
-  this->materialPtrList.push_back(std::shared_ptr<Material>(new Material(
-      this->enginePtr, materialName, vertexFileName, fragmentFileName)));
+  this->materialPtrList.push_back(std::shared_ptr<Material>(
+      new Material(this->enginePtr, materialName, shaderStageNameMap)));
 
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
