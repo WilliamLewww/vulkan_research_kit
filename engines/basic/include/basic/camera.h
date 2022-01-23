@@ -35,6 +35,10 @@ public:
   std::shared_ptr<VkDescriptorBufferInfo> getCameraDescriptorBufferInfoPtr();
 
 private:
+  void updateViewMatrix();
+
+  void updateProjectionMatrix();
+
   std::string cameraName;
 
   std::shared_ptr<Engine> enginePtr;
@@ -62,8 +66,4 @@ private:
   float nearPlane;
 
   float farPlane;
-
-  void updateViewMatrix();
-
-  void updateProjectionMatrix();
 };

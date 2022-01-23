@@ -44,7 +44,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16},
+                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32},
                           {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32},
                           {VK_DESCRIPTOR_TYPE_SAMPLER, 1},
                           {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32}}));
@@ -63,7 +63,9 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
            {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
             NULL},
            {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 32,
+            VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =
       std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
@@ -88,7 +90,9 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
               {2, 0, VK_FORMAT_R32G32_SFLOAT,
                offsetof(Model::Vertex, textureCoordinates)},
               {3, 0, VK_FORMAT_R32_SINT,
-               offsetof(Model::Vertex, materialPropertiesIndex)}}});
+               offsetof(Model::Vertex, materialPropertiesIndex)},
+              {4, 0, VK_FORMAT_R32_SINT,
+               offsetof(Model::Vertex, modelIndex)}}});
 
   auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
@@ -247,6 +251,17 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
           NULL, NULL}},
         {});
   }
+
+  for (uint32_t x = 0; x < 32; x++) {
+    std::shared_ptr<VkDescriptorBufferInfo> modelDescriptorBufferInfoPtr =
+        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+            .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 6, x, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+          modelDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
 }
 
 Material::~Material() {}
@@ -331,4 +346,11 @@ void Material::appendTextureDescriptors(
   }
 
   this->textureCount += imageViewPtrList.size();
+}
+
+void Material::updateModelDescriptorSet(std::shared_ptr<Model> modelPtr) {
+  this->descriptorSetGroupPtr->updateDescriptorSets(
+      {{0, 6, modelPtr->getModelIndex(), 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        NULL, modelPtr->getModelDescriptorBufferInfoPtr(), NULL}},
+      {});
 }

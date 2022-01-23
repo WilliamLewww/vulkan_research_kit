@@ -20,11 +20,17 @@ public:
     float normals[3];
     float textureCoordinates[2];
     int materialPropertiesIndex;
+    int modelIndex;
+  };
+
+  struct ModelShaderStructure {
+    alignas(16) float modelMatrix[16];
   };
 
   Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         std::string modelName, std::string modelPath,
-        std::shared_ptr<Material> materialPtr);
+        std::shared_ptr<Material> materialPtr, uint32_t modelIndex,
+        std::shared_ptr<Buffer> modelsBufferPtr);
 
   ~Model();
 
@@ -32,6 +38,14 @@ public:
   render(std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
              commandBufferInheritanceInfoParamPtr,
          uint32_t commandBufferIndex);
+
+  std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
+
+  uint32_t getModelIndex();
+
+  bool getIsModelBufferDirty();
+
+  void resetIsModelBufferDirty();
 
 private:
   struct CompareVertex {
@@ -50,6 +64,8 @@ private:
       return std::memcmp(a.positions, b.positions, sizeof(float) * 3) < 0;
     }
   };
+
+  void updateModelMatrix();
 
   std::shared_ptr<Engine> enginePtr;
 
@@ -74,4 +90,22 @@ private:
   std::vector<std::unique_ptr<Image>> imagePtrList;
 
   std::vector<std::shared_ptr<ImageView>> imageViewPtrList;
+
+  std::shared_ptr<Buffer> modelsBufferPtr;
+
+  uint32_t modelIndex;
+
+  ModelShaderStructure modelShaderStructure;
+
+  std::shared_ptr<VkDescriptorBufferInfo> modelDescriptorBufferInfoPtr;
+
+  bool isModelBufferDirty;
+
+  float position[3];
+
+  float yaw;
+
+  float pitch;
+
+  float roll;
 };

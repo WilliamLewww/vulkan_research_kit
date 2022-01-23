@@ -13,7 +13,7 @@ float random(vec2 uv, float seed) {
 }
 
 void main() {
-  float value = random(voxelCenter.xy, voxelCenter.z);
+  float value = 1.0;
 
   outColor = vec4(value);
 }

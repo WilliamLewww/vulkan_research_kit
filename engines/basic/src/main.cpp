@@ -27,7 +27,7 @@ int main() {
 
   std::shared_ptr<Scene> scene = engine->createScene("my-scene");
 
-  std::shared_ptr<Material> material = scene->createMaterial(
+  std::shared_ptr<Material> material1 = scene->createMaterial(
       "material1",
       {{Material::ShaderStage::VERTEX, "resources/shaders/voxels.vert.spv"},
        {Material::ShaderStage::GEOMETRY, "resources/shaders/voxels.geom.spv"},
@@ -39,8 +39,8 @@ int main() {
        {Material::ShaderStage::FRAGMENT,
         "resources/shaders/material.frag.spv"}});
 
-  std::shared_ptr<Model> model = scene->createModel(
-      "model1", "resources/models/utah_teapot/utah_teapot.obj", material);
+  std::shared_ptr<Model> model1 = scene->createModel(
+      "model1", "resources/models/utah_teapot/utah_teapot.obj", material1);
 
   std::shared_ptr<Model> model2 = scene->createModel(
       "model2", "resources/models/color_cube/color_cube.obj", material2);

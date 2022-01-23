@@ -119,7 +119,7 @@ void createFace(float voxelSize, vec4 voxelCenter, vec4 direction) {
 }
 
 void main() {
-  float voxelSize = 0.1;
+  float voxelSize = 0.01;
   vec4 voxelCenter = ceil(gl_in[0].gl_Position / voxelSize) * voxelSize;
 
   createFace(voxelSize, voxelCenter, vec4(-1, 0, 0, 0));

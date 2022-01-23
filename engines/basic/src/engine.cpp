@@ -275,6 +275,12 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
             scenePtr->getLightPtrList()[y]);
       }
     }
+    for (uint32_t y = 0; y < scenePtr->getModelPtrList().size(); y++) {
+      if (scenePtr->getModelPtrList()[y]->getIsModelBufferDirty()) {
+        scenePtr->getMaterialPtrList()[x]->updateModelDescriptorSet(
+            scenePtr->getModelPtrList()[y]);
+      }
+    }
     scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
   }
   if (cameraPtr->getIsCameraBufferDirty()) {
@@ -283,6 +289,11 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
   for (uint32_t x = 0; x < scenePtr->getLightPtrList().size(); x++) {
     if (scenePtr->getLightPtrList()[x]->getIsLightBufferDirty()) {
       scenePtr->getLightPtrList()[x]->resetIsLightBufferDirty();
+    }
+  }
+  for (uint32_t x = 0; x < scenePtr->getModelPtrList().size(); x++) {
+    if (scenePtr->getModelPtrList()[x]->getIsModelBufferDirty()) {
+      scenePtr->getModelPtrList()[x]->resetIsModelBufferDirty();
     }
   }
   scenePtr->recordCommandBuffer(this->currentFrame);

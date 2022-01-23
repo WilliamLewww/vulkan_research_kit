@@ -18,6 +18,7 @@
 class Engine;
 class Scene;
 class Light;
+class Model;
 
 class Material {
 public:
@@ -59,6 +60,8 @@ public:
 
   void appendTextureDescriptors(
       std::vector<std::shared_ptr<ImageView>> imageViewPtrList);
+
+  void updateModelDescriptorSet(std::shared_ptr<Model> modelPtr);
 
 private:
   std::shared_ptr<Engine> enginePtr;

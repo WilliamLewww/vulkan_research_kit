@@ -38,6 +38,8 @@ public:
 
   std::vector<std::shared_ptr<Light>> getLightPtrList();
 
+  std::vector<std::shared_ptr<Model>> getModelPtrList();
+
   std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
 private:
@@ -62,4 +64,6 @@ private:
   uint32_t getNextAvailableModelIndex();
 
   std::shared_ptr<Buffer> lightsBufferPtr;
+
+  std::shared_ptr<Buffer> modelsBufferPtr;
 };

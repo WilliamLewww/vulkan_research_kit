@@ -26,6 +26,13 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
       {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
+  this->modelsBufferPtr = std::shared_ptr<Buffer>(new Buffer(
+      enginePtr->devicePtr->getDeviceHandleRef(),
+      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+      sizeof(Model::ModelShaderStructure) * 32,
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
+      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
   void *hostSceneBuffer;
   this->sceneBufferPtr->mapMemory(&hostSceneBuffer, 0,
                                   sizeof(SceneShaderStructure));
@@ -50,9 +57,6 @@ std::shared_ptr<Model>
 Scene::createModel(std::string modelName, std::string modelPath,
                    std::shared_ptr<Material> materialPtr) {
 
-  this->modelPtrList.push_back(std::shared_ptr<Model>(new Model(
-      this->enginePtr, shared_from_this(), modelName, modelPath, materialPtr)));
-
   uint32_t modelIndex = -1;
   for (uint32_t x = 0;
        modelIndex == -1 && x < this->enginePtr->secondaryCommandBufferCount / 3;
@@ -61,6 +65,10 @@ Scene::createModel(std::string modelName, std::string modelPath,
       modelIndex = x;
     }
   }
+
+  this->modelPtrList.push_back(std::shared_ptr<Model>(
+      new Model(this->enginePtr, shared_from_this(), modelName, modelPath,
+                materialPtr, modelIndex, this->modelsBufferPtr)));
 
   this->indexModelMap[modelIndex] =
       this->modelPtrList[this->modelPtrList.size() - 1];
@@ -141,6 +149,10 @@ std::vector<std::shared_ptr<Material>> Scene::getMaterialPtrList() {
 
 std::vector<std::shared_ptr<Light>> Scene::getLightPtrList() {
   return this->lightPtrList;
+}
+
+std::vector<std::shared_ptr<Model>> Scene::getModelPtrList() {
+  return this->modelPtrList;
 }
 
 std::shared_ptr<VkDescriptorBufferInfo>
