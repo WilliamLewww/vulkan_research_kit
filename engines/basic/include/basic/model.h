@@ -39,6 +39,14 @@ public:
              commandBufferInheritanceInfoParamPtr,
          uint32_t commandBufferIndex);
 
+  void setPosition(float x, float y, float z);
+
+  void updatePosition(float x, float y, float z);
+
+  void setRotation(float yaw, float pitch, float roll);
+
+  void updateRotation(float yaw, float pitch, float roll);
+
   std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
 
   uint32_t getModelIndex();

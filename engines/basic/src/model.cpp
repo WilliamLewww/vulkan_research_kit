@@ -354,6 +354,39 @@ void Model::render(
       commandBufferIndex);
 }
 
+void Model::setPosition(float x, float y, float z) {
+  this->position[0] = x;
+  this->position[1] = y;
+  this->position[2] = z;
+
+  this->updateModelMatrix();
+}
+
+void Model::updatePosition(float x, float y, float z) {
+  this->position[0] += x;
+  this->position[1] += y;
+  this->position[2] += z;
+
+  this->updateModelMatrix();
+}
+
+void Model::setRotation(float yaw, float pitch, float roll) {
+  this->yaw = yaw;
+  this->pitch = pitch;
+  this->roll = roll;
+
+  this->updateModelMatrix();
+}
+
+void Model::updateRotation(float yaw, float pitch, float roll) {
+  this->yaw += yaw;
+  this->pitch += pitch;
+  this->roll += roll;
+
+  this->updateModelMatrix();
+}
+
+
 std::shared_ptr<VkDescriptorBufferInfo>
 Model::getModelDescriptorBufferInfoPtr() {
   return this->modelDescriptorBufferInfoPtr;
