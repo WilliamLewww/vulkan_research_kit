@@ -21,9 +21,9 @@ public:
 
   ~Scene();
 
-  std::shared_ptr<Material> createMaterial(std::string materialName,
-                                           std::string vertexFileName,
-                                           std::string fragmentFileName);
+  std::shared_ptr<Material> createMaterial(
+      std::string materialName,
+      std::map<Material::ShaderStage, std::string> shaderStageNameMap);
 
   std::shared_ptr<Model> createModel(std::string modelName,
                                      std::string modelPath,
@@ -37,6 +37,8 @@ public:
   std::vector<std::shared_ptr<Material>> getMaterialPtrList();
 
   std::vector<std::shared_ptr<Light>> getLightPtrList();
+
+  std::vector<std::shared_ptr<Model>> getModelPtrList();
 
   std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
@@ -62,4 +64,6 @@ private:
   uint32_t getNextAvailableModelIndex();
 
   std::shared_ptr<Buffer> lightsBufferPtr;
+
+  std::shared_ptr<Buffer> modelsBufferPtr;
 };

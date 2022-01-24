@@ -108,10 +108,14 @@ void Engine::selectPhysicalDevice(
       .robustImageAccess2 = VK_FALSE,
       .nullDescriptor = VK_TRUE};
 
+  std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr =
+      std::make_shared<VkPhysicalDeviceFeatures>(
+          (VkPhysicalDeviceFeatures){.geometryShader = VK_TRUE});
+
   this->devicePtr = std::shared_ptr<Device>(new Device(
       *this->physicalDeviceHandlePtr.get(),
       {{0, this->queueFamilyIndex, 1, {1.0f}}}, {}, deviceExtensionNameList,
-      NULL, {&physicalDeviceRobustness2Features}));
+      physicalDeviceFeaturesPtr, {&physicalDeviceRobustness2Features}));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
       this->devicePtr->getDeviceHandleRef(),
@@ -264,16 +268,33 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
   for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
     if (cameraPtr->getIsCameraBufferDirty()) {
       scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
-      cameraPtr->resetIsCameraBufferDirty();
     }
     for (uint32_t y = 0; y < scenePtr->getLightPtrList().size(); y++) {
-      if (scenePtr->getLightPtrList()[x]->getIsLightBufferDirty()) {
+      if (scenePtr->getLightPtrList()[y]->getIsLightBufferDirty()) {
         scenePtr->getMaterialPtrList()[x]->updateLightDescriptorSet(
             scenePtr->getLightPtrList()[y]);
-        scenePtr->getLightPtrList()[x]->resetIsLightBufferDirty();
+      }
+    }
+    for (uint32_t y = 0; y < scenePtr->getModelPtrList().size(); y++) {
+      if (scenePtr->getModelPtrList()[y]->getIsModelBufferDirty()) {
+        scenePtr->getMaterialPtrList()[x]->updateModelDescriptorSet(
+            scenePtr->getModelPtrList()[y]);
       }
     }
     scenePtr->getMaterialPtrList()[x]->updateSceneDescriptorSet(scenePtr);
+  }
+  if (cameraPtr->getIsCameraBufferDirty()) {
+    cameraPtr->resetIsCameraBufferDirty();
+  }
+  for (uint32_t x = 0; x < scenePtr->getLightPtrList().size(); x++) {
+    if (scenePtr->getLightPtrList()[x]->getIsLightBufferDirty()) {
+      scenePtr->getLightPtrList()[x]->resetIsLightBufferDirty();
+    }
+  }
+  for (uint32_t x = 0; x < scenePtr->getModelPtrList().size(); x++) {
+    if (scenePtr->getModelPtrList()[x]->getIsModelBufferDirty()) {
+      scenePtr->getModelPtrList()[x]->resetIsModelBufferDirty();
+    }
   }
   scenePtr->recordCommandBuffer(this->currentFrame);
 

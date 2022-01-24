@@ -9,9 +9,36 @@
 
 Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
              std::string modelName, std::string modelPath,
-             std::shared_ptr<Material> materialPtr)
+             std::shared_ptr<Material> materialPtr, uint32_t modelIndex,
+             std::shared_ptr<Buffer> modelsBufferPtr)
     : enginePtr(enginePtr), scenePtr(scenePtr), modelName(modelName),
-      materialPtr(materialPtr) {
+      materialPtr(materialPtr), modelIndex(modelIndex),
+      modelsBufferPtr(modelsBufferPtr) {
+
+  this->modelShaderStructure = {};
+
+  this->position[0] = 0.0;
+  this->position[1] = 0.0;
+  this->position[2] = 0.0;
+
+  this->yaw = 0.0;
+  this->pitch = 0.0;
+  this->roll = 0.0;
+
+  this->updateModelMatrix();
+
+  this->modelDescriptorBufferInfoPtr =
+      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+          .buffer = modelsBufferPtr->getBufferHandleRef(),
+          .offset = modelIndex * sizeof(ModelShaderStructure),
+          .range = sizeof(ModelShaderStructure)});
+
+  void *hostModelsBuffer;
+  this->modelsBufferPtr->mapMemory(&hostModelsBuffer, 0,
+                                   32 * sizeof(ModelShaderStructure));
+  memcpy(&((ModelShaderStructure *)hostModelsBuffer)[modelIndex],
+         &this->modelShaderStructure, sizeof(ModelShaderStructure));
+  this->modelsBufferPtr->unmapMemory();
 
   std::string modelDirectory = modelPath.substr(0, modelPath.find_last_of("/"));
 
@@ -45,19 +72,26 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         float vy = attrib.vertices[3 * uint32_t(idx.vertex_index) + 1];
         float vz = attrib.vertices[3 * uint32_t(idx.vertex_index) + 2];
 
-        float nx = attrib.normals[3 * uint32_t(idx.normal_index) + 0];
-        float ny = attrib.normals[3 * uint32_t(idx.normal_index) + 1];
-        float nz = attrib.normals[3 * uint32_t(idx.normal_index) + 2];
+        float nx = 0.0, ny = 0.0, nz = 0.0;
+        if (idx.normal_index >= 0) {
+          nx = attrib.normals[3 * uint32_t(idx.normal_index) + 0];
+          ny = attrib.normals[3 * uint32_t(idx.normal_index) + 1];
+          nz = attrib.normals[3 * uint32_t(idx.normal_index) + 2];
+        }
 
-        float tx = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 0];
-        float ty = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 1];
+        float tx = 0.0, ty = 0.0;
+        if (idx.texcoord_index >= 0) {
+          tx = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 0];
+          ty = attrib.texcoords[2 * uint32_t(idx.texcoord_index) + 1];
+        }
 
         Vertex vertex = {.positions = {vx, vy, vz},
                          .normals = {nx, ny, nz},
                          .textureCoordinates = {tx, ty},
                          .materialPropertiesIndex =
                              (int)materialPtr->getMaterialPropertiesCount() +
-                             shapes[s].mesh.material_ids[f]};
+                             shapes[s].mesh.material_ids[f],
+                         .modelIndex = (int)modelIndex};
 
         if (this->vertexMap.count(vertex) == 0) {
           this->vertexMap[vertex] = this->vertexList.size();
@@ -285,6 +319,7 @@ void Model::render(
     std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
         commandBufferInheritanceInfoParamPtr,
     uint32_t commandBufferIndex) {
+
   this->enginePtr->secondaryCommandBufferGroupPtr->beginRecording(
       commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
       commandBufferInheritanceInfoParamPtr);
@@ -317,4 +352,91 @@ void Model::render(
 
   this->enginePtr->secondaryCommandBufferGroupPtr->endRecording(
       commandBufferIndex);
+}
+
+void Model::setPosition(float x, float y, float z) {
+  this->position[0] = x;
+  this->position[1] = y;
+  this->position[2] = z;
+
+  this->updateModelMatrix();
+}
+
+void Model::updatePosition(float x, float y, float z) {
+  this->position[0] += x;
+  this->position[1] += y;
+  this->position[2] += z;
+
+  this->updateModelMatrix();
+}
+
+void Model::setRotation(float yaw, float pitch, float roll) {
+  this->yaw = yaw;
+  this->pitch = pitch;
+  this->roll = roll;
+
+  this->updateModelMatrix();
+}
+
+void Model::updateRotation(float yaw, float pitch, float roll) {
+  this->yaw += yaw;
+  this->pitch += pitch;
+  this->roll += roll;
+
+  this->updateModelMatrix();
+}
+
+
+std::shared_ptr<VkDescriptorBufferInfo>
+Model::getModelDescriptorBufferInfoPtr() {
+  return this->modelDescriptorBufferInfoPtr;
+}
+
+uint32_t Model::getModelIndex() { return this->modelIndex; }
+
+bool Model::getIsModelBufferDirty() { return this->isModelBufferDirty; }
+
+void Model::resetIsModelBufferDirty() { this->isModelBufferDirty = false; }
+
+void Model::updateModelMatrix() {
+  this->modelShaderStructure.modelMatrix[0] =
+      cosf(this->pitch) * cosf(this->yaw);
+  this->modelShaderStructure.modelMatrix[1] =
+      sinf(this->pitch) * cosf(this->yaw);
+  this->modelShaderStructure.modelMatrix[2] = -sinf(this->yaw);
+  this->modelShaderStructure.modelMatrix[3] = 0.0;
+
+  this->modelShaderStructure.modelMatrix[4] =
+      cosf(this->pitch) * sinf(this->yaw) * sinf(this->roll) -
+      sinf(this->pitch) * cosf(roll);
+  this->modelShaderStructure.modelMatrix[5] =
+      sinf(this->pitch) * sinf(this->yaw) * sinf(this->roll) +
+      cosf(this->pitch) * cosf(roll);
+  this->modelShaderStructure.modelMatrix[6] =
+      cosf(this->yaw) * sinf(this->roll);
+  this->modelShaderStructure.modelMatrix[7] = 0.0;
+
+  this->modelShaderStructure.modelMatrix[8] =
+      cosf(this->pitch) * sinf(this->yaw) * cosf(this->roll) +
+      sinf(this->pitch) * sinf(roll);
+  this->modelShaderStructure.modelMatrix[9] =
+      sinf(this->pitch) * sinf(this->yaw) * cosf(this->roll) -
+      cosf(this->pitch) * sinf(roll);
+  this->modelShaderStructure.modelMatrix[10] =
+      cosf(this->yaw) * cosf(this->roll);
+  this->modelShaderStructure.modelMatrix[11] = 0.0;
+
+  this->modelShaderStructure.modelMatrix[12] = this->position[0];
+  this->modelShaderStructure.modelMatrix[13] = this->position[1];
+  this->modelShaderStructure.modelMatrix[14] = this->position[2];
+  this->modelShaderStructure.modelMatrix[15] = 1.0;
+
+  void *hostModelsBuffer;
+  this->modelsBufferPtr->mapMemory(&hostModelsBuffer, 0,
+                                   32 * sizeof(ModelShaderStructure));
+  memcpy(&((ModelShaderStructure *)hostModelsBuffer)[modelIndex],
+         &this->modelShaderStructure, sizeof(ModelShaderStructure));
+  this->modelsBufferPtr->unmapMemory();
+
+  this->isModelBufferDirty = true;
 }

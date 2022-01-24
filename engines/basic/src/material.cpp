@@ -3,71 +3,69 @@
 #include "basic/scene.h"
 
 Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
-                   std::string vertexFileName, std::string fragmentFileName)
+                   std::map<ShaderStage, std::string> shaderStageNameMap)
     : enginePtr(enginePtr), materialName(materialName) {
 
-  std::ifstream vertexFile(Resource::findResource(vertexFileName),
-                           std::ios::binary | std::ios::ate);
-  std::streamsize vertexFileSize = vertexFile.tellg();
-  vertexFile.seekg(0, std::ios::beg);
-  std::vector<uint32_t> vertexShaderSource(vertexFileSize / sizeof(uint32_t));
-  vertexFile.read((char *)vertexShaderSource.data(), vertexFileSize);
-  vertexFile.close();
+  std::vector<GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam>
+      pipelineShaderStageCreateInfoList;
 
-  this->vertexShaderModulePtr = std::unique_ptr<ShaderModule>(new ShaderModule(
-      enginePtr->devicePtr->getDeviceHandleRef(), vertexShaderSource));
-
-  std::ifstream fragmentFile(Resource::findResource(fragmentFileName),
+  for (auto &pair : shaderStageNameMap) {
+    std::ifstream shaderFile(Resource::findResource(pair.second),
                              std::ios::binary | std::ios::ate);
-  std::streamsize fragmentFileSize = fragmentFile.tellg();
-  fragmentFile.seekg(0, std::ios::beg);
-  std::vector<uint32_t> fragmentShaderSource(fragmentFileSize /
-                                             sizeof(uint32_t));
-  fragmentFile.read((char *)fragmentShaderSource.data(), fragmentFileSize);
-  fragmentFile.close();
+    std::streamsize shaderFileSize = shaderFile.tellg();
+    shaderFile.seekg(0, std::ios::beg);
+    std::vector<uint32_t> shaderSource(shaderFileSize / sizeof(uint32_t));
+    shaderFile.read((char *)shaderSource.data(), shaderFileSize);
+    shaderFile.close();
 
-  this->fragmentShaderModulePtr =
-      std::unique_ptr<ShaderModule>(new ShaderModule(
-          enginePtr->devicePtr->getDeviceHandleRef(), fragmentShaderSource));
+    this->shaderStageModuleMap[pair.first] =
+        std::unique_ptr<ShaderModule>(new ShaderModule(
+            enginePtr->devicePtr->getDeviceHandleRef(), shaderSource));
 
-  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam vertexStage = {
-      .pipelineShaderStageCreateFlags = 0,
-      .shaderStageFlagBits = VK_SHADER_STAGE_VERTEX_BIT,
-      .shaderModuleHandleRef =
-          this->vertexShaderModulePtr->getShaderModuleHandleRef(),
-      .entryPointName = "main",
-      .specializationInfoPtr = NULL};
+    GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam shaderStage = {
+        .pipelineShaderStageCreateFlags = 0,
+        .shaderStageFlagBits = (VkShaderStageFlagBits)0,
+        .shaderModuleHandleRef =
+            this->shaderStageModuleMap[pair.first]->getShaderModuleHandleRef(),
+        .entryPointName = "main",
+        .specializationInfoPtr = NULL};
 
-  GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam fragmentStage = {
-      .pipelineShaderStageCreateFlags = 0,
-      .shaderStageFlagBits = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .shaderModuleHandleRef =
-          this->fragmentShaderModulePtr->getShaderModuleHandleRef(),
-      .entryPointName = "main",
-      .specializationInfoPtr = NULL};
+    if (pair.first == ShaderStage::VERTEX) {
+      shaderStage.shaderStageFlagBits = VK_SHADER_STAGE_VERTEX_BIT;
+    } else if (pair.first == ShaderStage::FRAGMENT) {
+      shaderStage.shaderStageFlagBits = VK_SHADER_STAGE_FRAGMENT_BIT;
+    } else if (pair.first == ShaderStage::GEOMETRY) {
+      shaderStage.shaderStageFlagBits = VK_SHADER_STAGE_GEOMETRY_BIT;
+    }
+
+    pipelineShaderStageCreateInfoList.push_back(shaderStage);
+  }
 
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16},
+                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32},
                           {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32},
                           {VK_DESCRIPTOR_TYPE_SAMPLER, 1},
                           {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32}}));
 
-  this->descriptorSetLayoutPtr = std::unique_ptr<DescriptorSetLayout>(
-      new DescriptorSetLayout(enginePtr->devicePtr->getDeviceHandleRef(), 0,
-                              {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-                                VK_SHADER_STAGE_VERTEX_BIT, NULL},
-                               {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-                               {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
-                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-                               {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
-                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-                               {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1,
-                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-                               {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
-                                VK_SHADER_STAGE_FRAGMENT_BIT, NULL}}));
+  this->descriptorSetLayoutPtr =
+      std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
+          enginePtr->devicePtr->getDeviceHandleRef(), 0,
+          {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT, NULL},
+           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            NULL},
+           {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 32,
+            VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
 
   this->descriptorSetGroupPtr =
       std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
@@ -92,7 +90,9 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
               {2, 0, VK_FORMAT_R32G32_SFLOAT,
                offsetof(Model::Vertex, textureCoordinates)},
               {3, 0, VK_FORMAT_R32_SINT,
-               offsetof(Model::Vertex, materialPropertiesIndex)}}});
+               offsetof(Model::Vertex, materialPropertiesIndex)},
+              {4, 0, VK_FORMAT_R32_SINT,
+               offsetof(Model::Vertex, modelIndex)}}});
 
   auto pipelineInputAssemblyStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineInputAssemblyStateCreateInfoParam>(
@@ -175,22 +175,17 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
   this->graphicsPipelineGroupPtr =
       std::unique_ptr<GraphicsPipelineGroup>(new GraphicsPipelineGroup(
           enginePtr->devicePtr->getDeviceHandleRef(),
-          {{0,
-            {vertexStage, fragmentStage},
+          {{0, pipelineShaderStageCreateInfoList,
             pipelineVertexInputStateCreateInfoParam,
-            pipelineInputAssemblyStateCreateInfoParam,
-            NULL,
+            pipelineInputAssemblyStateCreateInfoParam, NULL,
             pipelineViewportStateCreateInfoParam,
             pipelineRasterizationStateCreateInfoParam,
             pipelineMultisampleStateCreateInfoParam,
             pipelineDepthStencilStateCreateInfoParam,
-            pipelineColorBlendStateCreateInfoParam,
-            NULL,
+            pipelineColorBlendStateCreateInfoParam, NULL,
             this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),
-            enginePtr->renderPassPtr->getRenderPassHandleRef(),
-            0,
-            VK_NULL_HANDLE,
-            0}}));
+            enginePtr->renderPassPtr->getRenderPassHandleRef(), 0,
+            VK_NULL_HANDLE, 0}}));
 
   this->materialPropertiesCount = 0;
 
@@ -209,7 +204,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       VK_FALSE));
 
   this->textureCount = 0;
-  
+
   for (uint32_t x = 0; x < 16; x++) {
     std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
         std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
@@ -256,6 +251,17 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
           NULL, NULL}},
         {});
   }
+
+  for (uint32_t x = 0; x < 32; x++) {
+    std::shared_ptr<VkDescriptorBufferInfo> modelDescriptorBufferInfoPtr =
+        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+            .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE});
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0, 6, x, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
+          modelDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
 }
 
 Material::~Material() {}
@@ -264,9 +270,7 @@ uint32_t Material::getMaterialPropertiesCount() {
   return this->materialPropertiesCount;
 }
 
-uint32_t Material::getTextureCount() {
-  return this->textureCount;
-}
+uint32_t Material::getTextureCount() { return this->textureCount; }
 
 void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
@@ -312,7 +316,7 @@ void Material::appendMaterialPropertiesDescriptors(
                 .buffer =
                     this->materialPropertiesBufferPtr->getBufferHandleRef(),
                 .offset =
-                    this->materialPropertiesCount + x * sizeof(Properties),
+                    (this->materialPropertiesCount + x) * sizeof(Properties),
                 .range = sizeof(Properties)});
 
     this->descriptorSetGroupPtr->updateDescriptorSets(
@@ -342,4 +346,11 @@ void Material::appendTextureDescriptors(
   }
 
   this->textureCount += imageViewPtrList.size();
+}
+
+void Material::updateModelDescriptorSet(std::shared_ptr<Model> modelPtr) {
+  this->descriptorSetGroupPtr->updateDescriptorSets(
+      {{0, 6, modelPtr->getModelIndex(), 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        NULL, modelPtr->getModelDescriptorBufferInfoPtr(), NULL}},
+      {});
 }

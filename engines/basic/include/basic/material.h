@@ -18,6 +18,7 @@
 class Engine;
 class Scene;
 class Light;
+class Model;
 
 class Material {
 public:
@@ -37,8 +38,10 @@ public:
     alignas(4) int specularTextureIndex;
   };
 
+  enum class ShaderStage { VERTEX, FRAGMENT, GEOMETRY };
+
   Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
-           std::string vertexFileName, std::string fragmentFileName);
+           std::map<ShaderStage, std::string> shaderStageNameMap);
 
   ~Material();
 
@@ -58,14 +61,14 @@ public:
   void appendTextureDescriptors(
       std::vector<std::shared_ptr<ImageView>> imageViewPtrList);
 
+  void updateModelDescriptorSet(std::shared_ptr<Model> modelPtr);
+
 private:
   std::shared_ptr<Engine> enginePtr;
 
   std::string materialName;
 
-  std::unique_ptr<ShaderModule> vertexShaderModulePtr;
-
-  std::unique_ptr<ShaderModule> fragmentShaderModulePtr;
+  std::map<ShaderStage, std::unique_ptr<ShaderModule>> shaderStageModuleMap;
 
   std::unique_ptr<PipelineLayout> pipelineLayoutPtr;
 
