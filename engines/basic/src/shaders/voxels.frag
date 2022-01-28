@@ -9,7 +9,6 @@ layout(location = 0) out vec4 outColor;
 float random(vec2 uv, float seed) {
   return fract(sin(mod(dot(uv, vec2(12.9898, 78.233)) + 1113.1 * seed, M_PI)) *
                43758.5453);
-  ;
 }
 
 void main() {

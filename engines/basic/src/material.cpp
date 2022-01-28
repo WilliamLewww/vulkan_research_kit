@@ -53,7 +53,9 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
           enginePtr->devicePtr->getDeviceHandleRef(), 0,
           {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT, NULL},
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT |
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+            NULL},
            {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
             VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
            {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
@@ -106,7 +108,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
       GraphicsPipelineGroup::PipelineViewportStateCreateInfoParam>(
       GraphicsPipelineGroup::PipelineViewportStateCreateInfoParam{
 
-          .viewportList = {{0, 0, 800, 600, 0, 1}},
+          .viewportList = {{0, 600, 800, -600, 0, 1}},
           .scissorRect2DList = {{{0, 0}, {800, 600}}}});
 
   auto pipelineRasterizationStateCreateInfoParam = std::make_shared<

@@ -14,15 +14,16 @@
 #include <vrk/wsi/surface.h>
 #include <vrk/wsi/swapchain.h>
 
+#include "vrk/ray_tracing/ray_tracing.h"
+
 #include <X11/Xlib.h>
 
 #include <map>
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
-  Engine(std::string appName, bool enableValidation,
-         std::vector<std::string> instanceLayerList,
-         std::vector<std::string> instanceExtensionNameList);
+  Engine(std::string appName, bool isValidationEnabled,
+         bool isRayTracingEnabled);
 
   ~Engine();
 
@@ -30,8 +31,7 @@ public:
 
   void selectWindow(Display *displayPtr, std::shared_ptr<Window> windowPtr);
 
-  void selectPhysicalDevice(std::string physicalDeviceName,
-                            std::vector<std::string> deviceExtensionNameList);
+  void selectPhysicalDevice(std::string physicalDeviceName);
 
   std::shared_ptr<Scene> createScene(std::string sceneName);
 
@@ -41,6 +41,10 @@ public:
                   std::shared_ptr<Camera> cameraPtr);
 
 private:
+  bool isValidationEnabled;
+
+  bool isRayTracingEnabled;
+
   std::unique_ptr<Instance> instancePtr;
 
   std::vector<VkPhysicalDevice> physicalDeviceHandleList;

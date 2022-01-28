@@ -35,6 +35,11 @@ find_library(VRK_WSI_LIBRARY
 	HINTS ${VRK_SOURCE_DIR}/build/
 )
 
+find_library(VRK_RAY_TRACING_LIBRARY
+  NAMES vrk-ray-tracing
+  HINTS ${VRK_SOURCE_DIR}/build/
+)
+
 if(NOT DEFINED ENV{VRK_RESOURCES_PATH})
 	message(FATAL_ERROR "VRK_RESOURCES_PATH environment variable not set (Hint: source setup-env.sh)")
 endif()
@@ -50,7 +55,7 @@ include_directories(basic-engine include)
 include_directories(basic-engine ${Vulkan_INCLUDE_DIRS})
 include_directories(basic-engine ${X11_INCLUDE_DIR})
 include_directories(basic-engine ${VRK_SOURCE_DIR}/include)
-target_link_libraries(basic-engine ${VRK_LIBRARY} ${VRK_WSI_LIBRARY} -lX11)
+target_link_libraries(basic-engine ${VRK_LIBRARY} ${VRK_WSI_LIBRARY} ${VRK_RAY_TRACING_LIBRARY} -lX11)
 
 file(GLOB SHADERS "src/shaders/*")
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)

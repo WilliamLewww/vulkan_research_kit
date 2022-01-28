@@ -1,15 +1,19 @@
 #include "basic/engine.h"
 
-Engine::Engine(std::string appName, bool enableValidation,
-               std::vector<std::string> instanceLayerList,
-               std::vector<std::string> instanceExtensionNameList) {
+Engine::Engine(std::string appName, bool isValidationEnabled,
+               bool isRayTracingEnabled)
+    : isValidationEnabled(isValidationEnabled),
+      isRayTracingEnabled(isRayTracingEnabled) {
+
+  std::vector<std::string> instanceLayerList;
+  std::vector<std::string> instanceExtensionNameList;
 
   std::vector<VkValidationFeatureEnableEXT> validationFeatureEnableList;
   std::vector<VkValidationFeatureDisableEXT> validationFeatureDisableList;
   VkDebugUtilsMessageSeverityFlagBitsEXT debugUtilsMessageSeverityFlagBits;
   VkDebugUtilsMessageTypeFlagBitsEXT debugUtilsMessageTypeFlagBits;
 
-  if (enableValidation) {
+  if (isValidationEnabled) {
     validationFeatureEnableList = {
         VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
         VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
@@ -29,6 +33,16 @@ Engine::Engine(std::string appName, bool enableValidation,
 
     instanceLayerList.push_back("VK_LAYER_KHRONOS_validation");
     instanceExtensionNameList.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+  }
+
+  if (isRayTracingEnabled) {
+    instanceExtensionNameList.insert(
+        instanceExtensionNameList.end(),
+        RAY_TRACING_PIPELINE_REQUIRED_INSTANCE_EXTENSION_LIST.begin(),
+        RAY_TRACING_PIPELINE_REQUIRED_INSTANCE_EXTENSION_LIST.end());
+    instanceExtensionNameList.erase(unique(instanceExtensionNameList.begin(),
+                                           instanceExtensionNameList.end()),
+                                    instanceExtensionNameList.end());
   }
 
   instanceExtensionNameList.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
@@ -70,9 +84,9 @@ void Engine::selectWindow(Display *displayPtr,
           xlibSurfaceCreateInfoParam)));
 }
 
-void Engine::selectPhysicalDevice(
-    std::string physicalDeviceName,
-    std::vector<std::string> deviceExtensionNameList) {
+void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
+
+  std::vector<std::string> deviceExtensionNameList;
 
   for (VkPhysicalDevice physicalDeviceHandle : this->physicalDeviceHandleList) {
     VkPhysicalDeviceProperties physicalDeviceProperties =
@@ -99,14 +113,59 @@ void Engine::selectPhysicalDevice(
     }
   }
 
-  deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+  std::vector<void *> deviceCreateInfoChainList;
 
-  VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {
-      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-      .pNext = NULL,
-      .robustBufferAccess2 = VK_FALSE,
-      .robustImageAccess2 = VK_FALSE,
-      .nullDescriptor = VK_TRUE};
+  deviceCreateInfoChainList.push_back(
+      new VkPhysicalDeviceRobustness2FeaturesEXT(
+          {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+           .pNext = NULL,
+           .robustBufferAccess2 = VK_FALSE,
+           .robustImageAccess2 = VK_FALSE,
+           .nullDescriptor = VK_TRUE}));
+
+  if (this->isRayTracingEnabled) {
+    deviceCreateInfoChainList.push_back(
+        new VkPhysicalDeviceBufferDeviceAddressFeatures(
+            {.sType =
+                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+             .pNext = NULL,
+             .bufferDeviceAddress = VK_TRUE,
+             .bufferDeviceAddressCaptureReplay = VK_FALSE,
+             .bufferDeviceAddressMultiDevice = VK_FALSE}));
+
+    deviceCreateInfoChainList.push_back(
+        new VkPhysicalDeviceAccelerationStructureFeaturesKHR(
+            {.sType =
+                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+             .pNext = NULL,
+             .accelerationStructure = VK_TRUE,
+             .accelerationStructureCaptureReplay = VK_FALSE,
+             .accelerationStructureIndirectBuild = VK_FALSE,
+             .accelerationStructureHostCommands = VK_FALSE,
+             .descriptorBindingAccelerationStructureUpdateAfterBind =
+                 VK_FALSE}));
+
+    deviceCreateInfoChainList.push_back(
+        new VkPhysicalDeviceRayTracingPipelineFeaturesKHR(
+            {.sType =
+                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+             .pNext = NULL,
+             .rayTracingPipeline = VK_TRUE,
+             .rayTracingPipelineShaderGroupHandleCaptureReplay = VK_FALSE,
+             .rayTracingPipelineShaderGroupHandleCaptureReplayMixed = VK_FALSE,
+             .rayTracingPipelineTraceRaysIndirect = VK_FALSE,
+             .rayTraversalPrimitiveCulling = VK_FALSE}));
+
+    deviceExtensionNameList.insert(
+        deviceExtensionNameList.end(),
+        RAY_TRACING_PIPELINE_REQUIRED_DEVICE_EXTENSION_LIST.begin(),
+        RAY_TRACING_PIPELINE_REQUIRED_DEVICE_EXTENSION_LIST.end());
+    deviceExtensionNameList.erase(
+        unique(deviceExtensionNameList.begin(), deviceExtensionNameList.end()),
+        deviceExtensionNameList.end());
+  }
+
+  deviceExtensionNameList.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
   std::shared_ptr<VkPhysicalDeviceFeatures> physicalDeviceFeaturesPtr =
       std::make_shared<VkPhysicalDeviceFeatures>(
@@ -115,7 +174,7 @@ void Engine::selectPhysicalDevice(
   this->devicePtr = std::shared_ptr<Device>(new Device(
       *this->physicalDeviceHandlePtr.get(),
       {{0, this->queueFamilyIndex, 1, {1.0f}}}, {}, deviceExtensionNameList,
-      physicalDeviceFeaturesPtr, {&physicalDeviceRobustness2Features}));
+      physicalDeviceFeaturesPtr, deviceCreateInfoChainList));
 
   this->commandPoolPtr = std::unique_ptr<CommandPool>(new CommandPool(
       this->devicePtr->getDeviceHandleRef(),

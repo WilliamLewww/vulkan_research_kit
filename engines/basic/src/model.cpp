@@ -386,7 +386,6 @@ void Model::updateRotation(float yaw, float pitch, float roll) {
   this->updateModelMatrix();
 }
 
-
 std::shared_ptr<VkDescriptorBufferInfo>
 Model::getModelDescriptorBufferInfoPtr() {
   return this->modelDescriptorBufferInfoPtr;
