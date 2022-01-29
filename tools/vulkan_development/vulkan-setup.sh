@@ -150,9 +150,6 @@ then
 
   git --git-dir=Vulkan-ValidationLayers/.git --work-tree=Vulkan-ValidationLayers checkout ${VERSION}
 
-  git clone https://github.com/martinus/robin-hood-hashing.git \
-      Vulkan-ValidationLayers/external/robin-hood-hashing
-
   mkdir Vulkan-ValidationLayers/build
   cmake -HVulkan-ValidationLayers -BVulkan-ValidationLayers/build \
       -DCMAKE_INSTALL_PREFIX=Vulkan-ValidationLayers/build/install \
@@ -160,7 +157,7 @@ then
       -DGLSLANG_INSTALL_DIR=$SCRIPTPATH/glslang/build/install \
       -DSPIRV_HEADERS_INSTALL_DIR=$SCRIPTPATH/SPIRV-Headers/build/install \
       -DSPIRV_TOOLS_INSTALL_DIR=$SCRIPTPATH/SPIRV-Tools/build/install \
-      -DROBIN_HOOD_HASHING_INSTALL_DIR=$SCRIPTPATH/Vulkan-ValidationLayers/external/robin-hood-hashing
+      -DUSE_ROBIN_HOOD_HASHING=OFF
   make install -j${THREADS} -C Vulkan-ValidationLayers/build
 fi
 
