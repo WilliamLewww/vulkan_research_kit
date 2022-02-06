@@ -106,6 +106,7 @@ private:
   friend class Scene;
   friend class Camera;
   friend class Material;
+  friend class MaterialRaster;
   friend class Model;
   friend class Light;
 };

@@ -2,6 +2,7 @@
 #include "basic/camera.h"
 #include "basic/light.h"
 #include "basic/material.h"
+#include "basic/material_raster.h"
 #include "basic/model.h"
 
 #include <vrk/fence.h>

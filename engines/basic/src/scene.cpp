@@ -48,7 +48,7 @@ std::shared_ptr<Material> Scene::createMaterial(
     std::map<Material::ShaderStage, std::string> shaderStageNameMap) {
 
   this->materialPtrList.push_back(std::shared_ptr<Material>(
-      new Material(this->enginePtr, materialName, shaderStageNameMap)));
+      new MaterialRaster(this->enginePtr, materialName, shaderStageNameMap)));
 
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }

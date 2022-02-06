@@ -24,10 +24,24 @@ case $i in
     -nvt|--no-vulkan-tools)
     NO_VULKAN_TOOLS=1
     ;;
+    -nvvl|--no-vulkan-validation-layers)
+    NO_VULKAN_VALIDATION_LAYERS=1
+    ;;
+    -d|--delete)
+    DELETE=1
+    ;;
     *)
     ;;
 esac
 done
+
+if [ "${DELETE}" == "1" ]
+then
+  echo "Requesting sudo access to delete existing local repositories:"
+  sudo rm -r -f setup-vulkan-development-env.sh glslang SPIRV* Vulkan*
+  echo "Local repositories deleted!"
+  exit
+fi
 
 if [ "${VERSION}" == "" ]
 then
@@ -65,92 +79,117 @@ if [ "${NO_VULKAN_TOOLS}" == 1 ]
 then
   echo "  No Vulkan Tools"
 fi
-
-if [ ! -d "Vulkan-Headers" ]
+if [ "${NO_VULKAN_VALIDATION_LAYERS}" == 1 ]
 then
-  git clone https://github.com/KhronosGroup/Vulkan-Headers
+  echo "  No Vulkan Validation Layers"
+fi
+
+if [ ! -d "Vulkan-Headers/build/install" ]
+then
+  if [ ! -d "Vulkan-Headers" ]
+  then
+    git clone https://github.com/KhronosGroup/Vulkan-Headers
+  fi
 
   git --git-dir=Vulkan-Headers/.git --work-tree=Vulkan-Headers checkout ${VERSION}
 
-  mkdir Vulkan-Headers/build
+  mkdir -p Vulkan-Headers/build
   cmake -HVulkan-Headers -BVulkan-Headers/build \
       -DCMAKE_INSTALL_PREFIX=Vulkan-Headers/build/install
   make install -j${THREADS} -C Vulkan-Headers/build
 fi
 
-if [ ! -d "Vulkan-Loader" ]
+if [ ! -d "Vulkan-Loader/build/install" ]
 then
-  git clone https://github.com/KhronosGroup/Vulkan-Loader
+  if [ ! -d "Vulkan-Loader" ]
+  then
+    git clone https://github.com/KhronosGroup/Vulkan-Loader
+  fi
 
   git --git-dir=Vulkan-Loader/.git --work-tree=Vulkan-Loader checkout ${VERSION}
 
-  mkdir Vulkan-Loader/build
+  mkdir -p Vulkan-Loader/build
   cmake -HVulkan-Loader -BVulkan-Loader/build \
       -DCMAKE_INSTALL_PREFIX=Vulkan-Loader/build/install \
       -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install
   make install -j${THREADS} -C Vulkan-Loader/build
 fi
 
-if [ ! -d "Vulkan-Tools" ] && [ "${NO_VULKAN_TOOLS}" != "1" ]
+if [ ! -d "Vulkan-Tools/build/install" ] && [ "${NO_VULKAN_TOOLS}" != "1" ]
 then
-  git clone https://github.com/KhronosGroup/Vulkan-Tools
+  if [ ! -d "Vulkan-Tools" ]
+  then
+    git clone https://github.com/KhronosGroup/Vulkan-Tools
+  fi
 
   git --git-dir=Vulkan-Tools/.git --work-tree=Vulkan-Tools checkout ${VERSION}
 
-  mkdir Vulkan-Tools/build
+  mkdir -p Vulkan-Tools/build
   cmake -HVulkan-Tools -BVulkan-Tools/build \
       -DCMAKE_INSTALL_PREFIX=Vulkan-Tools/build/install \
       -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install
   make install -j${THREADS} -C Vulkan-Tools/build
 fi
 
-if [ ! -d "SPIRV-Headers" ]
+if [ ! -d "SPIRV-Headers/build/install" ]
 then
-  git clone https://github.com/KhronosGroup/SPIRV-Headers
+  if [ ! -d "SPIRV-Headers" ]
+  then
+    git clone https://github.com/KhronosGroup/SPIRV-Headers
+  fi
 
   git --git-dir=SPIRV-Headers/.git --work-tree=SPIRV-Headers checkout ${SPIRV_HEADERS_VERSION}
 
-  mkdir SPIRV-Headers/build
+  mkdir -p SPIRV-Headers/build
   cmake -HSPIRV-Headers -BSPIRV-Headers/build \
       -DCMAKE_INSTALL_PREFIX=SPIRV-Headers/build/install
   make install -j${THREADS} -C SPIRV-Headers/build
 fi
 
-if [ ! -d "SPIRV-Tools" ]
+if [ ! -d "SPIRV-Tools/build/install" ]
 then
-  git clone https://github.com/KhronosGroup/SPIRV-Tools
+  if [ ! -d "SPIRV-Tools" ]
+  then
+    git clone https://github.com/KhronosGroup/SPIRV-Tools
+  fi
 
   git --git-dir=SPIRV-Tools/.git --work-tree=SPIRV-Tools checkout ${SPIRV_TOOLS_VERSION}
   
-  ln -sF $SCRIPTPATH/SPIRV-Headers $SCRIPTPATH/SPIRV-Tools/external
+  ln -f -sF $SCRIPTPATH/SPIRV-Headers $SCRIPTPATH/SPIRV-Tools/external
 
-  mkdir SPIRV-Tools/build
+  mkdir -p SPIRV-Tools/build
   cmake -HSPIRV-Tools -BSPIRV-Tools/build \
       -DCMAKE_INSTALL_PREFIX=SPIRV-Tools/build/install
   make install -j${THREADS} -C SPIRV-Tools/build
 fi
 
-if [ ! -d "glslang" ]
+if [ ! -d "glslang/build/install" ]
 then
-  git clone https://github.com/KhronosGroup/glslang
+  if [ ! -d "glslang" ]
+  then
+    git clone https://github.com/KhronosGroup/glslang
+  fi
 
   git --git-dir=glslang/.git --work-tree=glslang checkout ${GLSLANG_VERSION}
 
   ln -sF $SCRIPTPATH/SPIRV-Tools $SCRIPTPATH/glslang/External/spirv-tools
 
-  mkdir glslang/build
+  mkdir -p glslang/build
   cmake -Hglslang -Bglslang/build \
       -DCMAKE_INSTALL_PREFIX=glslang/build/install
   make install -j${THREADS} -C glslang/build
 fi
 
-if [ ! -d "Vulkan-ValidationLayers" ]
+if [ ! -d "Vulkan-ValidationLayers/build/install" ] && [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
 then
-  git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers
+  if [ ! -d "Vulkan-ValidationLayers" ]
+  then
+    git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers
+  fi
 
   git --git-dir=Vulkan-ValidationLayers/.git --work-tree=Vulkan-ValidationLayers checkout ${VERSION}
 
-  mkdir Vulkan-ValidationLayers/build
+  mkdir -p Vulkan-ValidationLayers/build
   cmake -HVulkan-ValidationLayers -BVulkan-ValidationLayers/build \
       -DCMAKE_INSTALL_PREFIX=Vulkan-ValidationLayers/build/install \
       -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install \
@@ -166,11 +205,20 @@ then
   touch setup-vulkan-development-env.sh
   echo 'export Vulkan_INCLUDE_DIRS="'${SCRIPTPATH}'/Vulkan-Headers/build/install/include"' >> setup-vulkan-development-env.sh
   echo 'export Vulkan_GLSLANG_VALIDATOR_EXECUTABLE="'${SCRIPTPATH}'/glslang/build/install/bin/glslangValidator"' >> setup-vulkan-development-env.sh
-  
-  echo 'VK_LAYER_PATH="'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/share/vulkan/explicit_layer.d"' >> setup-vulkan-development-env.sh
+ 
+  if [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
+  then
+    echo 'VK_LAYER_PATH="'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/share/vulkan/explicit_layer.d"' >> setup-vulkan-development-env.sh
+  fi
+
   echo 'export VK_LAYER_PATH' >> setup-vulkan-development-env.sh
   
   echo 'Vulkan_LIBRARIES="'${SCRIPTPATH}'/Vulkan-Loader/build/install/lib/libvulkan.so"' >> setup-vulkan-development-env.sh
-  echo 'Vulkan_LIBRARIES="$Vulkan_LIBRARIES;'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/lib/libVkLayer_khronos_validation.so"' >> setup-vulkan-development-env.sh
+
+  if [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
+  then
+    echo 'Vulkan_LIBRARIES="$Vulkan_LIBRARIES;'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/lib/libVkLayer_khronos_validation.so"' >> setup-vulkan-development-env.sh
+  fi
+
   echo 'export Vulkan_LIBRARIES' >> setup-vulkan-development-env.sh
 fi

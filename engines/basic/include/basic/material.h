@@ -40,11 +40,6 @@ public:
 
   enum class ShaderStage { VERTEX, FRAGMENT, GEOMETRY };
 
-  Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
-           std::map<ShaderStage, std::string> shaderStageNameMap);
-
-  ~Material();
-
   uint32_t getMaterialPropertiesCount();
 
   uint32_t getTextureCount();
@@ -63,7 +58,16 @@ public:
 
   void updateModelDescriptorSet(std::shared_ptr<Model> modelPtr);
 
-private:
+  virtual void bindPipeline(VkCommandBuffer commandBufferHandle) = 0;
+
+  virtual void render(VkCommandBuffer commandBufferHandle,
+                      std::shared_ptr<Model> modelPtr) = 0;
+
+protected:
+  Material(std::shared_ptr<Engine> enginePtr, std::string materialName);
+
+  ~Material();
+
   std::shared_ptr<Engine> enginePtr;
 
   std::string materialName;
@@ -71,8 +75,6 @@ private:
   std::map<ShaderStage, std::unique_ptr<ShaderModule>> shaderStageModuleMap;
 
   std::unique_ptr<PipelineLayout> pipelineLayoutPtr;
-
-  std::unique_ptr<GraphicsPipelineGroup> graphicsPipelineGroupPtr;
 
   std::unique_ptr<DescriptorPool> descriptorPoolPtr;
 

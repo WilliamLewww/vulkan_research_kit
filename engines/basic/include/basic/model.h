@@ -51,6 +51,8 @@ public:
 
   uint32_t getModelIndex();
 
+  uint32_t getIndexCount();
+
   bool getIsModelBufferDirty();
 
   void resetIsModelBufferDirty();
