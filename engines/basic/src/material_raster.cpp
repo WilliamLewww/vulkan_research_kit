@@ -278,7 +278,7 @@ void MaterialRaster::render(VkCommandBuffer commandBufferHandle,
   modelPtr->getVertexBufferPtr()->bindVertexBufferCmd(commandBufferHandle, 0);
 
   modelPtr->getIndexBufferPtr()->bindIndexBufferCmd(commandBufferHandle,
-                                               VK_INDEX_TYPE_UINT32);
+                                                    VK_INDEX_TYPE_UINT32);
 
   this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
       commandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS,

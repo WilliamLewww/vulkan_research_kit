@@ -428,6 +428,4 @@ std::shared_ptr<Buffer> Model::getIndexBufferPtr() {
   return this->indexBufferPtr;
 }
 
-uint32_t Model::getIndexCount() {
-  return this->indexList.size();
-}
+uint32_t Model::getIndexCount() { return this->indexList.size(); }
