@@ -170,16 +170,16 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
       }
 
       this->imagePtrList.push_back(std::unique_ptr<Image>(new Image(
-          enginePtr->devicePtr->getDeviceHandleRef(),
-          *enginePtr->physicalDeviceHandlePtr.get(), 0, VK_IMAGE_TYPE_2D,
+          enginePtr->getDevicePtr()->getDeviceHandleRef(),
+          *enginePtr->getPhysicalDeviceHandlePtr().get(), 0, VK_IMAGE_TYPE_2D,
           VK_FORMAT_R8G8B8A8_SRGB, {(uint32_t)texWidth, (uint32_t)texHeight, 1},
           1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
           VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-          VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
+          VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
           VK_IMAGE_LAYOUT_UNDEFINED, 0)));
 
       this->imageViewPtrList.push_back(std::shared_ptr<ImageView>(new ImageView(
-          enginePtr->devicePtr->getDeviceHandleRef(),
+          enginePtr->getDevicePtr()->getDeviceHandleRef(),
           this->imagePtrList[this->imagePtrList.size() - 1]
               ->getImageHandleRef(),
           0, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
@@ -187,13 +187,14 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
            VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
           {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
 
-      std::shared_ptr<Buffer> imageBufferPtr = std::shared_ptr<Buffer>(
-          new Buffer(enginePtr->devicePtr->getDeviceHandleRef(),
-                     *enginePtr->physicalDeviceHandlePtr.get(), 0, imageSize,
-                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      std::shared_ptr<Buffer> imageBufferPtr =
+          std::shared_ptr<Buffer>(new Buffer(
+              enginePtr->getDevicePtr()->getDeviceHandleRef(),
+              *enginePtr->getPhysicalDeviceHandlePtr().get(), 0, imageSize,
+              VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+              VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
+              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
       void *hostImageBuffer;
       imageBufferPtr->mapMemory(&hostImageBuffer, 0, imageSize);
@@ -201,40 +202,41 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
       imageBufferPtr->unmapMemory();
 
       std::shared_ptr<Fence> fencePtr = std::shared_ptr<Fence>(
-          new Fence(enginePtr->devicePtr->getDeviceHandleRef(),
+          new Fence(enginePtr->getDevicePtr()->getDeviceHandleRef(),
                     (VkFenceCreateFlagBits)0));
 
-      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+      enginePtr->getUtilityCommandBufferGroupPtr()->beginRecording(
           0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-      enginePtr->utilityCommandBufferGroupPtr->createPipelineBarrierCmd(
+      enginePtr->getUtilityCommandBufferGroupPtr()->createPipelineBarrierCmd(
           0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
           VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {}, {},
           {{VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_TRANSFER_READ_BIT,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            enginePtr->queueFamilyIndex,
-            enginePtr->queueFamilyIndex,
+            enginePtr->getQueueFamilyIndex(),
+            enginePtr->getQueueFamilyIndex(),
             this->imagePtrList[this->imagePtrList.size() - 1]
                 ->getImageHandleRef(),
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
 
-      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+      enginePtr->getUtilityCommandBufferGroupPtr()->endRecording(0);
 
-      enginePtr->utilityCommandBufferGroupPtr->submit(
-          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
-                                                  0),
+      enginePtr->getUtilityCommandBufferGroupPtr()->submit(
+          enginePtr->getDevicePtr()->getQueueHandleRef(
+              enginePtr->getQueueFamilyIndex(), 0),
           {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
 
       fencePtr->waitForSignal(UINT32_MAX);
       fencePtr->reset();
 
-      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+      enginePtr->getUtilityCommandBufferGroupPtr()->beginRecording(
           0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
       this->imagePtrList[this->imagePtrList.size() - 1]->copyFromBufferCmd(
-          enginePtr->utilityCommandBufferGroupPtr->getCommandBufferHandleRef(0),
+          enginePtr->getUtilityCommandBufferGroupPtr()
+              ->getCommandBufferHandleRef(0),
           imageBufferPtr->getBufferHandleRef(),
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           {{0,
@@ -244,37 +246,37 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
             {0, 0, 0},
             {(uint32_t)texWidth, (uint32_t)texHeight, 1}}});
 
-      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+      enginePtr->getUtilityCommandBufferGroupPtr()->endRecording(0);
 
-      enginePtr->utilityCommandBufferGroupPtr->submit(
-          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
-                                                  0),
+      enginePtr->getUtilityCommandBufferGroupPtr()->submit(
+          enginePtr->getDevicePtr()->getQueueHandleRef(
+              enginePtr->getQueueFamilyIndex(), 0),
           {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
 
       fencePtr->waitForSignal(UINT32_MAX);
       fencePtr->reset();
 
-      enginePtr->utilityCommandBufferGroupPtr->beginRecording(
+      enginePtr->getUtilityCommandBufferGroupPtr()->beginRecording(
           0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-      enginePtr->utilityCommandBufferGroupPtr->createPipelineBarrierCmd(
+      enginePtr->getUtilityCommandBufferGroupPtr()->createPipelineBarrierCmd(
           0, VK_PIPELINE_STAGE_TRANSFER_BIT,
           VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, {}, {},
           {{VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            enginePtr->queueFamilyIndex,
-            enginePtr->queueFamilyIndex,
+            enginePtr->getQueueFamilyIndex(),
+            enginePtr->getQueueFamilyIndex(),
             this->imagePtrList[this->imagePtrList.size() - 1]
                 ->getImageHandleRef(),
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
 
-      enginePtr->utilityCommandBufferGroupPtr->endRecording(0);
+      enginePtr->getUtilityCommandBufferGroupPtr()->endRecording(0);
 
-      enginePtr->utilityCommandBufferGroupPtr->submit(
-          enginePtr->devicePtr->getQueueHandleRef(enginePtr->queueFamilyIndex,
-                                                  0),
+      enginePtr->getUtilityCommandBufferGroupPtr()->submit(
+          enginePtr->getDevicePtr()->getQueueHandleRef(
+              enginePtr->getQueueFamilyIndex(), 0),
           {{{}, {}, {0}, {}}}, fencePtr->getFenceHandleRef());
 
       fencePtr->waitForSignal(UINT32_MAX);
@@ -284,12 +286,12 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
 
   materialPtr->appendTextureDescriptors(this->imageViewPtrList);
 
-  this->vertexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+  this->vertexBufferPtr = std::shared_ptr<Buffer>(new Buffer(
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(Vertex) * this->vertexList.size(),
       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   void *hostVertexBuffer;
   this->vertexBufferPtr->mapMemory(&hostVertexBuffer, 0,
@@ -298,12 +300,12 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
          sizeof(Vertex) * this->vertexList.size());
   this->vertexBufferPtr->unmapMemory();
 
-  this->indexBufferPtr = std::unique_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+  this->indexBufferPtr = std::shared_ptr<Buffer>(new Buffer(
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(uint32_t) * this->indexList.size(),
       VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   void *hostIndexBuffer;
   this->indexBufferPtr->mapMemory(&hostIndexBuffer, 0,
@@ -320,15 +322,15 @@ void Model::render(
         commandBufferInheritanceInfoParamPtr,
     uint32_t commandBufferIndex) {
 
-  this->enginePtr->secondaryCommandBufferGroupPtr->beginRecording(
+  this->enginePtr->getSecondaryCommandBufferGroupPtr()->beginRecording(
       commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
       commandBufferInheritanceInfoParamPtr);
 
-  this->materialPtr->render(this->enginePtr->secondaryCommandBufferGroupPtr
+  this->materialPtr->render(this->enginePtr->getSecondaryCommandBufferGroupPtr()
                                 ->getCommandBufferHandleRef(commandBufferIndex),
                             shared_from_this());
 
-  this->enginePtr->secondaryCommandBufferGroupPtr->endRecording(
+  this->enginePtr->getSecondaryCommandBufferGroupPtr()->endRecording(
       commandBufferIndex);
 }
 
@@ -416,4 +418,16 @@ void Model::updateModelMatrix() {
   this->modelsBufferPtr->unmapMemory();
 
   this->isModelBufferDirty = true;
+}
+
+std::shared_ptr<Buffer> Model::getVertexBufferPtr() {
+  return this->vertexBufferPtr;
+}
+
+std::shared_ptr<Buffer> Model::getIndexBufferPtr() {
+  return this->indexBufferPtr;
+}
+
+uint32_t Model::getIndexCount() {
+  return this->indexList.size();
 }

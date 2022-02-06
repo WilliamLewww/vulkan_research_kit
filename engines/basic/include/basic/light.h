@@ -31,15 +31,15 @@ public:
 
   void updateDirection(float x, float y, float z);
 
-private:
+  uint32_t getLightIndex();
+
   bool getIsLightBufferDirty();
 
   void resetIsLightBufferDirty();
 
   std::shared_ptr<VkDescriptorBufferInfo> getLightDescriptorBufferInfoPtr();
 
-  uint32_t getLightIndex();
-
+private:
   std::shared_ptr<Engine> enginePtr;
 
   std::shared_ptr<Buffer> lightsBufferPtr;
@@ -53,7 +53,4 @@ private:
   LightShaderStructure lightShaderStructure;
 
   std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr;
-
-  friend class Engine;
-  friend class Material;
 };

@@ -20,10 +20,10 @@ Camera::Camera(std::string cameraName, std::shared_ptr<Engine> enginePtr)
   this->farPlane = 1000.0;
 
   this->cameraBufferPtr = std::unique_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(CameraShaderStructure), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
+      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   this->cameraDescriptorBufferInfoPtr =

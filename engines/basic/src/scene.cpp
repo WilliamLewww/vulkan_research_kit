@@ -7,10 +7,10 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
   this->sceneShaderStructure = {};
 
   this->sceneBufferPtr = std::unique_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(SceneShaderStructure), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->queueFamilyIndex},
+      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   this->sceneDescriptorBufferInfoPtr =
@@ -20,18 +20,18 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
           .range = VK_WHOLE_SIZE});
 
   this->lightsBufferPtr = std::shared_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(Light::LightShaderStructure) * 16,
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   this->modelsBufferPtr = std::shared_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0,
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(Model::ModelShaderStructure) * 32,
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   void *hostSceneBuffer;
   this->sceneBufferPtr->mapMemory(&hostSceneBuffer, 0,
@@ -59,7 +59,8 @@ Scene::createModel(std::string modelName, std::string modelPath,
 
   uint32_t modelIndex = -1;
   for (uint32_t x = 0;
-       modelIndex == -1 && x < this->enginePtr->secondaryCommandBufferCount / 3;
+       modelIndex == -1 &&
+       x < this->enginePtr->getSecondaryCommandBufferCount() / 3;
        x++) {
     if (this->indexModelMap.find(x) == this->indexModelMap.end()) {
       modelIndex = x;
@@ -99,10 +100,10 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       std::make_shared<CommandBufferGroup::CommandBufferInheritanceInfoParam>(
           CommandBufferGroup::CommandBufferInheritanceInfoParam{
               .renderPassHandle =
-                  this->enginePtr->renderPassPtr->getRenderPassHandleRef(),
+                  this->enginePtr->getRenderPassPtr()->getRenderPassHandleRef(),
               .subpass = 0,
               .framebufferHandle =
-                  this->enginePtr->framebufferPtrList[frameIndex]
+                  this->enginePtr->getFramebufferPtrList()[frameIndex]
                       ->getFramebufferHandleRef(),
               .occlusionQueryEnable = VK_FALSE,
               .queryControlFlags = 0,
@@ -111,36 +112,38 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
   std::vector<VkCommandBuffer> commandBufferHandleList;
   for (auto &pair : this->indexModelMap) {
     commandBufferHandleList.push_back(
-        enginePtr->secondaryCommandBufferGroupPtr->getCommandBufferHandleRef(
-            (this->enginePtr->framebufferPtrList.size() * pair.first) +
-            frameIndex));
+        enginePtr->getSecondaryCommandBufferGroupPtr()
+            ->getCommandBufferHandleRef(
+                (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
+                frameIndex));
     pair.second->render(
         commandBufferInheritanceInfoParamPtr,
-        (this->enginePtr->framebufferPtrList.size() * pair.first) + frameIndex);
+        (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
+            frameIndex);
   }
 
-  this->enginePtr->commandBufferGroupPtr->beginRecording(
+  this->enginePtr->getCommandBufferGroupPtr()->beginRecording(
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
   VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
   VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
 
-  this->enginePtr->renderPassPtr->beginRenderPassCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(
+  this->enginePtr->getRenderPassPtr()->beginRenderPassCmd(
+      this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
           frameIndex),
-      this->enginePtr->framebufferPtrList[frameIndex]
+      this->enginePtr->getFramebufferPtrList()[frameIndex]
           ->getFramebufferHandleRef(),
       {{0, 0}, {800, 600}}, {clearColor, clearDepth},
       VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-  this->enginePtr->commandBufferGroupPtr->executeCommandsCmd(
+  this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
       frameIndex, commandBufferHandleList);
 
-  this->enginePtr->renderPassPtr->endRenderPassCmd(
-      this->enginePtr->commandBufferGroupPtr->getCommandBufferHandleRef(
+  this->enginePtr->getRenderPassPtr()->endRenderPassCmd(
+      this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
           frameIndex));
 
-  this->enginePtr->commandBufferGroupPtr->endRecording(frameIndex);
+  this->enginePtr->getCommandBufferGroupPtr()->endRecording(frameIndex);
 }
 
 std::vector<std::shared_ptr<Material>> Scene::getMaterialPtrList() {

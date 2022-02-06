@@ -8,9 +8,9 @@ public:
 
   ~MaterialRaster();
 
-private:
   void render(VkCommandBuffer commandBufferHandle,
               std::shared_ptr<Model> modelPtr) override;
 
+private:
   std::unique_ptr<GraphicsPipelineGroup> graphicsPipelineGroupPtr;
 };

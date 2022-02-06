@@ -40,6 +40,26 @@ public:
   uint32_t render(std::shared_ptr<Scene> scenePtr,
                   std::shared_ptr<Camera> cameraPtr);
 
+  std::shared_ptr<Device> getDevicePtr();
+
+  std::shared_ptr<VkPhysicalDevice> getPhysicalDeviceHandlePtr();
+
+  uint32_t getQueueFamilyIndex();
+
+  std::shared_ptr<RenderPass> getRenderPassPtr();
+
+  std::shared_ptr<CommandBufferGroup> getCommandBufferGroupPtr();
+
+  uint32_t getSecondaryCommandBufferCount();
+
+  std::shared_ptr<CommandBufferGroup> getSecondaryCommandBufferGroupPtr();
+
+  uint32_t getUtilityCommandBufferCount();
+
+  std::shared_ptr<CommandBufferGroup> getUtilityCommandBufferGroupPtr();
+
+  std::vector<std::shared_ptr<Framebuffer>> getFramebufferPtrList();
+
 private:
   bool isValidationEnabled;
 
@@ -51,7 +71,7 @@ private:
 
   std::unique_ptr<Surface> surfacePtr;
 
-  std::unique_ptr<VkPhysicalDevice> physicalDeviceHandlePtr;
+  std::shared_ptr<VkPhysicalDevice> physicalDeviceHandlePtr;
 
   uint32_t queueFamilyIndex;
 
@@ -61,15 +81,15 @@ private:
 
   std::unique_ptr<CommandPool> commandPoolPtr;
 
-  std::unique_ptr<CommandBufferGroup> commandBufferGroupPtr;
+  std::shared_ptr<CommandBufferGroup> commandBufferGroupPtr;
 
   uint32_t secondaryCommandBufferCount;
 
-  std::unique_ptr<CommandBufferGroup> secondaryCommandBufferGroupPtr;
+  std::shared_ptr<CommandBufferGroup> secondaryCommandBufferGroupPtr;
 
   uint32_t utilityCommandBufferCount;
 
-  std::unique_ptr<CommandBufferGroup> utilityCommandBufferGroupPtr;
+  std::shared_ptr<CommandBufferGroup> utilityCommandBufferGroupPtr;
 
   VkSurfaceCapabilitiesKHR surfaceCapabilities;
 
@@ -79,7 +99,7 @@ private:
 
   std::unique_ptr<Swapchain> swapchainPtr;
 
-  std::unique_ptr<RenderPass> renderPassPtr;
+  std::shared_ptr<RenderPass> renderPassPtr;
 
   std::vector<VkImage> swapchainImageHandleList;
 
@@ -89,7 +109,7 @@ private:
 
   std::vector<std::unique_ptr<ImageView>> depthImageViewPtrList;
 
-  std::vector<std::unique_ptr<Framebuffer>> framebufferPtrList;
+  std::vector<std::shared_ptr<Framebuffer>> framebufferPtrList;
 
   std::vector<std::unique_ptr<Fence>> imageAvailableFencePtrList;
 
@@ -102,11 +122,4 @@ private:
   std::vector<std::shared_ptr<Camera>> cameraPtrList;
 
   uint32_t currentFrame;
-
-  friend class Scene;
-  friend class Camera;
-  friend class Material;
-  friend class MaterialRaster;
-  friend class Model;
-  friend class Light;
 };

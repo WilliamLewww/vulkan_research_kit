@@ -21,7 +21,7 @@ MaterialRaster::MaterialRaster(
 
     this->shaderStageModuleMap[pair.first] =
         std::unique_ptr<ShaderModule>(new ShaderModule(
-            enginePtr->devicePtr->getDeviceHandleRef(), shaderSource));
+            enginePtr->getDevicePtr()->getDeviceHandleRef(), shaderSource));
 
     GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam shaderStage = {
         .pipelineShaderStageCreateFlags = 0,
@@ -43,7 +43,7 @@ MaterialRaster::MaterialRaster(
   }
 
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
-      new DescriptorPool(enginePtr->devicePtr->getDeviceHandleRef(),
+      new DescriptorPool(enginePtr->getDevicePtr()->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
                          {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32},
                           {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32},
@@ -52,7 +52,7 @@ MaterialRaster::MaterialRaster(
 
   this->descriptorSetLayoutPtr =
       std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
-          enginePtr->devicePtr->getDeviceHandleRef(), 0,
+          enginePtr->getDevicePtr()->getDeviceHandleRef(), 0,
           {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT |
                 VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -72,12 +72,12 @@ MaterialRaster::MaterialRaster(
 
   this->descriptorSetGroupPtr =
       std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
-          enginePtr->devicePtr->getDeviceHandleRef(),
+          enginePtr->getDevicePtr()->getDeviceHandleRef(),
           this->descriptorPoolPtr->getDescriptorPoolHandleRef(),
           {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}));
 
   this->pipelineLayoutPtr = std::unique_ptr<PipelineLayout>(new PipelineLayout(
-      enginePtr->devicePtr->getDeviceHandleRef(),
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
       {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}, {}));
 
   auto pipelineVertexInputStateCreateInfoParam = std::make_shared<
@@ -177,7 +177,7 @@ MaterialRaster::MaterialRaster(
 
   this->graphicsPipelineGroupPtr =
       std::unique_ptr<GraphicsPipelineGroup>(new GraphicsPipelineGroup(
-          enginePtr->devicePtr->getDeviceHandleRef(),
+          enginePtr->getDevicePtr()->getDeviceHandleRef(),
           {{0, pipelineShaderStageCreateInfoList,
             pipelineVertexInputStateCreateInfoParam,
             pipelineInputAssemblyStateCreateInfoParam, NULL,
@@ -187,19 +187,20 @@ MaterialRaster::MaterialRaster(
             pipelineDepthStencilStateCreateInfoParam,
             pipelineColorBlendStateCreateInfoParam, NULL,
             this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),
-            enginePtr->renderPassPtr->getRenderPassHandleRef(), 0,
+            enginePtr->getRenderPassPtr()->getRenderPassHandleRef(), 0,
             VK_NULL_HANDLE, 0}}));
 
   this->materialPropertiesCount = 0;
 
-  this->materialPropertiesBufferPtr = std::unique_ptr<Buffer>(new Buffer(
-      enginePtr->devicePtr->getDeviceHandleRef(),
-      *enginePtr->physicalDeviceHandlePtr.get(), 0, sizeof(Properties) * 32,
-      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->queueFamilyIndex}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+  this->materialPropertiesBufferPtr = std::unique_ptr<Buffer>(
+      new Buffer(enginePtr->getDevicePtr()->getDeviceHandleRef(),
+                 *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
+                 sizeof(Properties) * 32, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                 VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
 
   this->samplerPtr = std::unique_ptr<Sampler>(new Sampler(
-      enginePtr->devicePtr->getDeviceHandleRef(), 0, VK_FILTER_NEAREST,
+      enginePtr->getDevicePtr()->getDeviceHandleRef(), 0, VK_FILTER_NEAREST,
       VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST,
       VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
       VK_SAMPLER_ADDRESS_MODE_REPEAT, 0, VK_FALSE, 0, VK_FALSE,
@@ -274,20 +275,15 @@ void MaterialRaster::render(VkCommandBuffer commandBufferHandle,
 
   this->graphicsPipelineGroupPtr->bindPipelineCmd(0, commandBufferHandle);
 
-  modelPtr->vertexBufferPtr->bindVertexBufferCmd(
-      commandBufferHandle,
-      0);
+  modelPtr->getVertexBufferPtr()->bindVertexBufferCmd(commandBufferHandle, 0);
 
-  modelPtr->indexBufferPtr->bindIndexBufferCmd(
-      commandBufferHandle,
-      VK_INDEX_TYPE_UINT32);
+  modelPtr->getIndexBufferPtr()->bindIndexBufferCmd(commandBufferHandle,
+                                               VK_INDEX_TYPE_UINT32);
 
   this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
-      commandBufferHandle,
-      VK_PIPELINE_BIND_POINT_GRAPHICS,
-      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0,
-      {0}, {});
+      commandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS,
+      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0}, {});
 
   this->graphicsPipelineGroupPtr->drawIndexedCmd(
-      commandBufferHandle, modelPtr->indexList.size(), 1, 0, 0, 0);
+      commandBufferHandle, modelPtr->getIndexCount(), 1, 0, 0, 0);
 }

@@ -42,6 +42,25 @@ public:
 
   void updateRotation(float yaw, float pitch, float roll);
 
+  void
+  render(std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
+             commandBufferInheritanceInfoParamPtr,
+         uint32_t commandBufferIndex);
+
+  uint32_t getModelIndex();
+
+  bool getIsModelBufferDirty();
+
+  void resetIsModelBufferDirty();
+
+  std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
+
+  std::shared_ptr<Buffer> getVertexBufferPtr();
+
+  std::shared_ptr<Buffer> getIndexBufferPtr();
+
+  uint32_t getIndexCount();
+
 private:
   struct CompareVertex {
     bool operator()(const Vertex &a, const Vertex &b) const {
@@ -59,19 +78,6 @@ private:
       return std::memcmp(a.positions, b.positions, sizeof(float) * 3) < 0;
     }
   };
-
-  std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
-
-  uint32_t getModelIndex();
-
-  bool getIsModelBufferDirty();
-
-  void resetIsModelBufferDirty();
-
-  void
-  render(std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
-             commandBufferInheritanceInfoParamPtr,
-         uint32_t commandBufferIndex);
 
   void updateModelMatrix();
 
@@ -91,9 +97,9 @@ private:
 
   std::vector<Material::Properties> materialPropertiesList;
 
-  std::unique_ptr<Buffer> vertexBufferPtr;
+  std::shared_ptr<Buffer> vertexBufferPtr;
 
-  std::unique_ptr<Buffer> indexBufferPtr;
+  std::shared_ptr<Buffer> indexBufferPtr;
 
   std::vector<std::unique_ptr<Image>> imagePtrList;
 
@@ -116,9 +122,4 @@ private:
   float pitch;
 
   float roll;
-
-  friend class Scene;
-  friend class Material;
-  friend class MaterialRaster;
-  friend class Engine;
 };

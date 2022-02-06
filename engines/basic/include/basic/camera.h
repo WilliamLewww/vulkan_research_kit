@@ -28,13 +28,13 @@ public:
 
   void updateRotation(float yaw, float pitch, float roll);
 
-private:
   bool getIsCameraBufferDirty();
 
   void resetIsCameraBufferDirty();
 
   std::shared_ptr<VkDescriptorBufferInfo> getCameraDescriptorBufferInfoPtr();
 
+private:
   void updateViewMatrix();
 
   void updateProjectionMatrix();
@@ -66,7 +66,4 @@ private:
   float nearPlane;
 
   float farPlane;
-
-  friend class Engine;
-  friend class Material;
 };

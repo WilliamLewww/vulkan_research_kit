@@ -94,7 +94,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
 
     if (physicalDeviceName == physicalDeviceProperties.deviceName) {
       this->physicalDeviceHandlePtr =
-          std::make_unique<VkPhysicalDevice>(physicalDeviceHandle);
+          std::make_shared<VkPhysicalDevice>(physicalDeviceHandle);
     }
   }
 
@@ -181,7 +181,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
       VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, this->queueFamilyIndex));
 
   this->commandBufferGroupPtr =
-      std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
+      std::shared_ptr<CommandBufferGroup>(new CommandBufferGroup(
           this->devicePtr->getDeviceHandleRef(),
           commandPoolPtr->getCommandPoolHandleRef(),
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -189,7 +189,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
 
   this->secondaryCommandBufferCount = 128;
 
-  this->secondaryCommandBufferGroupPtr = std::unique_ptr<CommandBufferGroup>(
+  this->secondaryCommandBufferGroupPtr = std::shared_ptr<CommandBufferGroup>(
       new CommandBufferGroup(this->devicePtr->getDeviceHandleRef(),
                              commandPoolPtr->getCommandPoolHandleRef(),
                              VK_COMMAND_BUFFER_LEVEL_SECONDARY,
@@ -198,7 +198,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
   this->utilityCommandBufferCount = 3;
 
   this->utilityCommandBufferGroupPtr =
-      std::unique_ptr<CommandBufferGroup>(new CommandBufferGroup(
+      std::shared_ptr<CommandBufferGroup>(new CommandBufferGroup(
           this->devicePtr->getDeviceHandleRef(),
           commandPoolPtr->getCommandPoolHandleRef(),
           VK_COMMAND_BUFFER_LEVEL_PRIMARY, this->utilityCommandBufferCount));
@@ -227,7 +227,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
       {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
       {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
 
-  this->renderPassPtr = std::unique_ptr<RenderPass>(new RenderPass(
+  this->renderPassPtr = std::shared_ptr<RenderPass>(new RenderPass(
       this->devicePtr->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
       {{0, this->surfaceFormatList[0].format, VK_SAMPLE_COUNT_1_BIT,
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
@@ -284,7 +284,7 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
             {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1})));
 
     this->framebufferPtrList.push_back(
-        std::unique_ptr<Framebuffer>(new Framebuffer(
+        std::shared_ptr<Framebuffer>(new Framebuffer(
             this->devicePtr->getDeviceHandleRef(),
             this->renderPassPtr->getRenderPassHandleRef(),
             {this->swapchainImageViewPtrList[x]->getImageViewHandleRef(),
@@ -387,4 +387,41 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
   this->currentFrame =
       (this->currentFrame + 1) % this->framebufferPtrList.size();
   return this->currentFrame;
+}
+
+std::shared_ptr<Device> Engine::getDevicePtr() { return this->devicePtr; }
+
+std::shared_ptr<VkPhysicalDevice> Engine::getPhysicalDeviceHandlePtr() {
+  return this->physicalDeviceHandlePtr;
+}
+
+uint32_t Engine::getQueueFamilyIndex() { return this->queueFamilyIndex; }
+
+std::shared_ptr<RenderPass> Engine::getRenderPassPtr() {
+  return this->renderPassPtr;
+}
+
+std::shared_ptr<CommandBufferGroup> Engine::getCommandBufferGroupPtr() {
+  return this->commandBufferGroupPtr;
+}
+
+uint32_t Engine::getSecondaryCommandBufferCount() {
+  return this->secondaryCommandBufferCount;
+}
+
+std::shared_ptr<CommandBufferGroup>
+Engine::getSecondaryCommandBufferGroupPtr() {
+  return this->secondaryCommandBufferGroupPtr;
+}
+
+uint32_t Engine::getUtilityCommandBufferCount() {
+  return this->utilityCommandBufferCount;
+}
+
+std::shared_ptr<CommandBufferGroup> Engine::getUtilityCommandBufferGroupPtr() {
+  return this->utilityCommandBufferGroupPtr;
+}
+
+std::vector<std::shared_ptr<Framebuffer>> Engine::getFramebufferPtrList() {
+  return this->framebufferPtrList;
 }
