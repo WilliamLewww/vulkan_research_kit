@@ -40,6 +40,11 @@ public:
 
   enum class ShaderStage { VERTEX, FRAGMENT, GEOMETRY };
 
+protected:
+  Material(std::shared_ptr<Engine> enginePtr, std::string materialName);
+
+  ~Material();
+
   uint32_t getMaterialPropertiesCount();
 
   uint32_t getTextureCount();
@@ -58,15 +63,8 @@ public:
 
   void updateModelDescriptorSet(std::shared_ptr<Model> modelPtr);
 
-  virtual void bindPipeline(VkCommandBuffer commandBufferHandle) = 0;
-
   virtual void render(VkCommandBuffer commandBufferHandle,
                       std::shared_ptr<Model> modelPtr) = 0;
-
-protected:
-  Material(std::shared_ptr<Engine> enginePtr, std::string materialName);
-
-  ~Material();
 
   std::shared_ptr<Engine> enginePtr;
 
@@ -90,5 +88,6 @@ protected:
 
   uint32_t textureCount;
 
+  friend class Engine;
   friend class Model;
 };

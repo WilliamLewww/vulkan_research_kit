@@ -269,13 +269,25 @@ MaterialRaster::MaterialRaster(
 
 MaterialRaster::~MaterialRaster() {}
 
-void MaterialRaster::bindPipeline(VkCommandBuffer commandBufferHandle) {
-  this->graphicsPipelineGroupPtr->bindPipelineCmd(0, commandBufferHandle);
-}
-
 void MaterialRaster::render(VkCommandBuffer commandBufferHandle,
                             std::shared_ptr<Model> modelPtr) {
 
+  this->graphicsPipelineGroupPtr->bindPipelineCmd(0, commandBufferHandle);
+
+  modelPtr->vertexBufferPtr->bindVertexBufferCmd(
+      commandBufferHandle,
+      0);
+
+  modelPtr->indexBufferPtr->bindIndexBufferCmd(
+      commandBufferHandle,
+      VK_INDEX_TYPE_UINT32);
+
+  this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
+      commandBufferHandle,
+      VK_PIPELINE_BIND_POINT_GRAPHICS,
+      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0,
+      {0}, {});
+
   this->graphicsPipelineGroupPtr->drawIndexedCmd(
-      commandBufferHandle, modelPtr->getIndexCount(), 1, 0, 0, 0);
+      commandBufferHandle, modelPtr->indexList.size(), 1, 0, 0, 0);
 }

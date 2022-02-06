@@ -33,6 +33,7 @@ public:
   std::shared_ptr<Light> createLight(std::string lightName,
                                      Light::LightType lightType);
 
+private:
   void recordCommandBuffer(uint32_t frameIndex);
 
   std::vector<std::shared_ptr<Material>> getMaterialPtrList();
@@ -43,7 +44,6 @@ public:
 
   std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
-private:
   std::string sceneName;
 
   std::shared_ptr<Engine> enginePtr;
@@ -67,4 +67,7 @@ private:
   std::shared_ptr<Buffer> lightsBufferPtr;
 
   std::shared_ptr<Buffer> modelsBufferPtr;
+
+  friend class Engine;
+  friend class Material;
 };

@@ -34,11 +34,6 @@ public:
 
   ~Model();
 
-  void
-  render(std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
-             commandBufferInheritanceInfoParamPtr,
-         uint32_t commandBufferIndex);
-
   void setPosition(float x, float y, float z);
 
   void updatePosition(float x, float y, float z);
@@ -46,16 +41,6 @@ public:
   void setRotation(float yaw, float pitch, float roll);
 
   void updateRotation(float yaw, float pitch, float roll);
-
-  std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
-
-  uint32_t getModelIndex();
-
-  uint32_t getIndexCount();
-
-  bool getIsModelBufferDirty();
-
-  void resetIsModelBufferDirty();
 
 private:
   struct CompareVertex {
@@ -74,6 +59,19 @@ private:
       return std::memcmp(a.positions, b.positions, sizeof(float) * 3) < 0;
     }
   };
+
+  std::shared_ptr<VkDescriptorBufferInfo> getModelDescriptorBufferInfoPtr();
+
+  uint32_t getModelIndex();
+
+  bool getIsModelBufferDirty();
+
+  void resetIsModelBufferDirty();
+
+  void
+  render(std::shared_ptr<CommandBufferGroup::CommandBufferInheritanceInfoParam>
+             commandBufferInheritanceInfoParamPtr,
+         uint32_t commandBufferIndex);
 
   void updateModelMatrix();
 
@@ -118,4 +116,9 @@ private:
   float pitch;
 
   float roll;
+
+  friend class Scene;
+  friend class Material;
+  friend class MaterialRaster;
+  friend class Engine;
 };

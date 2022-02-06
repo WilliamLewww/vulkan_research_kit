@@ -324,27 +324,6 @@ void Model::render(
       commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
       commandBufferInheritanceInfoParamPtr);
 
-  this->materialPtr->bindPipeline(
-      this->enginePtr->secondaryCommandBufferGroupPtr
-          ->getCommandBufferHandleRef(commandBufferIndex));
-
-  this->vertexBufferPtr->bindVertexBufferCmd(
-      this->enginePtr->secondaryCommandBufferGroupPtr
-          ->getCommandBufferHandleRef(commandBufferIndex),
-      0);
-
-  this->indexBufferPtr->bindIndexBufferCmd(
-      this->enginePtr->secondaryCommandBufferGroupPtr
-          ->getCommandBufferHandleRef(commandBufferIndex),
-      VK_INDEX_TYPE_UINT32);
-
-  this->materialPtr->descriptorSetGroupPtr->bindDescriptorSetsCmd(
-      this->enginePtr->secondaryCommandBufferGroupPtr
-          ->getCommandBufferHandleRef(commandBufferIndex),
-      VK_PIPELINE_BIND_POINT_GRAPHICS,
-      this->materialPtr->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0,
-      {0}, {});
-
   this->materialPtr->render(this->enginePtr->secondaryCommandBufferGroupPtr
                                 ->getCommandBufferHandleRef(commandBufferIndex),
                             shared_from_this());
@@ -391,8 +370,6 @@ Model::getModelDescriptorBufferInfoPtr() {
 }
 
 uint32_t Model::getModelIndex() { return this->modelIndex; }
-
-uint32_t Model::getIndexCount() { return this->indexList.size(); }
 
 bool Model::getIsModelBufferDirty() { return this->isModelBufferDirty; }
 
