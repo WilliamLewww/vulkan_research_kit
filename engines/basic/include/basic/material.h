@@ -38,11 +38,32 @@ public:
     alignas(4) int specularTextureIndex;
   };
 
-  enum class ShaderStage { VERTEX, FRAGMENT, GEOMETRY };
+  enum class ShaderStage {
+    VERTEX,
+    FRAGMENT,
+    GEOMETRY,
+    RAYGEN,
+    MISS,
+    CLOSEST_HIT,
+    ANY_HIT
+  };
 
-  Material(std::shared_ptr<Engine> enginePtr, std::string materialName);
+  enum class MaterialType { RASTER, RAY_TRACE };
+
+  struct MaterialDescriptorCounts {
+    uint32_t uniformBufferCount;
+    uint32_t storageBufferCount;
+    uint32_t samplerCount;
+    uint32_t sampledImageCount;
+  };
+
+  Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
+           std::map<ShaderStage, std::string> shaderStageNameMap,
+           MaterialType materialType);
 
   ~Material();
+
+  MaterialType getMaterialType();
 
   uint32_t getMaterialPropertiesCount();
 
@@ -66,6 +87,12 @@ public:
                       std::shared_ptr<Model> modelPtr) = 0;
 
 protected:
+  void initializeDescriptors(
+      const MaterialDescriptorCounts materialDescriptorCounts,
+      std::shared_ptr<DescriptorSetLayout> descriptorSetLayoutPtr);
+
+  MaterialType materialType;
+
   std::shared_ptr<Engine> enginePtr;
 
   std::string materialName;
@@ -87,4 +114,11 @@ protected:
   std::unique_ptr<Sampler> samplerPtr;
 
   uint32_t textureCount;
+
+private:
+  const MaterialDescriptorCounts MATERIAL_DESCRIPTOR_COUNTS = {
+      .uniformBufferCount = 50,
+      .storageBufferCount = 32,
+      .samplerCount = 1,
+      .sampledImageCount = 32};
 };

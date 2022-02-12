@@ -45,22 +45,22 @@ fi
 
 if [ "${VERSION}" == "" ]
 then
-  VERSION='sdk-1.2.198.0'
+  VERSION='sdk-1.3.204'
 fi
 
 if [ "${SPIRV_TOOLS_VERSION}" == "" ]
 then
-  SPIRV_TOOLS_VERSION='sdk-1.2.198.0'
+  SPIRV_TOOLS_VERSION='sdk-1.3.204'
 fi
 
 if [ "${SPIRV_HEADERS_VERSION}" == "" ]
 then
-  SPIRV_HEADERS_VERSION='sdk-1.2.198.0'
+  SPIRV_HEADERS_VERSION='sdk-1.3.204'
 fi
 
 if [ "${GLSLANG_VERSION}" == "" ]
 then
-  GLSLANG_VERSION='sdk-1.2.198.0'
+  GLSLANG_VERSION='sdk-1.3.204'
 fi
 
 if [ "${THREADS}" == "" ]

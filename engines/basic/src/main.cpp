@@ -29,6 +29,14 @@ int main() {
 
   std::shared_ptr<Material> material1 = scene->createMaterial(
       "material1",
+      {{Material::ShaderStage::RAYGEN, "resources/shaders/material.rgen.spv"},
+       {Material::ShaderStage::CLOSEST_HIT,
+        "resources/shaders/material.rchit.spv"},
+       {Material::ShaderStage::MISS, "resources/shaders/material.rmiss.spv"}},
+      true);
+
+  std::shared_ptr<Material> material2 = scene->createMaterial(
+      "material2",
       {{Material::ShaderStage::VERTEX, "resources/shaders/turbidity.vert.spv"},
        {Material::ShaderStage::FRAGMENT,
         "resources/shaders/turbidity.frag.spv"}});
@@ -38,7 +46,7 @@ int main() {
   model1->setPosition(0, -1.5, 0);
 
   std::shared_ptr<Model> model2 = scene->createModel(
-      "model2", "resources/models/large_cube/large_cube.obj", material1);
+      "model2", "resources/models/large_cube/large_cube.obj", material2);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);

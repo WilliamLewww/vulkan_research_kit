@@ -57,9 +57,13 @@ public:
 
   std::shared_ptr<Buffer> getVertexBufferPtr();
 
+  uint32_t getVertexCount();
+
   std::shared_ptr<Buffer> getIndexBufferPtr();
 
   uint32_t getIndexCount();
+
+  std::shared_ptr<Material> getMaterialPtr();
 
 private:
   struct CompareVertex {

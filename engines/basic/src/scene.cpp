@@ -45,10 +45,17 @@ Scene::~Scene() {}
 
 std::shared_ptr<Material> Scene::createMaterial(
     std::string materialName,
-    std::map<Material::ShaderStage, std::string> shaderStageNameMap) {
+    std::map<Material::ShaderStage, std::string> shaderStageNameMap,
+    bool isUsingRayTracingPipeline) {
 
-  this->materialPtrList.push_back(std::shared_ptr<Material>(
-      new MaterialRaster(this->enginePtr, materialName, shaderStageNameMap)));
+  if (!isUsingRayTracingPipeline) {
+    this->materialPtrList.push_back(std::shared_ptr<Material>(
+        new MaterialRaster(this->enginePtr, materialName, shaderStageNameMap)));
+  } else {
+    this->materialPtrList.push_back(
+        std::shared_ptr<Material>(new MaterialRayTrace(
+            this->enginePtr, materialName, shaderStageNameMap)));
+  }
 
   return this->materialPtrList[this->materialPtrList.size() - 1];
 }
@@ -70,6 +77,12 @@ Scene::createModel(std::string modelName, std::string modelPath,
   this->modelPtrList.push_back(std::shared_ptr<Model>(
       new Model(this->enginePtr, shared_from_this(), modelName, modelPath,
                 materialPtr, modelIndex, this->modelsBufferPtr)));
+
+  if (materialPtr->getMaterialType() == Material::MaterialType::RAY_TRACE) {
+    std::static_pointer_cast<MaterialRayTrace>(materialPtr)
+        ->createBottomLevelAccelerationStructure(
+            this->modelPtrList[this->modelPtrList.size() - 1]);
+  }
 
   this->indexModelMap[modelIndex] =
       this->modelPtrList[this->modelPtrList.size() - 1];
@@ -99,6 +112,16 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
   auto commandBufferInheritanceInfoParamPtr =
       std::make_shared<CommandBufferGroup::CommandBufferInheritanceInfoParam>(
           CommandBufferGroup::CommandBufferInheritanceInfoParam{
+              .renderPassHandle = VK_NULL_HANDLE,
+              .subpass = 0,
+              .framebufferHandle = VK_NULL_HANDLE,
+              .occlusionQueryEnable = VK_FALSE,
+              .queryControlFlags = 0,
+              .queryPipelineStatisticFlags = 0});
+
+  auto renderPassCommandBufferInheritanceInfoParamPtr =
+      std::make_shared<CommandBufferGroup::CommandBufferInheritanceInfoParam>(
+          CommandBufferGroup::CommandBufferInheritanceInfoParam{
               .renderPassHandle =
                   this->enginePtr->getRenderPassPtr()->getRenderPassHandleRef(),
               .subpass = 0,
@@ -110,38 +133,61 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
               .queryPipelineStatisticFlags = 0});
 
   std::vector<VkCommandBuffer> commandBufferHandleList;
+  std::vector<VkCommandBuffer> renderPassCommandBufferHandleList;
   for (auto &pair : this->indexModelMap) {
-    commandBufferHandleList.push_back(
-        enginePtr->getSecondaryCommandBufferGroupPtr()
-            ->getCommandBufferHandleRef(
-                (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
-                frameIndex));
-    pair.second->render(
-        commandBufferInheritanceInfoParamPtr,
-        (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
-            frameIndex);
+    if (pair.second->getMaterialPtr()->getMaterialType() ==
+        Material::MaterialType::RASTER) {
+      renderPassCommandBufferHandleList.push_back(
+          enginePtr->getSecondaryCommandBufferGroupPtr()
+              ->getCommandBufferHandleRef(
+                  (this->enginePtr->getFramebufferPtrList().size() *
+                   pair.first) +
+                  frameIndex));
+      pair.second->render(
+          renderPassCommandBufferInheritanceInfoParamPtr,
+          (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
+              frameIndex);
+    } else {
+      commandBufferHandleList.push_back(
+          enginePtr->getSecondaryCommandBufferGroupPtr()
+              ->getCommandBufferHandleRef(
+                  (this->enginePtr->getFramebufferPtrList().size() *
+                   pair.first) +
+                  frameIndex));
+      pair.second->render(
+          commandBufferInheritanceInfoParamPtr,
+          (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
+              frameIndex);
+    }
   }
 
   this->enginePtr->getCommandBufferGroupPtr()->beginRecording(
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
-  VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
-  VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
+  if (commandBufferHandleList.size() > 0) {
+    this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
+        frameIndex, commandBufferHandleList);
+  }
 
-  this->enginePtr->getRenderPassPtr()->beginRenderPassCmd(
-      this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
-          frameIndex),
-      this->enginePtr->getFramebufferPtrList()[frameIndex]
-          ->getFramebufferHandleRef(),
-      {{0, 0}, {800, 600}}, {clearColor, clearDepth},
-      VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+  if (renderPassCommandBufferHandleList.size() > 0) {
+    VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
+    VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
 
-  this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
-      frameIndex, commandBufferHandleList);
+    this->enginePtr->getRenderPassPtr()->beginRenderPassCmd(
+        this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
+            frameIndex),
+        this->enginePtr->getFramebufferPtrList()[frameIndex]
+            ->getFramebufferHandleRef(),
+        {{0, 0}, {800, 600}}, {clearColor, clearDepth},
+        VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-  this->enginePtr->getRenderPassPtr()->endRenderPassCmd(
-      this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
-          frameIndex));
+    this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
+        frameIndex, renderPassCommandBufferHandleList);
+
+    this->enginePtr->getRenderPassPtr()->endRenderPassCmd(
+        this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
+            frameIndex));
+  }
 
   this->enginePtr->getCommandBufferGroupPtr()->endRecording(frameIndex);
 }

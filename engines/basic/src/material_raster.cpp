@@ -5,29 +5,17 @@
 MaterialRaster::MaterialRaster(
     std::shared_ptr<Engine> enginePtr, std::string materialName,
     std::map<ShaderStage, std::string> shaderStageNameMap)
-    : Material(enginePtr, materialName) {
+    : Material(enginePtr, materialName, shaderStageNameMap,
+               Material::MaterialType::RASTER) {
 
   std::vector<GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam>
       pipelineShaderStageCreateInfoList;
 
-  for (auto &pair : shaderStageNameMap) {
-    std::ifstream shaderFile(Resource::findResource(pair.second),
-                             std::ios::binary | std::ios::ate);
-    std::streamsize shaderFileSize = shaderFile.tellg();
-    shaderFile.seekg(0, std::ios::beg);
-    std::vector<uint32_t> shaderSource(shaderFileSize / sizeof(uint32_t));
-    shaderFile.read((char *)shaderSource.data(), shaderFileSize);
-    shaderFile.close();
-
-    this->shaderStageModuleMap[pair.first] =
-        std::unique_ptr<ShaderModule>(new ShaderModule(
-            enginePtr->getDevicePtr()->getDeviceHandleRef(), shaderSource));
-
+  for (auto &pair : this->shaderStageModuleMap) {
     GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam shaderStage = {
         .pipelineShaderStageCreateFlags = 0,
         .shaderStageFlagBits = (VkShaderStageFlagBits)0,
-        .shaderModuleHandleRef =
-            this->shaderStageModuleMap[pair.first]->getShaderModuleHandleRef(),
+        .shaderModuleHandleRef = pair.second->getShaderModuleHandleRef(),
         .entryPointName = "main",
         .specializationInfoPtr = NULL};
 
@@ -41,44 +29,6 @@ MaterialRaster::MaterialRaster(
 
     pipelineShaderStageCreateInfoList.push_back(shaderStage);
   }
-
-  this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
-      new DescriptorPool(enginePtr->getDevicePtr()->getDeviceHandleRef(),
-                         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 1,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 + 1 + 16 + 32},
-                          {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32},
-                          {VK_DESCRIPTOR_TYPE_SAMPLER, 1},
-                          {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32}}));
-
-  this->descriptorSetLayoutPtr =
-      std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
-          enginePtr->getDevicePtr()->getDeviceHandleRef(), 0,
-          {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT |
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-            NULL},
-           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-            NULL},
-           {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 32,
-            VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
-
-  this->descriptorSetGroupPtr =
-      std::unique_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
-          enginePtr->getDevicePtr()->getDeviceHandleRef(),
-          this->descriptorPoolPtr->getDescriptorPoolHandleRef(),
-          {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}));
-
-  this->pipelineLayoutPtr = std::unique_ptr<PipelineLayout>(new PipelineLayout(
-      enginePtr->getDevicePtr()->getDeviceHandleRef(),
-      {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}, {}));
 
   auto pipelineVertexInputStateCreateInfoParam = std::make_shared<
       GraphicsPipelineGroup::PipelineVertexInputStateCreateInfoParam>(
@@ -175,6 +125,29 @@ MaterialRaster::MaterialRaster(
               {pipelineColorBlendAttachmentState},
           .blendConstants = {0, 0, 0, 0}});
 
+  this->rasterDescriptorSetLayoutPtr =
+      std::shared_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
+          enginePtr->getDevicePtr()->getDeviceHandleRef(), 0,
+          {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT |
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+            NULL},
+           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            NULL},
+           {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
+            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
+           {6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 32,
+            VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
+
+  this->initializeDescriptors(this->RASTER_MATERIAL_DESCRIPTOR_COUNTS,
+                              this->rasterDescriptorSetLayoutPtr);
+
   this->graphicsPipelineGroupPtr =
       std::unique_ptr<GraphicsPipelineGroup>(new GraphicsPipelineGroup(
           enginePtr->getDevicePtr()->getDeviceHandleRef(),
@@ -189,83 +162,6 @@ MaterialRaster::MaterialRaster(
             this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),
             enginePtr->getRenderPassPtr()->getRenderPassHandleRef(), 0,
             VK_NULL_HANDLE, 0}}));
-
-  this->materialPropertiesCount = 0;
-
-  this->materialPropertiesBufferPtr = std::unique_ptr<Buffer>(
-      new Buffer(enginePtr->getDevicePtr()->getDeviceHandleRef(),
-                 *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
-                 sizeof(Properties) * 32, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                 VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
-
-  this->samplerPtr = std::unique_ptr<Sampler>(new Sampler(
-      enginePtr->getDevicePtr()->getDeviceHandleRef(), 0, VK_FILTER_NEAREST,
-      VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST,
-      VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
-      VK_SAMPLER_ADDRESS_MODE_REPEAT, 0, VK_FALSE, 0, VK_FALSE,
-      VK_COMPARE_OP_NEVER, 0, 0, VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
-      VK_FALSE));
-
-  this->textureCount = 0;
-
-  for (uint32_t x = 0; x < 16; x++) {
-    std::shared_ptr<VkDescriptorBufferInfo> lightDescriptorBufferInfoPtr =
-        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
-            .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE});
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0, 2, x, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
-          lightDescriptorBufferInfoPtr, NULL}},
-        {});
-  }
-
-  for (uint32_t x = 0; x < 32; x++) {
-    std::shared_ptr<VkDescriptorBufferInfo>
-        materialPropertiesDescriptorBufferInfoPtr =
-            std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
-                .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE});
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0, 3, x, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NULL,
-          materialPropertiesDescriptorBufferInfoPtr, NULL}},
-        {});
-  }
-
-  std::shared_ptr<VkDescriptorImageInfo> descriptorSamplerImageInfoPtr =
-      std::make_shared<VkDescriptorImageInfo>(
-          VkDescriptorImageInfo{.sampler = samplerPtr->getSamplerHandleRef(),
-                                .imageView = VK_NULL_HANDLE,
-                                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED});
-
-  descriptorSetGroupPtr->updateDescriptorSets(
-      {{0, 4, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLER, descriptorSamplerImageInfoPtr,
-        NULL, NULL}},
-      {});
-
-  for (uint32_t x = 0; x < 32; x++) {
-    std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
-        std::make_shared<VkDescriptorImageInfo>(
-            VkDescriptorImageInfo{.sampler = VK_NULL_HANDLE,
-                                  .imageView = VK_NULL_HANDLE,
-                                  .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED});
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0, 5, x, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorImageInfoPtr,
-          NULL, NULL}},
-        {});
-  }
-
-  for (uint32_t x = 0; x < 32; x++) {
-    std::shared_ptr<VkDescriptorBufferInfo> modelDescriptorBufferInfoPtr =
-        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
-            .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE});
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0, 6, x, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
-          modelDescriptorBufferInfoPtr, NULL}},
-        {});
-  }
 }
 
 MaterialRaster::~MaterialRaster() {}
@@ -282,7 +178,7 @@ void MaterialRaster::render(VkCommandBuffer commandBufferHandle,
 
   this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
       commandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS,
-      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0}, {});
+      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0, 1}, {});
 
   this->graphicsPipelineGroupPtr->drawIndexedCmd(
       commandBufferHandle, modelPtr->getIndexCount(), 1, 0, 0, 0);

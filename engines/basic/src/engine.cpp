@@ -325,6 +325,16 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
                         std::shared_ptr<Camera> cameraPtr) {
 
   for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
+    if (scenePtr->getMaterialPtrList()[x]->getMaterialType() ==
+        Material::MaterialType::RAY_TRACE) {
+      if (!std::static_pointer_cast<MaterialRayTrace>(
+               scenePtr->getMaterialPtrList()[x])
+               ->getTopLevelAccelerationStructureExists()) {
+        std::static_pointer_cast<MaterialRayTrace>(
+            scenePtr->getMaterialPtrList()[x])
+            ->createTopLevelAccelerationStructure();
+      }
+    }
     if (cameraPtr->getIsCameraBufferDirty()) {
       scenePtr->getMaterialPtrList()[x]->updateCameraDescriptorSet(cameraPtr);
     }

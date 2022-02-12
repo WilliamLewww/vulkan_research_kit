@@ -286,12 +286,26 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
 
   materialPtr->appendTextureDescriptors(this->imageViewPtrList);
 
+  VkMemoryAllocateFlagsInfo memoryAllocateFlagsInfo = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+      .pNext = NULL,
+      .flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT,
+      .deviceMask = 0};
+
+  VkBufferUsageFlagBits extraUsageFlagBits = (VkBufferUsageFlagBits)0;
+  if (materialPtr->getMaterialType() == Material::MaterialType::RAY_TRACE) {
+    extraUsageFlagBits =
+        (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+                                VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
+  }
+
   this->vertexBufferPtr = std::shared_ptr<Buffer>(new Buffer(
       enginePtr->getDevicePtr()->getDeviceHandleRef(),
       *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(Vertex) * this->vertexList.size(),
-      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | extraUsageFlagBits,
+      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, {&memoryAllocateFlagsInfo}));
 
   void *hostVertexBuffer;
   this->vertexBufferPtr->mapMemory(&hostVertexBuffer, 0,
@@ -304,8 +318,9 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
       enginePtr->getDevicePtr()->getDeviceHandleRef(),
       *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
       sizeof(uint32_t) * this->indexList.size(),
-      VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {enginePtr->getQueueFamilyIndex()}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+      VK_BUFFER_USAGE_INDEX_BUFFER_BIT | extraUsageFlagBits,
+      VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, {&memoryAllocateFlagsInfo}));
 
   void *hostIndexBuffer;
   this->indexBufferPtr->mapMemory(&hostIndexBuffer, 0,
@@ -322,8 +337,18 @@ void Model::render(
         commandBufferInheritanceInfoParamPtr,
     uint32_t commandBufferIndex) {
 
+  VkCommandBufferUsageFlagBits commandBufferUsageFlagBits =
+      (VkCommandBufferUsageFlagBits)0;
+
+  if (commandBufferInheritanceInfoParamPtr->renderPassHandle !=
+      VK_NULL_HANDLE) {
+
+    commandBufferUsageFlagBits =
+        VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+  }
+
   this->enginePtr->getSecondaryCommandBufferGroupPtr()->beginRecording(
-      commandBufferIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
+      commandBufferIndex, commandBufferUsageFlagBits,
       commandBufferInheritanceInfoParamPtr);
 
   this->materialPtr->render(this->enginePtr->getSecondaryCommandBufferGroupPtr()
@@ -424,8 +449,12 @@ std::shared_ptr<Buffer> Model::getVertexBufferPtr() {
   return this->vertexBufferPtr;
 }
 
+uint32_t Model::getVertexCount() { return this->vertexList.size(); }
+
 std::shared_ptr<Buffer> Model::getIndexBufferPtr() {
   return this->indexBufferPtr;
 }
 
 uint32_t Model::getIndexCount() { return this->indexList.size(); }
+
+std::shared_ptr<Material> Model::getMaterialPtr() { return this->materialPtr; }
