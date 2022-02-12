@@ -27,21 +27,52 @@ void Material::initializeDescriptors(
     const MaterialDescriptorCounts materialDescriptorCounts,
     std::shared_ptr<DescriptorSetLayout> descriptorSetLayoutPtr) {
 
+  std::vector<VkDescriptorPoolSize> descriptorPoolSizeList = {};
+
+  uint32_t uniformBufferCount =
+      this->MATERIAL_DESCRIPTOR_COUNTS.uniformBufferCount +
+      materialDescriptorCounts.uniformBufferCount;
+  if (uniformBufferCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniformBufferCount});
+  }
+
+  uint32_t storageBufferCount =
+      this->MATERIAL_DESCRIPTOR_COUNTS.storageBufferCount +
+      materialDescriptorCounts.storageBufferCount;
+  if (storageBufferCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, storageBufferCount});
+  }
+
+  uint32_t samplerCount = this->MATERIAL_DESCRIPTOR_COUNTS.samplerCount +
+                          materialDescriptorCounts.samplerCount;
+  if (samplerCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_SAMPLER, samplerCount});
+  }
+
+  uint32_t sampledImageCount =
+      this->MATERIAL_DESCRIPTOR_COUNTS.sampledImageCount +
+      materialDescriptorCounts.sampledImageCount;
+  if (sampledImageCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, sampledImageCount});
+  }
+
+  uint32_t accelerationStructureCount =
+      this->MATERIAL_DESCRIPTOR_COUNTS.accelerationStructureCount +
+      materialDescriptorCounts.accelerationStructureCount;
+  if (accelerationStructureCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,
+         accelerationStructureCount});
+  }
+
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->getDevicePtr()->getDeviceHandleRef(),
                          VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 2,
-                         {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                           this->MATERIAL_DESCRIPTOR_COUNTS.uniformBufferCount +
-                               materialDescriptorCounts.uniformBufferCount},
-                          {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                           this->MATERIAL_DESCRIPTOR_COUNTS.storageBufferCount +
-                               materialDescriptorCounts.storageBufferCount},
-                          {VK_DESCRIPTOR_TYPE_SAMPLER,
-                           this->MATERIAL_DESCRIPTOR_COUNTS.samplerCount +
-                               materialDescriptorCounts.samplerCount},
-                          {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                           this->MATERIAL_DESCRIPTOR_COUNTS.sampledImageCount +
-                               materialDescriptorCounts.sampledImageCount}}));
+                         descriptorPoolSizeList));
 
   this->descriptorSetLayoutPtr =
       std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(

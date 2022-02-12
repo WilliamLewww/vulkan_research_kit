@@ -55,6 +55,7 @@ public:
     uint32_t storageBufferCount;
     uint32_t samplerCount;
     uint32_t sampledImageCount;
+    uint32_t accelerationStructureCount;
   };
 
   Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
@@ -120,5 +121,6 @@ private:
       .uniformBufferCount = 50,
       .storageBufferCount = 32,
       .samplerCount = 1,
-      .sampledImageCount = 32};
+      .sampledImageCount = 32,
+      .accelerationStructureCount = 0};
 };

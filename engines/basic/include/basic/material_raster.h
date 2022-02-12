@@ -16,7 +16,8 @@ private:
       .uniformBufferCount = 50,
       .storageBufferCount = 32,
       .samplerCount = 1,
-      .sampledImageCount = 32};
+      .sampledImageCount = 32,
+      .accelerationStructureCount = 0};
 
   std::shared_ptr<DescriptorSetLayout> rasterDescriptorSetLayoutPtr;
 

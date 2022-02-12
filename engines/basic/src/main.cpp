@@ -45,8 +45,8 @@ int main() {
       "model1", "resources/models/utah_teapot/utah_teapot.obj", material1);
   model1->setPosition(0, -1.5, 0);
 
-  std::shared_ptr<Model> model2 = scene->createModel(
-      "model2", "resources/models/large_cube/large_cube.obj", material2);
+  // std::shared_ptr<Model> model2 = scene->createModel(
+  //     "model2", "resources/models/large_cube/large_cube.obj", material2);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);
