@@ -22,22 +22,6 @@ class Model;
 
 class Material {
 public:
-  struct Properties {
-    alignas(16) float ambient[4];
-    alignas(16) float diffuse[4];
-    alignas(16) float specular[4];
-    alignas(16) float transmittance[4];
-    alignas(16) float emission[4];
-    alignas(4) float shininess;
-    alignas(4) float ior;
-    alignas(4) float dissolve;
-    alignas(4) int illum;
-
-    alignas(4) int ambientTextureIndex;
-    alignas(4) int diffuseTextureIndex;
-    alignas(4) int specularTextureIndex;
-  };
-
   enum class ShaderStage {
     VERTEX,
     FRAGMENT,
@@ -66,21 +50,23 @@ public:
 
   MaterialType getMaterialType();
 
+  void incrementMaterialPropertiesCount(uint32_t count);
+
   uint32_t getMaterialPropertiesCount();
 
+  std::shared_ptr<Buffer> getMaterialPropertiesBufferPtr();
+
+  void incrementTextureCount(uint32_t count);
+
   uint32_t getTextureCount();
+
+  std::shared_ptr<DescriptorSetGroup> getDescriptorSetGroupPtr();
 
   void updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr);
 
   void updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr);
 
   void updateLightDescriptorSet(std::shared_ptr<Light> lightPtr);
-
-  void
-  appendMaterialPropertiesDescriptors(std::vector<Properties> propertiesList);
-
-  void appendTextureDescriptors(
-      std::vector<std::shared_ptr<ImageView>> imageViewPtrList);
 
   void updateModelDescriptorSet(std::shared_ptr<Model> modelPtr);
 
@@ -106,11 +92,11 @@ protected:
 
   std::unique_ptr<DescriptorSetLayout> descriptorSetLayoutPtr;
 
-  std::unique_ptr<DescriptorSetGroup> descriptorSetGroupPtr;
+  std::shared_ptr<DescriptorSetGroup> descriptorSetGroupPtr;
 
   uint32_t materialPropertiesCount;
 
-  std::unique_ptr<Buffer> materialPropertiesBufferPtr;
+  std::shared_ptr<Buffer> materialPropertiesBufferPtr;
 
   std::unique_ptr<Sampler> samplerPtr;
 

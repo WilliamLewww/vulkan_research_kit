@@ -79,22 +79,10 @@ MaterialRayTrace::MaterialRayTrace(
   this->rayTraceDescriptorSetLayoutPtr =
       std::shared_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
           enginePtr->getDevicePtr()->getDeviceHandleRef(), 0,
-          {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT |
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-            NULL},
-           {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 32,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {4, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-            NULL},
-           {5, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 32,
-            VK_SHADER_STAGE_FRAGMENT_BIT, NULL},
-           {6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 32,
-            VK_SHADER_STAGE_VERTEX_BIT, NULL}}));
+          {
+              {0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
+               VK_SHADER_STAGE_RAYGEN_BIT_KHR, NULL},
+          }));
 
   this->initializeDescriptors(this->RAY_TRACE_MATERIAL_DESCRIPTOR_COUNTS,
                               this->rayTraceDescriptorSetLayoutPtr);

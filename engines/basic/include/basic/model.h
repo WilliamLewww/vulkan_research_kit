@@ -15,6 +15,22 @@ class Scene;
 
 class Model : public std::enable_shared_from_this<Model> {
 public:
+  struct Properties {
+    alignas(16) float ambient[4];
+    alignas(16) float diffuse[4];
+    alignas(16) float specular[4];
+    alignas(16) float transmittance[4];
+    alignas(16) float emission[4];
+    alignas(4) float shininess;
+    alignas(4) float ior;
+    alignas(4) float dissolve;
+    alignas(4) int illum;
+
+    alignas(4) int ambientTextureIndex;
+    alignas(4) int diffuseTextureIndex;
+    alignas(4) int specularTextureIndex;
+  };
+
   struct Vertex {
     float positions[3];
     float normals[3];
@@ -99,11 +115,15 @@ private:
 
   std::shared_ptr<Material> materialPtr;
 
-  std::vector<Material::Properties> materialPropertiesList;
+  uint32_t materialOffsetIndex;
+
+  std::vector<Properties> materialPropertiesList;
 
   std::shared_ptr<Buffer> vertexBufferPtr;
 
   std::shared_ptr<Buffer> indexBufferPtr;
+
+  uint32_t textureOffsetIndex;
 
   std::vector<std::unique_ptr<Image>> imagePtrList;
 
@@ -116,6 +136,8 @@ private:
   ModelShaderStructure modelShaderStructure;
 
   std::shared_ptr<VkDescriptorBufferInfo> modelDescriptorBufferInfoPtr;
+
+  std::shared_ptr<Buffer> materialPropertiesBufferPtr;
 
   bool isModelBufferDirty;
 

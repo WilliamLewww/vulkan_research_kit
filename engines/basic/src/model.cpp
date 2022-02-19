@@ -13,7 +13,11 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
              std::shared_ptr<Buffer> modelsBufferPtr)
     : enginePtr(enginePtr), scenePtr(scenePtr), modelName(modelName),
       materialPtr(materialPtr), modelIndex(modelIndex),
-      modelsBufferPtr(modelsBufferPtr) {
+      modelsBufferPtr(modelsBufferPtr),
+      materialOffsetIndex(materialPtr->getMaterialPropertiesCount()),
+      materialPropertiesBufferPtr(
+          materialPtr->getMaterialPropertiesBufferPtr()),
+      textureOffsetIndex(materialPtr->getTextureCount()) {
 
   this->modelShaderStructure = {};
 
@@ -126,7 +130,7 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
           materialPtr->getTextureCount() + textureNameIndexMap.size() - 1;
     }
 
-    Material::Properties materialProperties = {
+    Properties materialProperties = {
         .ambient = {materials[x].ambient[0], materials[x].ambient[1],
                     materials[x].ambient[2], 1},
         .diffuse = {materials[x].diffuse[0], materials[x].diffuse[1],
@@ -153,8 +157,29 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     this->materialPropertiesList.push_back(materialProperties);
   }
 
-  materialPtr->appendMaterialPropertiesDescriptors(
-      this->materialPropertiesList);
+  void *hostMaterialPropertiesBuffer;
+  this->materialPropertiesBufferPtr->mapMemory(&hostMaterialPropertiesBuffer, 0,
+                                               32 * sizeof(Properties));
+  for (uint32_t x = 0; x < this->materialPropertiesList.size(); x++) {
+    std::shared_ptr<VkDescriptorBufferInfo> materialDescriptorBufferInfoPtr =
+        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+            .buffer = materialPropertiesBufferPtr->getBufferHandleRef(),
+            .offset = (materialOffsetIndex + x) * sizeof(Properties),
+            .range = sizeof(Properties)});
+
+    memcpy(
+        &((Properties *)hostMaterialPropertiesBuffer)[materialOffsetIndex + x],
+        &this->materialPropertiesList[x], sizeof(Properties));
+
+    materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
+        {{0, 3, materialOffsetIndex + x, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+          NULL, materialDescriptorBufferInfoPtr, NULL}},
+        {});
+  }
+  this->materialPropertiesBufferPtr->unmapMemory();
+
+  materialPtr->incrementMaterialPropertiesCount(
+      this->materialPropertiesList.size());
 
   for (auto pair : textureNameIndexMap) {
     if (pair.second != -1) {
@@ -284,7 +309,20 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
     }
   }
 
-  materialPtr->appendTextureDescriptors(this->imageViewPtrList);
+  for (uint32_t x = 0; x < this->imageViewPtrList.size(); x++) {
+    std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
+        std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
+            .sampler = VK_NULL_HANDLE,
+            .imageView = this->imageViewPtrList[x]->getImageViewHandleRef(),
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+
+    materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
+        {{0, 5, textureOffsetIndex + x, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+          descriptorImageInfoPtr, NULL, NULL}},
+        {});
+  }
+
+  materialPtr->incrementTextureCount(this->imageViewPtrList.size());
 
   VkMemoryAllocateFlagsInfo memoryAllocateFlagsInfo = {
       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,

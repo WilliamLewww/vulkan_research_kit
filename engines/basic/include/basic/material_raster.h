@@ -13,10 +13,10 @@ public:
 
 private:
   const MaterialDescriptorCounts RASTER_MATERIAL_DESCRIPTOR_COUNTS = {
-      .uniformBufferCount = 50,
-      .storageBufferCount = 32,
-      .samplerCount = 1,
-      .sampledImageCount = 32,
+      .uniformBufferCount = 0,
+      .storageBufferCount = 0,
+      .samplerCount = 0,
+      .sampledImageCount = 0,
       .accelerationStructureCount = 0};
 
   std::shared_ptr<DescriptorSetLayout> rasterDescriptorSetLayoutPtr;

@@ -45,22 +45,22 @@ fi
 
 if [ "${VERSION}" == "" ]
 then
-  VERSION='sdk-1.3.204'
+  VERSION='sdk-1.3.204.0'
 fi
 
 if [ "${SPIRV_TOOLS_VERSION}" == "" ]
 then
-  SPIRV_TOOLS_VERSION='sdk-1.3.204'
+  SPIRV_TOOLS_VERSION='sdk-1.3.204.0'
 fi
 
 if [ "${SPIRV_HEADERS_VERSION}" == "" ]
 then
-  SPIRV_HEADERS_VERSION='sdk-1.3.204'
+  SPIRV_HEADERS_VERSION='sdk-1.3.204.0'
 fi
 
 if [ "${GLSLANG_VERSION}" == "" ]
 then
-  GLSLANG_VERSION='sdk-1.3.204'
+  GLSLANG_VERSION='sdk-1.3.204.0'
 fi
 
 if [ "${THREADS}" == "" ]
@@ -221,4 +221,13 @@ then
   fi
 
   echo 'export Vulkan_LIBRARIES' >> setup-vulkan-development-env.sh
+
+  if [ "${NO_VULKAN_TOOLS}" != "1" ]
+  then
+    echo 'PATH="$PATH:'${SCRIPTPATH}'/Vulkan-Tools/build/install/bin"' >> setup-vulkan-development-env.sh
+  fi
+
+    echo 'PATH="$PATH:'${SCRIPTPATH}'/SPIRV-Tools/build/install/bin"' >> setup-vulkan-development-env.sh
+    echo 'PATH="$PATH:'${SCRIPTPATH}'/glslang/build/install/bin"' >> setup-vulkan-development-env.sh
+
 fi
