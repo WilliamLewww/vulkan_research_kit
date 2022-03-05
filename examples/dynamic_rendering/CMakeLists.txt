@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(dynamic_rendering)
 
-if(NOT Vulkan_INCLUDE_DIRS)
-  if(DEFINED ENV{Vulkan_INCLUDE_DIRS})
-    set(Vulkan_INCLUDE_DIRS $ENV{Vulkan_INCLUDE_DIRS})
-  elseif(DEFINED ENV{VULKAN_SDK})
-    set(Vulkan_INCLUDE_DIRS $ENV{VULKAN_SDK}/include)
-  else()
-    message(FATAL_ERROR "Vulkan_INCLUDE_DIRS not set")
-  endif()
-endif()
+find_package(Vulkan REQUIRED)
 
 get_filename_component(VRK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
 
@@ -31,4 +23,3 @@ add_executable(dynamic_rendering main.cpp)
 include_directories(dynamic_rendering ${Vulkan_INCLUDE_DIRS})
 include_directories(dynamic_rendering ${VRK_SOURCE_DIR}/include)
 target_link_libraries(dynamic_rendering ${VRK_LIBRARY} ${VRK_DYNAMIC_RENDERING_LIBRARY})
-
