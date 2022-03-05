@@ -6,61 +6,67 @@ SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 for i in "$@"
 do
 case $i in
-    -v=*|--version=*)
-    VERSION="${i#*=}"
-    ;;
-    -stv=*|--spirv-tools-version=*)
-    SPIRV_TOOLS_VERSION="${i#*=}"
-    ;;
-    -shv=*|--spirv-headers-version=*)
-    SPIRV_HEADERS_VERSION="${i#*=}"
-    ;;
-    -gv=*|--glslang-version=*)
-    GLSLANG_VERSION="${i#*=}"
-    ;;
-    -t=*|--threads=*)
-    THREADS="${i#*=}"
-    ;;
-    -nvt|--no-vulkan-tools)
-    NO_VULKAN_TOOLS=1
-    ;;
-    -nvvl|--no-vulkan-validation-layers)
-    NO_VULKAN_VALIDATION_LAYERS=1
-    ;;
-    -d|--delete)
-    DELETE=1
-    ;;
-    *)
-    ;;
+  -vv=*|--vulkan-version=*)
+  VULKAN_VERSION="${i#*=}"
+  ;;
+  -stv=*|--spirv-tools-version=*)
+  SPIRV_TOOLS_VERSION="${i#*=}"
+  ;;
+  -shv=*|--spirv-headers-version=*)
+  SPIRV_HEADERS_VERSION="${i#*=}"
+  ;;
+  -gv=*|--glslang-version=*)
+  GLSLANG_VERSION="${i#*=}"
+  ;;
+  -v=*|--version=*)
+  VULKAN_VERSION="${i#*=}"
+  SPIRV_TOOLS_VERSION="${i#*=}"
+  SPIRV_HEADERS_VERSION="${i#*=}"
+  GLSLANG_VERSION="${i#*=}"
+  ;;
+  -t=*|--threads=*)
+  THREADS="${i#*=}"
+  ;;
+  -nvt|--no-vulkan-tools)
+  NO_VULKAN_TOOLS=1
+  ;;
+  -nvvl|--no-vulkan-validation-layers)
+  NO_VULKAN_VALIDATION_LAYERS=1
+  ;;
+  -d|--delete)
+  DELETE=1
+  ;;
+  *)
+  ;;
 esac
 done
 
-if [ "${DELETE}" == "1" ]
+if [ "${DELETE}" == 1 ]
 then
   echo "Requesting sudo access to delete existing local repositories:"
-  sudo rm -r -f setup-vulkan-development-env.sh glslang SPIRV* Vulkan*
+  sudo rm -r -f src build install log
   echo "Local repositories deleted!"
   exit
 fi
 
-if [ "${VERSION}" == "" ]
+if [ "${VULKAN_VERSION}" == "" ]
 then
-  VERSION='sdk-1.3.204.0'
+  VULKAN_VERSION='sdk-1.3.204.1'
 fi
 
 if [ "${SPIRV_TOOLS_VERSION}" == "" ]
 then
-  SPIRV_TOOLS_VERSION='sdk-1.3.204.0'
+  SPIRV_TOOLS_VERSION='sdk-1.3.204.1'
 fi
 
 if [ "${SPIRV_HEADERS_VERSION}" == "" ]
 then
-  SPIRV_HEADERS_VERSION='sdk-1.3.204.0'
+  SPIRV_HEADERS_VERSION='sdk-1.3.204.1'
 fi
 
 if [ "${GLSLANG_VERSION}" == "" ]
 then
-  GLSLANG_VERSION='sdk-1.3.204.0'
+  GLSLANG_VERSION='sdk-1.3.204.1'
 fi
 
 if [ "${THREADS}" == "" ]
@@ -68,7 +74,7 @@ then
   THREADS='4'
 fi
 
-echo "Vulkan Version: ${VERSION}"
+echo "Vulkan Version: ${VULKAN_VERSION}"
 echo "SPIRV Tools Version: ${SPIRV_TOOLS_VERSION}"
 echo "SPIRV Headers Version: ${SPIRV_HEADERS_VERSION}"
 echo "glslang Version: ${GLSLANG_VERSION}"
@@ -84,150 +90,111 @@ then
   echo "  No Vulkan Validation Layers"
 fi
 
-if [ ! -d "Vulkan-Headers/build/install" ]
+mkdir -p src
+mkdir -p build
+mkdir -p install
+mkdir -p log
+
+if [ ! -f "log/Vulkan-Headers.receipt" ]
 then
-  if [ ! -d "Vulkan-Headers" ]
-  then
-    git clone https://github.com/KhronosGroup/Vulkan-Headers
-  fi
+  git clone https://github.com/KhronosGroup/Vulkan-Headers src/Vulkan-Headers
+  git --git-dir=src/Vulkan-Headers/.git --work-tree=src/Vulkan-Headers checkout ${VULKAN_VERSION}
 
-  git --git-dir=Vulkan-Headers/.git --work-tree=Vulkan-Headers checkout ${VERSION}
+  cmake -Hsrc/Vulkan-Headers -Bbuild/Vulkan-Headers \
+      -DCMAKE_INSTALL_PREFIX=install
+  make install -j${THREADS} -C build/Vulkan-Headers
 
-  mkdir -p Vulkan-Headers/build
-  cmake -HVulkan-Headers -BVulkan-Headers/build \
-      -DCMAKE_INSTALL_PREFIX=Vulkan-Headers/build/install
-  make install -j${THREADS} -C Vulkan-Headers/build
+  touch log/Vulkan-Headers.receipt
 fi
 
-if [ ! -d "Vulkan-Loader/build/install" ]
+if [ ! -f "log/Vulkan-Loader.receipt" ]
 then
-  if [ ! -d "Vulkan-Loader" ]
-  then
-    git clone https://github.com/KhronosGroup/Vulkan-Loader
-  fi
+  git clone https://github.com/KhronosGroup/Vulkan-Loader src/Vulkan-Loader
+  git --git-dir=src/Vulkan-Loader/.git --work-tree=src/Vulkan-Loader checkout ${VULKAN_VERSION}
 
-  git --git-dir=Vulkan-Loader/.git --work-tree=Vulkan-Loader checkout ${VERSION}
+  cmake -Hsrc/Vulkan-Loader -Bbuild/Vulkan-Loader \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/install
+  make install -j${THREADS} -C build/Vulkan-Loader
 
-  mkdir -p Vulkan-Loader/build
-  cmake -HVulkan-Loader -BVulkan-Loader/build \
-      -DCMAKE_INSTALL_PREFIX=Vulkan-Loader/build/install \
-      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install
-  make install -j${THREADS} -C Vulkan-Loader/build
+  touch log/Vulkan-Loader.receipt
 fi
 
-if [ ! -d "Vulkan-Tools/build/install" ] && [ "${NO_VULKAN_TOOLS}" != "1" ]
+if [ ! -f "log/glslang.receipt" ]
 then
-  if [ ! -d "Vulkan-Tools" ]
-  then
-    git clone https://github.com/KhronosGroup/Vulkan-Tools
-  fi
+  git clone https://github.com/KhronosGroup/glslang src/glslang
+  git --git-dir=src/glslang/.git --work-tree=src/glslang checkout ${GLSLANG_VERSION}
 
-  git --git-dir=Vulkan-Tools/.git --work-tree=Vulkan-Tools checkout ${VERSION}
+  ln -sF $SCRIPTPATH/src/SPIRV-Tools $SCRIPTPATH/src/glslang/External/spirv-tools
 
-  mkdir -p Vulkan-Tools/build
-  cmake -HVulkan-Tools -BVulkan-Tools/build \
-      -DCMAKE_INSTALL_PREFIX=Vulkan-Tools/build/install \
-      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install
-  make install -j${THREADS} -C Vulkan-Tools/build
+  cmake -Hsrc/glslang -Bbuild/glslang \
+      -DCMAKE_INSTALL_PREFIX=install
+  make install -j${THREADS} -C build/glslang
+
+  touch log/glslang.receipt
 fi
 
-if [ ! -d "SPIRV-Headers/build/install" ]
+if [ ! -f "log/Vulkan-Tools.receipt" ] && [ "${NO_VULKAN_TOOLS}" != "1" ]
 then
-  if [ ! -d "SPIRV-Headers" ]
-  then
-    git clone https://github.com/KhronosGroup/SPIRV-Headers
-  fi
+  git clone https://github.com/KhronosGroup/Vulkan-Tools src/Vulkan-Tools
+  git --git-dir=src/Vulkan-Tools/.git --work-tree=src/Vulkan-Tools checkout ${VULKAN_VERSION}
 
-  git --git-dir=SPIRV-Headers/.git --work-tree=SPIRV-Headers checkout ${SPIRV_HEADERS_VERSION}
+  cmake -Hsrc/Vulkan-Tools -Bbuild/Vulkan-Tools \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/install \
+      -DGLSLANG_INSTALL_DIR=$SCRIPTPATH/install
+  make install -j${THREADS} -C build/Vulkan-Tools
 
-  mkdir -p SPIRV-Headers/build
-  cmake -HSPIRV-Headers -BSPIRV-Headers/build \
-      -DCMAKE_INSTALL_PREFIX=SPIRV-Headers/build/install
-  make install -j${THREADS} -C SPIRV-Headers/build
+  touch log/Vulkan-Tools.receipt
 fi
 
-if [ ! -d "SPIRV-Tools/build/install" ]
+if [ ! -f "log/SPIRV-Headers.receipt" ]
 then
-  if [ ! -d "SPIRV-Tools" ]
-  then
-    git clone https://github.com/KhronosGroup/SPIRV-Tools
-  fi
+  git clone https://github.com/KhronosGroup/SPIRV-Headers src/SPIRV-Headers
+  git --git-dir=src/SPIRV-Headers/.git --work-tree=src/SPIRV-Headers checkout ${SPIRV_HEADERS_VERSION}
 
-  git --git-dir=SPIRV-Tools/.git --work-tree=SPIRV-Tools checkout ${SPIRV_TOOLS_VERSION}
+  cmake -Hsrc/SPIRV-Headers -Bbuild/SPIRV-Headers \
+      -DCMAKE_INSTALL_PREFIX=install
+  make install -j${THREADS} -C build/SPIRV-Headers
+
+  touch log/SPIRV-Headers.receipt
+fi
+
+if [ ! -f "log/SPIRV-Tools.receipt" ]
+then
+  git clone https://github.com/KhronosGroup/SPIRV-Tools src/SPIRV-Tools
+  git --git-dir=src/SPIRV-Tools/.git --work-tree=src/SPIRV-Tools checkout ${SPIRV_TOOLS_VERSION}
   
-  ln -f -sF $SCRIPTPATH/SPIRV-Headers $SCRIPTPATH/SPIRV-Tools/external
+  ln -f -sF $SCRIPTPATH/src/SPIRV-Headers $SCRIPTPATH/src/SPIRV-Tools/external
 
-  mkdir -p SPIRV-Tools/build
-  cmake -HSPIRV-Tools -BSPIRV-Tools/build \
-      -DCMAKE_INSTALL_PREFIX=SPIRV-Tools/build/install
-  make install -j${THREADS} -C SPIRV-Tools/build
+  cmake -Hsrc/SPIRV-Tools -Bbuild/SPIRV-Tools \
+      -DCMAKE_INSTALL_PREFIX=install
+  make install -j${THREADS} -C build/SPIRV-Tools
+
+  touch log/SPIRV-Tools.receipt
 fi
 
-if [ ! -d "glslang/build/install" ]
+if [ ! -f "log/Vulkan-ValidationLayers.receipt" ] && [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
 then
-  if [ ! -d "glslang" ]
-  then
-    git clone https://github.com/KhronosGroup/glslang
-  fi
+  git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers src/Vulkan-ValidationLayers
+  git --git-dir=src/Vulkan-ValidationLayers/.git --work-tree=src/Vulkan-ValidationLayers checkout ${VULKAN_VERSION}
 
-  git --git-dir=glslang/.git --work-tree=glslang checkout ${GLSLANG_VERSION}
-
-  ln -sF $SCRIPTPATH/SPIRV-Tools $SCRIPTPATH/glslang/External/spirv-tools
-
-  mkdir -p glslang/build
-  cmake -Hglslang -Bglslang/build \
-      -DCMAKE_INSTALL_PREFIX=glslang/build/install
-  make install -j${THREADS} -C glslang/build
-fi
-
-if [ ! -d "Vulkan-ValidationLayers/build/install" ] && [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
-then
-  if [ ! -d "Vulkan-ValidationLayers" ]
-  then
-    git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers
-  fi
-
-  git --git-dir=Vulkan-ValidationLayers/.git --work-tree=Vulkan-ValidationLayers checkout ${VERSION}
-
-  mkdir -p Vulkan-ValidationLayers/build
-  cmake -HVulkan-ValidationLayers -BVulkan-ValidationLayers/build \
-      -DCMAKE_INSTALL_PREFIX=Vulkan-ValidationLayers/build/install \
-      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/Vulkan-Headers/build/install \
-      -DGLSLANG_INSTALL_DIR=$SCRIPTPATH/glslang/build/install \
-      -DSPIRV_HEADERS_INSTALL_DIR=$SCRIPTPATH/SPIRV-Headers/build/install \
-      -DSPIRV_TOOLS_INSTALL_DIR=$SCRIPTPATH/SPIRV-Tools/build/install \
+  cmake -Hsrc/Vulkan-ValidationLayers -Bbuild/Vulkan-ValidationLayers \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DVULKAN_HEADERS_INSTALL_DIR=$SCRIPTPATH/install \
+      -DVULKAN_LOADER_INSTALL_DIR=$SCRIPTPATH/install \
+      -DGLSLANG_INSTALL_DIR=$SCRIPTPATH/install \
+      -DSPIRV_HEADERS_INSTALL_DIR=$SCRIPTPATH/install \
+      -DSPIRV_TOOLS_INSTALL_DIR=$SCRIPTPATH/install \
       -DUSE_ROBIN_HOOD_HASHING=OFF
-  make install -j${THREADS} -C Vulkan-ValidationLayers/build
+  make install -j${THREADS} -C build/Vulkan-ValidationLayers
+
+  touch log/Vulkan-ValidationLayers.receipt
 fi
 
-if [ ! -f "setup-vulkan-development-env.sh" ]
+if [ ! -f "install/setup-env.sh" ]
 then
-  touch setup-vulkan-development-env.sh
-  echo 'export Vulkan_INCLUDE_DIRS="'${SCRIPTPATH}'/Vulkan-Headers/build/install/include"' >> setup-vulkan-development-env.sh
-  echo 'export Vulkan_GLSLANG_VALIDATOR_EXECUTABLE="'${SCRIPTPATH}'/glslang/build/install/bin/glslangValidator"' >> setup-vulkan-development-env.sh
- 
-  if [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
-  then
-    echo 'VK_LAYER_PATH="'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/share/vulkan/explicit_layer.d"' >> setup-vulkan-development-env.sh
-  fi
-
-  echo 'export VK_LAYER_PATH' >> setup-vulkan-development-env.sh
-  
-  echo 'Vulkan_LIBRARIES="'${SCRIPTPATH}'/Vulkan-Loader/build/install/lib/libvulkan.so"' >> setup-vulkan-development-env.sh
-
-  if [ "${NO_VULKAN_VALIDATION_LAYERS}" != "1" ]
-  then
-    echo 'Vulkan_LIBRARIES="$Vulkan_LIBRARIES;'${SCRIPTPATH}'/Vulkan-ValidationLayers/build/install/lib/libVkLayer_khronos_validation.so"' >> setup-vulkan-development-env.sh
-  fi
-
-  echo 'export Vulkan_LIBRARIES' >> setup-vulkan-development-env.sh
-
-  if [ "${NO_VULKAN_TOOLS}" != "1" ]
-  then
-    echo 'PATH="$PATH:'${SCRIPTPATH}'/Vulkan-Tools/build/install/bin"' >> setup-vulkan-development-env.sh
-  fi
-
-    echo 'PATH="$PATH:'${SCRIPTPATH}'/SPIRV-Tools/build/install/bin"' >> setup-vulkan-development-env.sh
-    echo 'PATH="$PATH:'${SCRIPTPATH}'/glslang/build/install/bin"' >> setup-vulkan-development-env.sh
-
+  touch install/setup-env.sh
+  echo 'export VULKAN_SDK="'${SCRIPTPATH}'/install"' >> install/setup-env.sh
+  echo 'export VK_LAYER_PATH="'${SCRIPTPATH}'/install/share/vulkan/explicit_layer.d"' >> install/setup-env.sh
 fi
