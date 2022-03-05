@@ -45,7 +45,7 @@ int main() {
       "model1", "resources/models/color_cube/color_cube.obj", material2);
 
   std::shared_ptr<Model> model2 = scene->createModel(
-      "model2", "resources/models/utah_teapot/utah_teapot.obj", material2);
+      "model2", "resources/models/utah_teapot/utah_teapot.obj", material1);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);

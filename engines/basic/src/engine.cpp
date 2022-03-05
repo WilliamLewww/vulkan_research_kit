@@ -15,7 +15,7 @@ Engine::Engine(std::string appName, bool isValidationEnabled,
 
   if (isValidationEnabled) {
     validationFeatureEnableList = {
-        VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+        // VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
         VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
         VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
 
@@ -52,6 +52,9 @@ Engine::Engine(std::string appName, bool isValidationEnabled,
       validationFeatureEnableList, validationFeatureDisableList,
       debugUtilsMessageSeverityFlagBits, debugUtilsMessageTypeFlagBits, appName,
       VK_MAKE_VERSION(1, 0, 0), instanceLayerList, instanceExtensionNameList));
+
+  std::cout << "Vulkan Instance Version: " <<
+      this->instancePtr->getVulkanVersionAPI() << std::endl;
 
   this->physicalDeviceHandleList =
       Device::getPhysicalDevices(this->instancePtr->getInstanceHandleRef());
