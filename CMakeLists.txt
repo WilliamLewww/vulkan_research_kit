@@ -11,6 +11,8 @@ target_include_directories(vrk PUBLIC
     $<BUILD_INTERFACE:${Vulkan_INCLUDE_DIRS}>  
     $<INSTALL_INTERFACE:include>)
 target_link_libraries(vrk PUBLIC ${Vulkan_LIBRARIES} m)
+target_compile_definitions(vrk PUBLIC
+    -DVRK_RESOURCES_DIR="${CMAKE_INSTALL_PREFIX}/share/VRK/")
 install(DIRECTORY include/vrk DESTINATION include) 
 install(TARGETS vrk DESTINATION lib EXPORT VRKTargets)
 
