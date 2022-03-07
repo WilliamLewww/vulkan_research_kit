@@ -461,17 +461,29 @@ int main(void) {
                                           ->getAccelerationStructureHandleRef(),
       };
 
-  auto descriptorImageInfo =
-      std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
-          .sampler = VK_NULL_HANDLE,
-          .imageView = colorImageView->getImageViewHandleRef(),
-          .imageLayout = VK_IMAGE_LAYOUT_GENERAL});
+  VkDescriptorImageInfo descriptorImageInfo = {
+      .sampler = VK_NULL_HANDLE,
+      .imageView = colorImageView->getImageViewHandleRef(),
+      .imageLayout = VK_IMAGE_LAYOUT_GENERAL};
 
   descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, NULL, NULL,
-        NULL, &writeDescriptorSetAccelerationStructure},
-       {0, 1, 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, descriptorImageInfo, NULL,
-        NULL, NULL}},
+      {{0,
+        0,
+        0,
+        1,
+        VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,
+        {},
+        {},
+        {},
+        &writeDescriptorSetAccelerationStructure},
+       {0,
+        1,
+        0,
+        1,
+        VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+        {descriptorImageInfo},
+        {},
+        {}}},
       {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(

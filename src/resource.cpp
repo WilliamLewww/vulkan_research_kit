@@ -12,12 +12,12 @@ std::string Resource::findResource(std::string resourcePath) {
       return envResourcePath + resourcePath;
     }
   } else {
-    #ifdef VRK_RESOURCES_DIR
+#ifdef VRK_RESOURCES_DIR
     f = std::ifstream(VRK_RESOURCES_DIR + resourcePath);
     if (f.good()) {
       return VRK_RESOURCES_DIR + resourcePath;
     }
-    #endif
+#endif
   }
 
   return "";

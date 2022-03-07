@@ -271,17 +271,20 @@ int main(void) {
   memcpy(hostColorBuffer, colors, 3 * sizeof(float));
   colorBuffer->unmapMemory();
 
-  auto descriptorBufferInfo =
-      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+  VkDescriptorBufferInfo descriptorBufferInfo = {
+      .buffer = colorBuffer->getBufferHandleRef(),
+      .offset = 0,
+      .range = VK_WHOLE_SIZE};
 
-          .buffer = colorBuffer->getBufferHandleRef(),
-          .offset = 0,
-          .range = VK_WHOLE_SIZE});
-
-  descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, NULL,
-        descriptorBufferInfo, NULL}},
-      {});
+  descriptorSetGroup->updateDescriptorSets({{0,
+                                             0,
+                                             0,
+                                             1,
+                                             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                             {},
+                                             {descriptorBufferInfo},
+                                             {}}},
+                                           {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
       device->getDeviceHandleRef(),

@@ -518,8 +518,15 @@ int main(void) {
       };
 
   descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, NULL, NULL,
-        NULL, &writeDescriptorSetAccelerationStructure}},
+      {{0,
+        0,
+        0,
+        1,
+        VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,
+        {},
+        {},
+        {},
+        &writeDescriptorSetAccelerationStructure}},
       {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
