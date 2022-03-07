@@ -15,9 +15,9 @@ public:
     uint32_t dstArrayElement;
     uint32_t descriptorCount;
     VkDescriptorType descriptorType;
-    std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr;
-    std::shared_ptr<VkDescriptorBufferInfo> descriptorBufferInfoPtr;
-    std::shared_ptr<VkBufferView> bufferViewHandlePtr;
+    std::vector<VkDescriptorImageInfo> descriptorImageInfoList;
+    std::vector<VkDescriptorBufferInfo> descriptorBufferInfoList;
+    std::vector<VkBufferView> bufferViewHandleList;
     void *writeDescriptorSetNext;
   };
 

@@ -60,9 +60,9 @@ void DescriptorSetGroup::updateDescriptorSets(
         .dstArrayElement = writeDescriptorSetParam.dstArrayElement,
         .descriptorCount = writeDescriptorSetParam.descriptorCount,
         .descriptorType = writeDescriptorSetParam.descriptorType,
-        .pImageInfo = writeDescriptorSetParam.descriptorImageInfoPtr.get(),
-        .pBufferInfo = writeDescriptorSetParam.descriptorBufferInfoPtr.get(),
-        .pTexelBufferView = writeDescriptorSetParam.bufferViewHandlePtr.get()};
+        .pImageInfo = writeDescriptorSetParam.descriptorImageInfoList.data(),
+        .pBufferInfo = writeDescriptorSetParam.descriptorBufferInfoList.data(),
+        .pTexelBufferView = writeDescriptorSetParam.bufferViewHandleList.data()};
 
     writeDescriptorSetList.push_back(writeDescriptorSet);
   }
