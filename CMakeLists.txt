@@ -35,7 +35,7 @@ if(NOT DISABLE_RAY_TRACING)
   install(TARGETS vrk-ray-tracing DESTINATION lib EXPORT VRKTargets)
 endif()
 
-set(VRK_INCLUDE_DIRS "include")
+set(VRK_INCLUDE_DIRS include ${Vulkan_INCLUDE_DIRS})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/VRKConfig.cmake.in VRKConfig.cmake

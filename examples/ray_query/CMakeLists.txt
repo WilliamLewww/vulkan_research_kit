@@ -1,38 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(ray_query)
+project(RayQuery)
 
-find_package(Vulkan REQUIRED)
-
-get_filename_component(VRK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../ ABSOLUTE)
-
-find_library(VRK_LIBRARY
-	NAMES vrk
-	HINTS ${VRK_SOURCE_DIR}/build/
-)
-
-find_library(VRK_RAY_TRACING_LIBRARY
-	NAMES vrk-ray-tracing
-	HINTS ${VRK_SOURCE_DIR}/build/
-)
-
-if(NOT DEFINED ENV{VRK_RESOURCES_PATH})
-	message(FATAL_ERROR "VRK_RESOURCES_PATH environment variable not set (Hint: source setup-env.sh)")
-endif()
+find_package(VRK REQUIRED)
 
 add_executable(ray_query main.cpp)
-include_directories(ray_query ${Vulkan_INCLUDE_DIRS})
-include_directories(ray_query ${VRK_SOURCE_DIR}/include)
-target_link_libraries(ray_query ${VRK_LIBRARY} ${VRK_RAY_TRACING_LIBRARY})
+target_include_directories(ray_query PRIVATE ${VRK_INCLUDE_DIRS})
+target_link_libraries(ray_query PRIVATE vrk vrk-ray-tracing)
 
 file(GLOB SHADERS "shaders/*")
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
-foreach(SHADER ${SHADERS})
-  get_filename_component(SHADER_NAME ${SHADER} NAME)
-
-  add_custom_command(
-    OUTPUT resources/shaders/${SHADER_NAME}.spv
-    COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv ${SHADER}
-    DEPENDS ${SHADER}
-  )
-  target_sources(ray_query PRIVATE resources/shaders/${SHADER_NAME}.spv)
-endforeach()
+vrk_compile_shaders(ray_query resources/shaders "${SHADERS}")

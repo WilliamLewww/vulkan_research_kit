@@ -1,5 +1,22 @@
 @PACKAGE_INIT@ 
 
-set_and_check(VRK_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+find_package(Vulkan REQUIRED)
+
+function(vrk_compile_shaders TARGET OUTPUT_DIR SHADERS)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${OUTPUT_DIR})
+  foreach(SHADER ${SHADERS})
+    get_filename_component(SHADER_NAME ${SHADER} NAME)
+    add_custom_command(
+      OUTPUT ${CMAKE_BINARY_DIR}/${OUTPUT_DIR}/${SHADER_NAME}.spv
+      COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o
+          ${CMAKE_BINARY_DIR}/${OUTPUT_DIR}/${SHADER_NAME}.spv ${SHADER}
+      DEPENDS ${SHADER}
+    )
+    target_sources(${TARGET}
+        PRIVATE ${CMAKE_BINARY_DIR}/${OUTPUT_DIR}/${SHADER_NAME}.spv)
+  endforeach()
+endfunction()
+
+set(VRK_INCLUDE_DIRS "@PACKAGE_VRK_INCLUDE_DIRS@")
 
 include("${CMAKE_CURRENT_LIST_DIR}/VRKTargets.cmake")

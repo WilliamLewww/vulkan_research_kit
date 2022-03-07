@@ -4,17 +4,8 @@ project(ComputePipeline)
 find_package(VRK REQUIRED)
 
 add_executable(compute_pipeline main.cpp)
-target_link_libraries(compute_pipeline)
+target_include_directories(compute_pipeline PRIVATE ${VRK_INCLUDE_DIRS})
+target_link_libraries(compute_pipeline PRIVATE vrk)
 
 file(GLOB SHADERS "shaders/*")
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
-foreach(SHADER ${SHADERS})
-  get_filename_component(SHADER_NAME ${SHADER} NAME)
-
-  add_custom_command(
-    OUTPUT resources/shaders/${SHADER_NAME}.spv
-    COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o resources/shaders/${SHADER_NAME}.spv ${SHADER}
-    DEPENDS ${SHADER}
-  )
-  target_sources(compute_pipeline PRIVATE resources/shaders/${SHADER_NAME}.spv)
-endforeach()
+vrk_compile_shaders(compute_pipeline resources/shaders "${SHADERS}")
