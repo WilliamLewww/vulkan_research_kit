@@ -10,7 +10,7 @@ The Vulkan Research Kit (VRK) is a thin wrapper of the Vulkan API. The project w
 Required Dependencies:
 - [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers): Provides Vulkan header files required for compilation.
 - [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader): Provides the Vulkan library used for linking during compilation.
-- [Glslang](https://github.com/KhronosGroup/glslang): Provides a binary to convert GLSL shader code into SPIR-V code.
+- [Glslang](https://github.com/KhronosGroup/glslang): Provides a binary to compile GLSL shader code into SPIR-V intermediate code.
 
 Optional Dependencies:
 - [Vulkan-ValidationLayers](https://github.com/KhronosGroup/Vulkan-ValidationLayers): Provides validation layers and libraries for Vulkan validation.
