@@ -27,7 +27,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        source ./tools/vulkan_development/setup-vulkan-development-env.sh
+        source ./tools/vulkan_development/install/setup-env.sh
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
