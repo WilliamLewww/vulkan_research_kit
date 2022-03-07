@@ -10,7 +10,7 @@ add_library(basic-engine SHARED ${SOURCES})
 target_include_directories(basic-engine PUBLIC include ${VRK_INCLUDE_DIRS})
 target_link_libraries(basic-engine PUBLIC vrk vrk-wsi vrk-ray-tracing)
 
-file(GLOB SHADERS "shaders/*")
+file(GLOB SHADERS "src/shaders/*")
 vrk_compile_shaders(basic-engine resources/shaders "${SHADERS}")
 
 add_executable(basic-engine-app src/main.cpp)
