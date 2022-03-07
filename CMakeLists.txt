@@ -35,8 +35,21 @@ if(NOT DISABLE_RAY_TRACING)
   install(TARGETS vrk-ray-tracing DESTINATION lib EXPORT VRKTargets)
 endif()
 
-set(VRK_INCLUDE_DIRS include ${Vulkan_INCLUDE_DIRS})
+file(GLOB SHADERS "src/shaders/*")
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders)
+foreach(SHADER ${SHADERS})
+  get_filename_component(SHADER_NAME ${SHADER} NAME)
+  add_custom_command(
+    OUTPUT resources/shaders/${SHADER_NAME}.spv
+    COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} --target-env vulkan1.2 -o
+        resources/shaders/${SHADER_NAME}.spv ${SHADER}
+    DEPENDS ${SHADER}
+  )
+  target_sources(vrk PRIVATE resources/shaders/${SHADER_NAME}.spv)
+endforeach()
+install(DIRECTORY ${CMAKE_BINARY_DIR}/resources/shaders DESTINATION share/VRK)
 
+set(VRK_INCLUDE_DIRS include ${Vulkan_INCLUDE_DIRS})
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/VRKConfig.cmake.in VRKConfig.cmake
     INSTALL_DESTINATION share/cmake/VRK PATH_VARS VRK_INCLUDE_DIRS)
