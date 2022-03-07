@@ -1,14 +1,17 @@
 VRK_REPOSITORY_PATH=$(dirname $(dirname $(realpath "${BASH_SOURCE[0]}")))
 
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/include/vrk/*.h
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/include/vrk/*/*.h
+ignored_directories='^.*/(build|vulkan_development)/.*$'
+ignored_files='^.*/(stb_image.h|tiny_obj_loader.h)$'
+extensions='^.*\.(h|cpp|vert|frag|comp|rgen|rchit|rmiss)$'
 
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/src/*.cpp
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/src/*/*
-
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/examples/*/*.cpp
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/examples/*/shaders/*
-
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/engines/*/include/*/*.h
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/engines/*/src/*.cpp
-clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${VRK_REPOSITORY_PATH}/engines/*/src/shaders/*
+for file in $(find ${VRK_REPOSITORY_PATH} -type f)
+do
+  if [[ ! $file =~ $ignored_directories && ! $file =~ $ignored_files ]]
+  then
+    if [[ $file =~ $extensions ]]
+    then
+      echo $file
+      clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${file}
+    fi
+  fi
+done
