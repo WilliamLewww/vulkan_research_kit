@@ -6,9 +6,9 @@ extensions='^.*\.(h|cpp|vert|frag|comp|rgen|rchit|rmiss)$'
 
 for file in $(find ${VRK_REPOSITORY_PATH} -type f)
 do
-  if [[ ! $file =~ $ignored_directories && ! $file =~ $ignored_files ]]
+  if [[ ! ${file} =~ $ignored_directories && ! ${file} =~ $ignored_files ]]
   then
-    if [[ $file =~ $extensions ]]
+    if [[ ${file} =~ ${extensions} ]]
     then
       clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${file}
     fi
