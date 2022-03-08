@@ -320,24 +320,33 @@ int main(void) {
   fence->waitForSignal(UINT32_MAX);
   fence->reset();
 
-  std::shared_ptr<VkDescriptorImageInfo> descriptorSamplerImageInfoPtr =
-      std::make_shared<VkDescriptorImageInfo>(
-          VkDescriptorImageInfo{.sampler = sampler->getSamplerHandleRef(),
-                                .imageView = VK_NULL_HANDLE,
-                                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED});
+  VkDescriptorImageInfo descriptorSamplerImageInfo = {
+      .sampler = sampler->getSamplerHandleRef(),
+      .imageView = VK_NULL_HANDLE,
+      .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED};
 
-  std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
-      std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
-          .sampler = VK_NULL_HANDLE,
-          .imageView = imageView->getImageViewHandleRef(),
-          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+  VkDescriptorImageInfo descriptorImageInfo = {
+      .sampler = VK_NULL_HANDLE,
+      .imageView = imageView->getImageViewHandleRef(),
+      .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 
-  descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLER, descriptorSamplerImageInfoPtr,
-        NULL, NULL},
-       {0, 1, 0, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorImageInfoPtr,
-        NULL, NULL}},
-      {});
+  descriptorSetGroup->updateDescriptorSets({{0,
+                                             0,
+                                             0,
+                                             1,
+                                             VK_DESCRIPTOR_TYPE_SAMPLER,
+                                             {descriptorSamplerImageInfo},
+                                             {},
+                                             {}},
+                                            {0,
+                                             1,
+                                             0,
+                                             1,
+                                             VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                             {descriptorImageInfo},
+                                             {},
+                                             {}}},
+                                           {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
       device->getDeviceHandleRef(),

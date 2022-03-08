@@ -62,7 +62,8 @@ void DescriptorSetGroup::updateDescriptorSets(
         .descriptorType = writeDescriptorSetParam.descriptorType,
         .pImageInfo = writeDescriptorSetParam.descriptorImageInfoList.data(),
         .pBufferInfo = writeDescriptorSetParam.descriptorBufferInfoList.data(),
-        .pTexelBufferView = writeDescriptorSetParam.bufferViewHandleList.data()};
+        .pTexelBufferView =
+            writeDescriptorSetParam.bufferViewHandleList.data()};
 
     writeDescriptorSetList.push_back(writeDescriptorSet);
   }

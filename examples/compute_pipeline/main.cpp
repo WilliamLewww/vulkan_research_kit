@@ -126,17 +126,20 @@ int main(void) {
                  VK_SHARING_MODE_EXCLUSIVE, {queueFamilyIndex},
                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-  auto descriptorBufferInfo =
-      std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
+  VkDescriptorBufferInfo descriptorBufferInfo = {
+      .buffer = dataBuffer->getBufferHandleRef(),
+      .offset = 0,
+      .range = VK_WHOLE_SIZE};
 
-          .buffer = dataBuffer->getBufferHandleRef(),
-          .offset = 0,
-          .range = VK_WHOLE_SIZE});
-
-  descriptorSetGroup->updateDescriptorSets(
-      {{0, 0, 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NULL,
-        descriptorBufferInfo, NULL}},
-      {});
+  descriptorSetGroup->updateDescriptorSets({{0,
+                                             0,
+                                             0,
+                                             1,
+                                             VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                             {},
+                                             {descriptorBufferInfo},
+                                             {}}},
+                                           {});
 
   PipelineLayout *pipelineLayout = new PipelineLayout(
       device->getDeviceHandleRef(),
