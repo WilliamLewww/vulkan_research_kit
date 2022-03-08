@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 VRK_REPOSITORY_PATH=$(dirname $(dirname $(realpath "${BASH_SOURCE[0]}")))
 
 for i in "$@"
