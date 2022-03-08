@@ -53,8 +53,8 @@ Engine::Engine(std::string appName, bool isValidationEnabled,
       debugUtilsMessageSeverityFlagBits, debugUtilsMessageTypeFlagBits, appName,
       VK_MAKE_VERSION(1, 0, 0), instanceLayerList, instanceExtensionNameList));
 
-  std::cout << "Vulkan Instance Version: " <<
-      this->instancePtr->getVulkanVersionAPI() << std::endl;
+  std::cout << "Vulkan Instance Version: "
+            << this->instancePtr->getVulkanVersionAPI() << std::endl;
 
   this->physicalDeviceHandleList =
       Device::getPhysicalDevices(this->instancePtr->getInstanceHandleRef());

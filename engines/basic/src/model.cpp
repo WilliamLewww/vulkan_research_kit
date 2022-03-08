@@ -161,19 +161,24 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
   this->materialPropertiesBufferPtr->mapMemory(&hostMaterialPropertiesBuffer, 0,
                                                32 * sizeof(Properties));
   for (uint32_t x = 0; x < this->materialPropertiesList.size(); x++) {
-    std::shared_ptr<VkDescriptorBufferInfo> materialDescriptorBufferInfoPtr =
-        std::make_shared<VkDescriptorBufferInfo>(VkDescriptorBufferInfo{
-            .buffer = materialPropertiesBufferPtr->getBufferHandleRef(),
-            .offset = (materialOffsetIndex + x) * sizeof(Properties),
-            .range = sizeof(Properties)});
+    VkDescriptorBufferInfo materialDescriptorBufferInfo = {
+        .buffer = materialPropertiesBufferPtr->getBufferHandleRef(),
+        .offset = (materialOffsetIndex + x) * sizeof(Properties),
+        .range = sizeof(Properties)};
 
     memcpy(
         &((Properties *)hostMaterialPropertiesBuffer)[materialOffsetIndex + x],
         &this->materialPropertiesList[x], sizeof(Properties));
 
     materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
-        {{0, 3, materialOffsetIndex + x, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-          NULL, materialDescriptorBufferInfoPtr, NULL}},
+        {{0,
+          3,
+          materialOffsetIndex + x,
+          1,
+          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+          {},
+          {materialDescriptorBufferInfo},
+          {}}},
         {});
   }
   this->materialPropertiesBufferPtr->unmapMemory();
@@ -310,15 +315,20 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
   }
 
   for (uint32_t x = 0; x < this->imageViewPtrList.size(); x++) {
-    std::shared_ptr<VkDescriptorImageInfo> descriptorImageInfoPtr =
-        std::make_shared<VkDescriptorImageInfo>(VkDescriptorImageInfo{
-            .sampler = VK_NULL_HANDLE,
-            .imageView = this->imageViewPtrList[x]->getImageViewHandleRef(),
-            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+    VkDescriptorImageInfo descriptorImageInfo = {
+        .sampler = VK_NULL_HANDLE,
+        .imageView = this->imageViewPtrList[x]->getImageViewHandleRef(),
+        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 
     materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
-        {{0, 5, textureOffsetIndex + x, 1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-          descriptorImageInfoPtr, NULL, NULL}},
+        {{0,
+          5,
+          textureOffsetIndex + x,
+          1,
+          VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+          {descriptorImageInfo},
+          {},
+          {}}},
         {});
   }
 

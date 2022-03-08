@@ -275,67 +275,6 @@ void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
       {});
 }
 
-void Material::appendMaterialPropertiesDescriptors(
-    std::vector<Properties> propertiesList) {
-
-  void *hostMaterialPropertiesBuffer;
-  this->materialPropertiesBufferPtr->mapMemory(&hostMaterialPropertiesBuffer, 0,
-                                               32 * sizeof(Properties));
-
-  for (uint32_t x = 0; x < propertiesList.size(); x++) {
-    memcpy(
-        &((Properties *)
-              hostMaterialPropertiesBuffer)[this->materialPropertiesCount + x],
-        &propertiesList[x], sizeof(Properties));
-  }
-
-  this->materialPropertiesBufferPtr->unmapMemory();
-
-  for (uint32_t x = 0; x < propertiesList.size(); x++) {
-    VkDescriptorBufferInfo materialPropertiesDescriptorBufferInfo = {
-        .buffer = this->materialPropertiesBufferPtr->getBufferHandleRef(),
-        .offset = (this->materialPropertiesCount + x) * sizeof(Properties),
-        .range = sizeof(Properties)};
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
-          3,
-          this->materialPropertiesCount + x,
-          1,
-          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-          {},
-          {materialPropertiesDescriptorBufferInfo},
-          {}}},
-        {});
-  }
-
-  this->materialPropertiesCount += propertiesList.size();
-}
-
-void Material::appendTextureDescriptors(
-    std::vector<std::shared_ptr<ImageView>> imageViewPtrList) {
-
-  for (uint32_t x = 0; x < imageViewPtrList.size(); x++) {
-    VkDescriptorImageInfo descriptorImageInfo = {
-        .sampler = VK_NULL_HANDLE,
-        .imageView = imageViewPtrList[x]->getImageViewHandleRef(),
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-
-    this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
-          5,
-          this->textureCount + x,
-          1,
-          VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-          {descriptorImageInfo},
-          {},
-          {}}},
-        {});
-  }
-
-  this->textureCount += imageViewPtrList.size();
-}
-
 void Material::updateModelDescriptorSet(std::shared_ptr<Model> modelPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
       {{0,
