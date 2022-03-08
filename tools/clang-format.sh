@@ -10,7 +10,6 @@ do
   then
     if [[ $file =~ $extensions ]]
     then
-      echo $file
       clang-format --style="{BasedOnStyle: llvm, ColumnLimit: 80}" -i ${file}
     fi
   fi
