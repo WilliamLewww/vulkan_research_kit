@@ -1,6 +1,8 @@
 #pragma once
 #include "basic/material.h"
 
+#include "vrk/graphics_pipeline_group.h"
+
 class MaterialRaster : public Material {
 public:
   MaterialRaster(std::shared_ptr<Engine> enginePtr, std::string materialName,

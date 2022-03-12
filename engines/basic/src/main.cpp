@@ -28,29 +28,37 @@ int main() {
   std::shared_ptr<Scene> scene = engine->createScene("my-scene");
 
   std::shared_ptr<Material> material1 = scene->createMaterial(
-      "material1",
+      "material1", Material::MaterialType::RAY_TRACE,
       {{Material::ShaderStage::RAYGEN, "resources/shaders/material.rgen.spv"},
        {Material::ShaderStage::CLOSEST_HIT,
         "resources/shaders/material.rchit.spv"},
-       {Material::ShaderStage::MISS, "resources/shaders/material.rmiss.spv"}},
-      true);
+       {Material::ShaderStage::MISS, "resources/shaders/material.rmiss.spv"}});
 
   std::shared_ptr<Material> material2 = scene->createMaterial(
-      "material2",
+      "material2", Material::MaterialType::RASTER,
       {{Material::ShaderStage::VERTEX, "resources/shaders/material.vert.spv"},
        {Material::ShaderStage::FRAGMENT,
         "resources/shaders/material.frag.spv"}});
+
+  std::shared_ptr<Material> material3 =
+      scene->createMaterial("material3", Material::MaterialType::COMPUTE,
+                            {{Material::ShaderStage::COMPUTE,
+                              "resources/shaders/material.comp.spv"}});
 
   std::shared_ptr<Model> model1 = scene->createModel(
       "model1", "resources/models/color_cube/color_cube.obj", material2);
 
   std::shared_ptr<Model> model2 = scene->createModel(
-      "model2", "resources/models/utah_teapot/utah_teapot.obj", material1);
+      "model2", "resources/models/utah_teapot/utah_teapot.obj", material2);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);
 
   std::shared_ptr<Camera> camera = engine->createCamera("my-camera");
+
+  scene->appendToRenderQueue(model2);
+  scene->appendToRenderQueue(material3);
+  scene->appendToRenderQueue(model1);
 
   XEvent event;
   while (true) {

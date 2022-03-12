@@ -1,7 +1,6 @@
 #pragma once
 #include "basic/camera.h"
 
-#include "vrk/graphics_pipeline_group.h"
 #include "vrk/pipeline_layout.h"
 #include <vrk/descriptor_pool.h>
 #include <vrk/descriptor_set_group.h>
@@ -29,10 +28,11 @@ public:
     RAYGEN,
     MISS,
     CLOSEST_HIT,
-    ANY_HIT
+    ANY_HIT,
+    COMPUTE
   };
 
-  enum class MaterialType { RASTER, RAY_TRACE };
+  enum class MaterialType { RASTER, RAY_TRACE, COMPUTE };
 
   struct MaterialDescriptorCounts {
     uint32_t uniformBufferCount;

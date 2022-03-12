@@ -2,6 +2,7 @@
 #include "basic/camera.h"
 #include "basic/light.h"
 #include "basic/material.h"
+#include "basic/material_compute.h"
 #include "basic/material_raster.h"
 #include "basic/material_ray_trace.h"
 #include "basic/model.h"
@@ -24,9 +25,8 @@ public:
   ~Scene();
 
   std::shared_ptr<Material> createMaterial(
-      std::string materialName,
-      std::map<Material::ShaderStage, std::string> shaderStageNameMap,
-      bool isUsingRayTracingPipeline = false);
+      std::string materialName, Material::MaterialType materialType,
+      std::map<Material::ShaderStage, std::string> shaderStageNameMap);
 
   std::shared_ptr<Model> createModel(std::string modelName,
                                      std::string modelPath,
@@ -34,6 +34,10 @@ public:
 
   std::shared_ptr<Light> createLight(std::string lightName,
                                      Light::LightType lightType);
+
+  void appendToRenderQueue(std::shared_ptr<Model> modelPtr);
+
+  void appendToRenderQueue(std::shared_ptr<Material> materialPtr);
 
   void recordCommandBuffer(uint32_t frameIndex);
 
@@ -46,6 +50,13 @@ public:
   std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
 private:
+  enum class RenderQueueEntryType { MODEL, MATERIAL };
+
+  struct RenderQueueEntry {
+    RenderQueueEntryType renderQueueEntryType;
+    std::shared_ptr<void> entryPtr;
+  };
+
   std::string sceneName;
 
   std::shared_ptr<Engine> enginePtr;
@@ -69,4 +80,6 @@ private:
   std::shared_ptr<Buffer> lightsBufferPtr;
 
   std::shared_ptr<Buffer> modelsBufferPtr;
+
+  std::vector<RenderQueueEntry> renderQueueEntryList;
 };

@@ -44,16 +44,19 @@ Scene::Scene(std::string sceneName, std::shared_ptr<Engine> enginePtr)
 Scene::~Scene() {}
 
 std::shared_ptr<Material> Scene::createMaterial(
-    std::string materialName,
-    std::map<Material::ShaderStage, std::string> shaderStageNameMap,
-    bool isUsingRayTracingPipeline) {
+    std::string materialName, Material::MaterialType materialType,
+    std::map<Material::ShaderStage, std::string> shaderStageNameMap) {
 
-  if (!isUsingRayTracingPipeline) {
+  if (materialType == Material::MaterialType::RASTER) {
     this->materialPtrList.push_back(std::shared_ptr<Material>(
         new MaterialRaster(this->enginePtr, materialName, shaderStageNameMap)));
-  } else {
+  } else if (materialType == Material::MaterialType::RAY_TRACE) {
     this->materialPtrList.push_back(
         std::shared_ptr<Material>(new MaterialRayTrace(
+            this->enginePtr, materialName, shaderStageNameMap)));
+  } else if (materialType == Material::MaterialType::COMPUTE) {
+    this->materialPtrList.push_back(
+        std::shared_ptr<Material>(new MaterialCompute(
             this->enginePtr, materialName, shaderStageNameMap)));
   }
 
@@ -106,6 +109,22 @@ std::shared_ptr<Light> Scene::createLight(std::string lightName,
                 this->lightPtrList.size(), lightName, lightType)));
 
   return this->lightPtrList[this->lightPtrList.size() - 1];
+}
+
+void Scene::appendToRenderQueue(std::shared_ptr<Model> modelPtr) {
+  RenderQueueEntry renderQueueEntry = {.renderQueueEntryType =
+                                           RenderQueueEntryType::MODEL,
+                                       .entryPtr = modelPtr};
+
+  this->renderQueueEntryList.push_back(renderQueueEntry);
+}
+
+void Scene::appendToRenderQueue(std::shared_ptr<Material> materialPtr) {
+  RenderQueueEntry renderQueueEntry = {.renderQueueEntryType =
+                                           RenderQueueEntryType::MATERIAL,
+                                       .entryPtr = materialPtr};
+
+  this->renderQueueEntryList.push_back(renderQueueEntry);
 }
 
 void Scene::recordCommandBuffer(uint32_t frameIndex) {
