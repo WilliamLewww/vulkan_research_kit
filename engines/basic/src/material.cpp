@@ -17,7 +17,7 @@ Material::Material(std::shared_ptr<Engine> enginePtr, std::string materialName,
     shaderFile.read((char *)shaderSource.data(), shaderFileSize);
     shaderFile.close();
 
-    this->shaderStageModuleMap[pair.first] =
+    this->shaderStageModulePtrMap[pair.first] =
         std::unique_ptr<ShaderModule>(new ShaderModule(
             enginePtr->getDevicePtr()->getDeviceHandleRef(), shaderSource));
   }
@@ -58,6 +58,14 @@ void Material::initializeDescriptors(
   if (sampledImageCount > 0) {
     descriptorPoolSizeList.push_back(
         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, sampledImageCount});
+  }
+
+  uint32_t storageImageCount =
+      this->MATERIAL_DESCRIPTOR_COUNTS.storageImageCount +
+      materialDescriptorCounts.storageImageCount;
+  if (storageImageCount > 0) {
+    descriptorPoolSizeList.push_back(
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, storageImageCount});
   }
 
   uint32_t accelerationStructureCount =
@@ -231,6 +239,14 @@ void Material::incrementTextureCount(uint32_t count) {
 }
 
 uint32_t Material::getTextureCount() { return this->textureCount; }
+
+std::shared_ptr<Image> Material::getImagePtr(std::string imageName) {
+  return this->imagePtrMap[imageName];
+}
+
+std::shared_ptr<ImageView> Material::getImageViewPtr(std::string imageName) {
+  return this->imageViewPtrMap[imageName];
+}
 
 std::shared_ptr<DescriptorSetGroup> Material::getDescriptorSetGroupPtr() {
   return this->descriptorSetGroupPtr;

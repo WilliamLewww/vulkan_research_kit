@@ -49,16 +49,16 @@ int main() {
       "model1", "resources/models/color_cube/color_cube.obj", material2);
 
   std::shared_ptr<Model> model2 = scene->createModel(
-      "model2", "resources/models/utah_teapot/utah_teapot.obj", material2);
+      "model2", "resources/models/utah_teapot/utah_teapot.obj", material1);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);
 
   std::shared_ptr<Camera> camera = engine->createCamera("my-camera");
 
+  scene->appendToRenderQueue(model1);
   scene->appendToRenderQueue(model2);
   scene->appendToRenderQueue(material3);
-  scene->appendToRenderQueue(model1);
 
   XEvent event;
   while (true) {

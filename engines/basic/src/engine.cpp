@@ -221,80 +221,27 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
       this->surfaceCapabilities.minImageCount + 1,
       this->surfaceFormatList[0].format, this->surfaceFormatList[0].colorSpace,
       this->surfaceCapabilities.currentExtent, 1,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
-      {this->queueFamilyIndex}, this->surfaceCapabilities.currentTransform,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      VK_SHARING_MODE_EXCLUSIVE, {this->queueFamilyIndex},
+      this->surfaceCapabilities.currentTransform,
       VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, this->presentModeList[0], VK_TRUE,
       VK_NULL_HANDLE));
 
-  std::vector<VkAttachmentReference> attachmentReferenceList = {
-      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
-      {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
+  for (VkImage &imageHandle : swapchainPtr->getSwapchainImageHandleList()) {
+    this->swapchainImagePtrList.push_back(std::shared_ptr<Image>(
+        new Image(imageHandle, this->devicePtr->getDeviceHandleRef())));
+  }
 
-  this->renderPassPtr = std::shared_ptr<RenderPass>(new RenderPass(
-      this->devicePtr->getDeviceHandleRef(), (VkRenderPassCreateFlagBits)0,
-      {{0, this->surfaceFormatList[0].format, VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
-       {0, VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
-      {{
-          0,
-          VK_PIPELINE_BIND_POINT_GRAPHICS,
-          0,
-          NULL,
-          1,
-          &attachmentReferenceList[0],
-          NULL,
-          &attachmentReferenceList[1],
-          0,
-          NULL,
-      }},
-      {}));
-
-  this->swapchainImageHandleList = swapchainPtr->getSwapchainImageHandleList();
-
-  for (uint32_t x = 0; x < this->swapchainImageHandleList.size(); x++) {
+  for (uint32_t x = 0; x < this->swapchainImagePtrList.size(); x++) {
     this->swapchainImageViewPtrList.push_back(
         std::unique_ptr<ImageView>(new ImageView(
             this->devicePtr->getDeviceHandleRef(),
-            this->swapchainImageHandleList[x], 0, VK_IMAGE_VIEW_TYPE_2D,
-            this->surfaceFormatList[0].format,
+            this->swapchainImagePtrList[x]->getImageHandleRef(), 0,
+            VK_IMAGE_VIEW_TYPE_2D, this->surfaceFormatList[0].format,
             {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
              VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1})));
-
-    this->depthImagePtrList.push_back(std::unique_ptr<Image>(new Image(
-        this->devicePtr->getDeviceHandleRef(),
-        *this->physicalDeviceHandlePtr.get(), 0, VK_IMAGE_TYPE_2D,
-        VK_FORMAT_D32_SFLOAT,
-        {this->surfaceCapabilities.currentExtent.width,
-         this->surfaceCapabilities.currentExtent.height, 1},
-        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
-        {this->queueFamilyIndex}, VK_IMAGE_LAYOUT_UNDEFINED, 0)));
-
-    this->depthImageViewPtrList.push_back(
-        std::unique_ptr<ImageView>(new ImageView(
-            this->devicePtr->getDeviceHandleRef(),
-            this->depthImagePtrList[x]->getImageHandleRef(), 0,
-            VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT,
-            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
-            {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1})));
-
-    this->framebufferPtrList.push_back(
-        std::shared_ptr<Framebuffer>(new Framebuffer(
-            this->devicePtr->getDeviceHandleRef(),
-            this->renderPassPtr->getRenderPassHandleRef(),
-            {this->swapchainImageViewPtrList[x]->getImageViewHandleRef(),
-             this->depthImageViewPtrList[x]->getImageViewHandleRef()},
-            (VkFramebufferCreateFlags)0,
-            this->surfaceCapabilities.currentExtent.width,
-            this->surfaceCapabilities.currentExtent.height, 1)));
 
     this->imageAvailableFencePtrList.push_back(std::unique_ptr<Fence>(new Fence(
         this->devicePtr->getDeviceHandleRef(), (VkFenceCreateFlagBits)0)));
@@ -302,9 +249,6 @@ void Engine::selectPhysicalDevice(std::string physicalDeviceName) {
         new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
     this->writeImageSemaphorePtrList.push_back(std::unique_ptr<Semaphore>(
         new Semaphore(this->devicePtr->getDeviceHandleRef(), 0)));
-  }
-
-  for (VkImage &swapchainImageHandle : this->swapchainImageHandleList) {
   }
 
   this->currentFrame = 0;
@@ -330,9 +274,11 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
   for (uint32_t x = 0; x < scenePtr->getMaterialPtrList().size(); x++) {
     if (scenePtr->getMaterialPtrList()[x]->getMaterialType() ==
         Material::MaterialType::RAY_TRACE) {
+
       if (!std::static_pointer_cast<MaterialRayTrace>(
                scenePtr->getMaterialPtrList()[x])
                ->getTopLevelAccelerationStructureExists()) {
+
         std::static_pointer_cast<MaterialRayTrace>(
             scenePtr->getMaterialPtrList()[x])
             ->createTopLevelAccelerationStructure();
@@ -398,7 +344,7 @@ uint32_t Engine::render(std::shared_ptr<Scene> scenePtr,
   this->imageAvailableFencePtrList[this->currentFrame]->reset();
 
   this->currentFrame =
-      (this->currentFrame + 1) % this->framebufferPtrList.size();
+      (this->currentFrame + 1) % this->swapchainImagePtrList.size();
   return this->currentFrame;
 }
 
@@ -409,10 +355,6 @@ std::shared_ptr<VkPhysicalDevice> Engine::getPhysicalDeviceHandlePtr() {
 }
 
 uint32_t Engine::getQueueFamilyIndex() { return this->queueFamilyIndex; }
-
-std::shared_ptr<RenderPass> Engine::getRenderPassPtr() {
-  return this->renderPassPtr;
-}
 
 std::shared_ptr<CommandBufferGroup> Engine::getCommandBufferGroupPtr() {
   return this->commandBufferGroupPtr;
@@ -435,6 +377,18 @@ std::shared_ptr<CommandBufferGroup> Engine::getUtilityCommandBufferGroupPtr() {
   return this->utilityCommandBufferGroupPtr;
 }
 
-std::vector<std::shared_ptr<Framebuffer>> Engine::getFramebufferPtrList() {
-  return this->framebufferPtrList;
+VkSurfaceCapabilitiesKHR Engine::getSurfaceCapabilities() {
+  return this->surfaceCapabilities;
+}
+
+std::vector<VkSurfaceFormatKHR> Engine::getSurfaceFormatList() {
+  return this->surfaceFormatList;
+}
+
+std::vector<std::shared_ptr<Image>> Engine::getSwapchainImagePtrList() {
+  return this->swapchainImagePtrList;
+}
+
+uint32_t Engine::getSwapchainImageCount() {
+  return this->swapchainImagePtrList.size();
 }

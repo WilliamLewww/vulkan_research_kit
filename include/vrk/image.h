@@ -18,6 +18,8 @@ public:
         VkImageLayout initialImageLayout,
         VkMemoryPropertyFlags memoryPropertyFlags);
 
+  Image(VkImage &imageHandle, VkDevice &deviceHandleRef);
+
   ~Image();
 
   void copyFromBufferCmd(VkCommandBuffer &commandBufferHandleRef,

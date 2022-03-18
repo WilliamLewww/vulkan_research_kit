@@ -1,12 +1,13 @@
 #pragma once
 #include "basic/camera.h"
 
-#include "vrk/pipeline_layout.h"
 #include <vrk/descriptor_pool.h>
 #include <vrk/descriptor_set_group.h>
 #include <vrk/descriptor_set_layout.h>
 #include <vrk/device.h>
+#include <vrk/image.h>
 #include <vrk/image_view.h>
+#include <vrk/pipeline_layout.h>
 #include <vrk/resource.h>
 #include <vrk/sampler.h>
 #include <vrk/shader_module.h>
@@ -39,6 +40,7 @@ public:
     uint32_t storageBufferCount;
     uint32_t samplerCount;
     uint32_t sampledImageCount;
+    uint32_t storageImageCount;
     uint32_t accelerationStructureCount;
   };
 
@@ -59,6 +61,10 @@ public:
   void incrementTextureCount(uint32_t count);
 
   uint32_t getTextureCount();
+
+  std::shared_ptr<Image> getImagePtr(std::string imageName);
+
+  std::shared_ptr<ImageView> getImageViewPtr(std::string imageViewName);
 
   std::shared_ptr<DescriptorSetGroup> getDescriptorSetGroupPtr();
 
@@ -84,7 +90,7 @@ protected:
 
   std::string materialName;
 
-  std::map<ShaderStage, std::unique_ptr<ShaderModule>> shaderStageModuleMap;
+  std::map<ShaderStage, std::unique_ptr<ShaderModule>> shaderStageModulePtrMap;
 
   std::unique_ptr<PipelineLayout> pipelineLayoutPtr;
 
@@ -102,11 +108,16 @@ protected:
 
   uint32_t textureCount;
 
+  std::map<std::string, std::shared_ptr<Image>> imagePtrMap;
+
+  std::map<std::string, std::shared_ptr<ImageView>> imageViewPtrMap;
+
 private:
   const MaterialDescriptorCounts MATERIAL_DESCRIPTOR_COUNTS = {
       .uniformBufferCount = 50,
       .storageBufferCount = 32,
       .samplerCount = 1,
       .sampledImageCount = 32,
+      .storageImageCount = 0,
       .accelerationStructureCount = 0};
 };

@@ -4,8 +4,8 @@
 layout(location = 0) rayPayloadEXT Payload { vec3 color; }
 payload;
 
-// layout(binding = 0, set = 1) uniform accelerationStructureEXT topLevelAS;
-// layout(binding = 1, set = 1, rgba32f) uniform image2D image;
+layout(binding = 0, set = 1, rgba32f) uniform image2D image;
+layout(binding = 1, set = 1) uniform accelerationStructureEXT topLevelAS;
 
 void main() {
   vec3 rayOrigin = vec3(-((gl_LaunchIDEXT.x / 800.0) - 0.5),
@@ -13,9 +13,8 @@ void main() {
   vec3 rayDirection = vec3(0, 0, 1);
 
   payload.color = vec3(0.0, 0.0, 0.0);
-  // traceRayEXT(topLevelAS, gl_RayFlagsOpaqueEXT, 0xFF, 0, 0, 0, rayOrigin,
-  // 0.001,
-  //             rayDirection, 10000.0, 0);
+  traceRayEXT(topLevelAS, gl_RayFlagsOpaqueEXT, 0xFF, 0, 0, 0, rayOrigin, 0.001,
+              rayDirection, 10000.0, 0);
 
-  // imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(payload.color, 1.0));
+  imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(payload.color, 1.0));
 }

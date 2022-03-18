@@ -1,7 +1,7 @@
 #pragma once
 #include "basic/material.h"
 
-#include "vrk/compute_pipeline_group.h"
+#include <vrk/compute_pipeline_group.h>
 
 class MaterialCompute : public Material {
 public:
@@ -18,7 +18,7 @@ private:
       .uniformBufferCount = 0,
       .storageBufferCount = 0,
       .samplerCount = 0,
-      .sampledImageCount = 0,
+      .sampledImageCount = 1,
       .accelerationStructureCount = 0};
 
   std::shared_ptr<DescriptorSetLayout> computeDescriptorSetLayoutPtr;

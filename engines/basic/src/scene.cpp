@@ -138,75 +138,290 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
               .queryControlFlags = 0,
               .queryPipelineStatisticFlags = 0});
 
-  auto renderPassCommandBufferInheritanceInfoParamPtr =
-      std::make_shared<CommandBufferGroup::CommandBufferInheritanceInfoParam>(
-          CommandBufferGroup::CommandBufferInheritanceInfoParam{
-              .renderPassHandle =
-                  this->enginePtr->getRenderPassPtr()->getRenderPassHandleRef(),
-              .subpass = 0,
-              .framebufferHandle =
-                  this->enginePtr->getFramebufferPtrList()[frameIndex]
-                      ->getFramebufferHandleRef(),
-              .occlusionQueryEnable = VK_FALSE,
-              .queryControlFlags = 0,
-              .queryPipelineStatisticFlags = 0});
-
   std::vector<VkCommandBuffer> commandBufferHandleList;
-  std::vector<VkCommandBuffer> renderPassCommandBufferHandleList;
-  for (auto &pair : this->indexModelMap) {
-    if (pair.second->getMaterialPtr()->getMaterialType() ==
-        Material::MaterialType::RASTER) {
-      renderPassCommandBufferHandleList.push_back(
-          enginePtr->getSecondaryCommandBufferGroupPtr()
-              ->getCommandBufferHandleRef(
-                  (this->enginePtr->getFramebufferPtrList().size() *
-                   pair.first) +
-                  frameIndex));
-      pair.second->render(
-          renderPassCommandBufferInheritanceInfoParamPtr,
-          (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
-              frameIndex);
-    } else {
+  for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
+    if (this->renderQueueEntryList[x].renderQueueEntryType ==
+        RenderQueueEntryType::MODEL) {
+
+      std::shared_ptr<Model> modelPtr = std::static_pointer_cast<Model>(
+          this->renderQueueEntryList[x].entryPtr);
+
+      if (modelPtr->getMaterialPtr()->getMaterialType() ==
+          Material::MaterialType::RASTER) {
+
+        std::shared_ptr<MaterialRaster> materialRasterPtr =
+            std::static_pointer_cast<MaterialRaster>(
+                modelPtr->getMaterialPtr());
+
+        auto renderPassCommandBufferInheritanceInfoParamPtr = std::make_shared<
+            CommandBufferGroup::CommandBufferInheritanceInfoParam>(
+            CommandBufferGroup::CommandBufferInheritanceInfoParam{
+                .renderPassHandle = materialRasterPtr->getRenderPassPtr()
+                                        ->getRenderPassHandleRef(),
+                .subpass = 0,
+                .framebufferHandle =
+                    materialRasterPtr->getFramebufferPtrList()[frameIndex]
+                        ->getFramebufferHandleRef(),
+                .occlusionQueryEnable = VK_FALSE,
+                .queryControlFlags = 0,
+                .queryPipelineStatisticFlags = 0});
+
+        commandBufferHandleList.push_back(
+            enginePtr->getSecondaryCommandBufferGroupPtr()
+                ->getCommandBufferHandleRef(
+                    (this->enginePtr->getSwapchainImageCount() * x) +
+                    frameIndex));
+
+        modelPtr->render(renderPassCommandBufferInheritanceInfoParamPtr,
+                         (this->enginePtr->getSwapchainImageCount() * x) +
+                             frameIndex);
+      } else if (modelPtr->getMaterialPtr()->getMaterialType() ==
+                 Material::MaterialType::RAY_TRACE) {
+
+        VkDescriptorImageInfo descriptorImageInfo = {
+            .sampler = VK_NULL_HANDLE,
+            .imageView = modelPtr->getMaterialPtr()
+                             ->getImageViewPtr("output" + frameIndex)
+                             ->getImageViewHandleRef(),
+            .imageLayout = VK_IMAGE_LAYOUT_GENERAL};
+
+        modelPtr->getMaterialPtr()
+            ->getDescriptorSetGroupPtr()
+            ->updateDescriptorSets({{1,
+                                     0,
+                                     0,
+                                     1,
+                                     VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                                     {descriptorImageInfo},
+                                     {},
+                                     {}}},
+                                   {});
+
+        commandBufferHandleList.push_back(
+            enginePtr->getSecondaryCommandBufferGroupPtr()
+                ->getCommandBufferHandleRef(
+                    (this->enginePtr->getSwapchainImageCount() * x) +
+                    frameIndex));
+
+        modelPtr->render(commandBufferInheritanceInfoParamPtr,
+                         (this->enginePtr->getSwapchainImageCount() * x) +
+                             frameIndex);
+      }
+    } else if (this->renderQueueEntryList[x].renderQueueEntryType ==
+               RenderQueueEntryType::MATERIAL) {
+
+      std::shared_ptr<Material> materialPtr =
+          std::static_pointer_cast<Material>(
+              this->renderQueueEntryList[x].entryPtr);
+
+      VkDescriptorImageInfo descriptorImageInfo = {
+          .sampler = VK_NULL_HANDLE,
+          .imageView = materialPtr->getImageViewPtr("output" + frameIndex)
+                           ->getImageViewHandleRef(),
+          .imageLayout = VK_IMAGE_LAYOUT_GENERAL};
+
+      materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
+          {{1,
+            0,
+            0,
+            1,
+            VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+            {descriptorImageInfo},
+            {},
+            {}}},
+          {});
+
       commandBufferHandleList.push_back(
           enginePtr->getSecondaryCommandBufferGroupPtr()
               ->getCommandBufferHandleRef(
-                  (this->enginePtr->getFramebufferPtrList().size() *
-                   pair.first) +
+                  (this->enginePtr->getSwapchainImageCount() * x) +
                   frameIndex));
-      pair.second->render(
-          commandBufferInheritanceInfoParamPtr,
-          (this->enginePtr->getFramebufferPtrList().size() * pair.first) +
-              frameIndex);
+
+      this->enginePtr->getSecondaryCommandBufferGroupPtr()->beginRecording(
+          (this->enginePtr->getSwapchainImageCount() * x) + frameIndex,
+          (VkCommandBufferUsageFlagBits)0,
+          commandBufferInheritanceInfoParamPtr);
+
+      materialPtr->render(
+          this->enginePtr->getSecondaryCommandBufferGroupPtr()
+              ->getCommandBufferHandleRef(
+                  (this->enginePtr->getSwapchainImageCount() * x) + frameIndex),
+          NULL);
+
+      this->enginePtr->getSecondaryCommandBufferGroupPtr()->endRecording(
+          (this->enginePtr->getSwapchainImageCount() * x) + frameIndex);
     }
   }
 
   this->enginePtr->getCommandBufferGroupPtr()->beginRecording(
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
-  if (commandBufferHandleList.size() > 0) {
-    this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
-        frameIndex, commandBufferHandleList);
+  for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
+    if (this->renderQueueEntryList[x].renderQueueEntryType ==
+        RenderQueueEntryType::MODEL) {
+      if (std::static_pointer_cast<Model>(
+              this->renderQueueEntryList[x].entryPtr)
+              ->getMaterialPtr()
+              ->getMaterialType() == Material::MaterialType::RASTER) {
+
+        std::shared_ptr<MaterialRaster> materialRasterPtr =
+            std::static_pointer_cast<MaterialRaster>(
+                std::static_pointer_cast<Model>(
+                    this->renderQueueEntryList[x].entryPtr)
+                    ->getMaterialPtr());
+
+        VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
+        VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
+
+        materialRasterPtr->getRenderPassPtr()->beginRenderPassCmd(
+            this->enginePtr->getCommandBufferGroupPtr()
+                ->getCommandBufferHandleRef(frameIndex),
+            materialRasterPtr->getFramebufferPtrList()[frameIndex]
+                ->getFramebufferHandleRef(),
+            {{0, 0}, {800, 600}}, {clearColor, clearDepth},
+            VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+        std::vector<VkCommandBuffer> combinedCommandBufferHandleList = {
+            commandBufferHandleList[x]};
+
+        for (uint32_t y = x + 1; y < this->renderQueueEntryList.size(); y++) {
+          if (this->renderQueueEntryList[y].renderQueueEntryType ==
+                  RenderQueueEntryType::MODEL &&
+              std::static_pointer_cast<Model>(
+                  this->renderQueueEntryList[y].entryPtr)
+                      ->getMaterialPtr() == materialRasterPtr) {
+
+            combinedCommandBufferHandleList.push_back(
+                commandBufferHandleList[y]);
+            x += 1;
+          } else {
+            break;
+          }
+        }
+
+        this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
+            frameIndex, combinedCommandBufferHandleList);
+
+        materialRasterPtr->getRenderPassPtr()->endRenderPassCmd(
+            this->enginePtr->getCommandBufferGroupPtr()
+                ->getCommandBufferHandleRef(frameIndex));
+      } else if (std::static_pointer_cast<Model>(
+                     this->renderQueueEntryList[x].entryPtr)
+                     ->getMaterialPtr()
+                     ->getMaterialType() == Material::MaterialType::RAY_TRACE) {
+
+        std::shared_ptr<Image> sourceImagePtr =
+            std::static_pointer_cast<Model>(
+                this->renderQueueEntryList[x].entryPtr)
+                ->getMaterialPtr()
+                ->getImagePtr("output" + frameIndex);
+
+        this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
+            frameIndex, VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+            {{VK_ACCESS_MEMORY_WRITE_BIT,
+              0,
+              VK_IMAGE_LAYOUT_UNDEFINED,
+              VK_IMAGE_LAYOUT_GENERAL,
+              this->enginePtr->getQueueFamilyIndex(),
+              this->enginePtr->getQueueFamilyIndex(),
+              sourceImagePtr->getImageHandleRef(),
+              {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+        this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
+            frameIndex, {commandBufferHandleList[x]});
+      }
+    } else {
+      std::shared_ptr<Image> sourceImagePtr =
+          std::static_pointer_cast<Material>(
+              this->renderQueueEntryList[x].entryPtr)
+              ->getImagePtr("output" + frameIndex);
+
+      this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
+          frameIndex, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+          {{VK_ACCESS_MEMORY_WRITE_BIT,
+            VK_ACCESS_MEMORY_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_GENERAL,
+            this->enginePtr->getQueueFamilyIndex(),
+            this->enginePtr->getQueueFamilyIndex(),
+            sourceImagePtr->getImageHandleRef(),
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+      this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
+          frameIndex, {commandBufferHandleList[x]});
+    }
   }
 
-  if (renderPassCommandBufferHandleList.size() > 0) {
-    VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
-    VkClearValue clearDepth = {.depthStencil = {.depth = 1.0}};
+  std::shared_ptr<Image> sourceImagePtr;
+  VkPipelineStageFlagBits pipelineStageFlagBits =
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  VkAccessFlagBits accessFlagBits = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    this->enginePtr->getRenderPassPtr()->beginRenderPassCmd(
-        this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
-            frameIndex),
-        this->enginePtr->getFramebufferPtrList()[frameIndex]
-            ->getFramebufferHandleRef(),
-        {{0, 0}, {800, 600}}, {clearColor, clearDepth},
-        VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+  if (this->renderQueueEntryList.back().renderQueueEntryType ==
+      RenderQueueEntryType::MODEL) {
 
-    this->enginePtr->getCommandBufferGroupPtr()->executeCommandsCmd(
-        frameIndex, renderPassCommandBufferHandleList);
+    sourceImagePtr = std::static_pointer_cast<Model>(
+                         this->renderQueueEntryList.back().entryPtr)
+                         ->getMaterialPtr()
+                         ->getImagePtr("output" + frameIndex);
 
-    this->enginePtr->getRenderPassPtr()->endRenderPassCmd(
-        this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
-            frameIndex));
+  } else if (this->renderQueueEntryList.back().renderQueueEntryType ==
+             RenderQueueEntryType::MATERIAL) {
+
+    sourceImagePtr = std::static_pointer_cast<Material>(
+                         this->renderQueueEntryList.back().entryPtr)
+                         ->getImagePtr("output" + frameIndex);
+
+    pipelineStageFlagBits = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    accessFlagBits = VK_ACCESS_SHADER_WRITE_BIT;
   }
+
+  this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
+      frameIndex, pipelineStageFlagBits, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, {},
+      {},
+      {{accessFlagBits,
+        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        this->enginePtr->getQueueFamilyIndex(),
+        this->enginePtr->getQueueFamilyIndex(),
+        sourceImagePtr->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}},
+       {accessFlagBits,
+        VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        this->enginePtr->getQueueFamilyIndex(),
+        this->enginePtr->getQueueFamilyIndex(),
+        this->enginePtr->getSwapchainImagePtrList()[frameIndex]
+            ->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+
+  this->enginePtr->getSwapchainImagePtrList()[frameIndex]->copyFromImageCmd(
+      this->enginePtr->getCommandBufferGroupPtr()->getCommandBufferHandleRef(
+          frameIndex),
+      sourceImagePtr->getImageHandleRef(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+      {{{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        {0, 0, 0},
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        {0, 0, 0},
+        {800, 600, 1}}});
+
+  this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
+      frameIndex, VK_PIPELINE_STAGE_TRANSFER_BIT,
+      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+      {{VK_ACCESS_TRANSFER_WRITE_BIT,
+        0,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        this->enginePtr->getQueueFamilyIndex(),
+        this->enginePtr->getQueueFamilyIndex(),
+        this->enginePtr->getSwapchainImagePtrList()[frameIndex]
+            ->getImageHandleRef(),
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
 
   this->enginePtr->getCommandBufferGroupPtr()->endRecording(frameIndex);
 }

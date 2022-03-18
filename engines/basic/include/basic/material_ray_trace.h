@@ -27,6 +27,7 @@ private:
       .storageBufferCount = 0,
       .samplerCount = 0,
       .sampledImageCount = 0,
+      .storageImageCount = 1,
       .accelerationStructureCount = 1};
 
   std::shared_ptr<DescriptorSetLayout> rayTraceDescriptorSetLayoutPtr;

@@ -8,10 +8,91 @@ MaterialRaster::MaterialRaster(
     : Material(enginePtr, materialName, shaderStageNameMap,
                Material::MaterialType::RASTER) {
 
+  std::vector<VkAttachmentReference> attachmentReferenceList = {
+      {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+      {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
+
+  this->renderPassPtr = std::unique_ptr<RenderPass>(new RenderPass(
+      enginePtr->getDevicePtr()->getDeviceHandleRef(),
+      (VkRenderPassCreateFlagBits)0,
+      {{0, enginePtr->getSurfaceFormatList()[0].format, VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
+       {0, VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
+      {{
+          0,
+          VK_PIPELINE_BIND_POINT_GRAPHICS,
+          0,
+          NULL,
+          1,
+          &attachmentReferenceList[0],
+          NULL,
+          &attachmentReferenceList[1],
+          0,
+          NULL,
+      }},
+      {}));
+
+  for (uint32_t x = 0; x < enginePtr->getSwapchainImageCount(); x++) {
+    this->imagePtrMap["output" + x] = std::unique_ptr<Image>(new Image(
+        enginePtr->getDevicePtr()->getDeviceHandleRef(),
+        *enginePtr->getPhysicalDeviceHandlePtr().get(), 0, VK_IMAGE_TYPE_2D,
+        enginePtr->getSurfaceFormatList()[0].format,
+        {enginePtr->getSurfaceCapabilities().currentExtent.width,
+         enginePtr->getSurfaceCapabilities().currentExtent.height, 1},
+        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+        VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
+        VK_IMAGE_LAYOUT_UNDEFINED, 0));
+
+    this->imageViewPtrMap["output" + x] =
+        std::unique_ptr<ImageView>(new ImageView(
+            enginePtr->getDevicePtr()->getDeviceHandleRef(),
+            this->imagePtrMap["output" + x]->getImageHandleRef(), 0,
+            VK_IMAGE_VIEW_TYPE_2D, enginePtr->getSurfaceFormatList()[0].format,
+            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}));
+
+    this->imagePtrMap["depth" + x] = std::unique_ptr<Image>(new Image(
+        enginePtr->getDevicePtr()->getDeviceHandleRef(),
+        *enginePtr->getPhysicalDeviceHandlePtr().get(), 0, VK_IMAGE_TYPE_2D,
+        VK_FORMAT_D32_SFLOAT,
+        {enginePtr->getSurfaceCapabilities().currentExtent.width,
+         enginePtr->getSurfaceCapabilities().currentExtent.height, 1},
+        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        {enginePtr->getQueueFamilyIndex()}, VK_IMAGE_LAYOUT_UNDEFINED, 0));
+
+    this->imageViewPtrMap["depth" + x] =
+        std::unique_ptr<ImageView>(new ImageView(
+            enginePtr->getDevicePtr()->getDeviceHandleRef(),
+            this->imagePtrMap["depth" + x]->getImageHandleRef(), 0,
+            VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT,
+            {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+             VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+            {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1}));
+
+    this->framebufferPtrList.push_back(
+        std::shared_ptr<Framebuffer>(new Framebuffer(
+            enginePtr->getDevicePtr()->getDeviceHandleRef(),
+            this->renderPassPtr->getRenderPassHandleRef(),
+            {this->imageViewPtrMap["output" + x]->getImageViewHandleRef(),
+             this->imageViewPtrMap["depth" + x]->getImageViewHandleRef()},
+            (VkFramebufferCreateFlags)0,
+            enginePtr->getSurfaceCapabilities().currentExtent.width,
+            enginePtr->getSurfaceCapabilities().currentExtent.height, 1)));
+  }
+
   std::vector<GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam>
       pipelineShaderStageCreateInfoList;
 
-  for (auto &pair : this->shaderStageModuleMap) {
+  for (auto &pair : this->shaderStageModulePtrMap) {
     GraphicsPipelineGroup::PipelineShaderStageCreateInfoParam shaderStage = {
         .pipelineShaderStageCreateFlags = 0,
         .shaderStageFlagBits = (VkShaderStageFlagBits)0,
@@ -144,8 +225,8 @@ MaterialRaster::MaterialRaster(
             pipelineDepthStencilStateCreateInfoParam,
             pipelineColorBlendStateCreateInfoParam, NULL,
             this->pipelineLayoutPtr->getPipelineLayoutHandleRef(),
-            enginePtr->getRenderPassPtr()->getRenderPassHandleRef(), 0,
-            VK_NULL_HANDLE, 0}}));
+            this->renderPassPtr->getRenderPassHandleRef(), 0, VK_NULL_HANDLE,
+            0}}));
 }
 
 MaterialRaster::~MaterialRaster() {}
@@ -166,4 +247,13 @@ void MaterialRaster::render(VkCommandBuffer commandBufferHandle,
 
   this->graphicsPipelineGroupPtr->drawIndexedCmd(
       commandBufferHandle, modelPtr->getIndexCount(), 1, 0, 0, 0);
+}
+
+std::shared_ptr<RenderPass> MaterialRaster::getRenderPassPtr() {
+  return this->renderPassPtr;
+}
+
+std::vector<std::shared_ptr<Framebuffer>>
+MaterialRaster::getFramebufferPtrList() {
+  return this->framebufferPtrList;
 }

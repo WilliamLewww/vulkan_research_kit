@@ -1,3 +1,5 @@
 #version 460
 
-void main() {}
+layout(binding = 0, set = 1, rgba32f) uniform image2D image;
+
+void main() { imageStore(image, ivec2(0, 0), vec4(1.0)); }

@@ -74,6 +74,10 @@ Image::Image(VkDevice &deviceHandleRef,
   }
 }
 
+Image::Image(VkImage &imageHandle, VkDevice &deviceHandleRef)
+    : imageHandle(imageHandle), deviceMemoryHandle(VK_NULL_HANDLE),
+      deviceHandleRef(deviceHandleRef) {}
+
 Image::~Image() {
   vkDestroyImage(this->deviceHandleRef, this->imageHandle, NULL);
   vkFreeMemory(this->deviceHandleRef, this->deviceMemoryHandle, NULL);

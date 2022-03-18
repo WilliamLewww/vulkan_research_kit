@@ -5,16 +5,14 @@
 #include <vrk/command_buffer_group.h>
 #include <vrk/command_pool.h>
 #include <vrk/device.h>
-#include <vrk/framebuffer.h>
 #include <vrk/image.h>
 #include <vrk/image_view.h>
 #include <vrk/instance.h>
-#include <vrk/render_pass.h>
 
 #include <vrk/wsi/surface.h>
 #include <vrk/wsi/swapchain.h>
 
-#include "vrk/ray_tracing/ray_tracing.h"
+#include <vrk/ray_tracing/ray_tracing.h>
 
 #include <X11/Xlib.h>
 
@@ -46,8 +44,6 @@ public:
 
   uint32_t getQueueFamilyIndex();
 
-  std::shared_ptr<RenderPass> getRenderPassPtr();
-
   std::shared_ptr<CommandBufferGroup> getCommandBufferGroupPtr();
 
   uint32_t getSecondaryCommandBufferCount();
@@ -58,7 +54,13 @@ public:
 
   std::shared_ptr<CommandBufferGroup> getUtilityCommandBufferGroupPtr();
 
-  std::vector<std::shared_ptr<Framebuffer>> getFramebufferPtrList();
+  VkSurfaceCapabilitiesKHR getSurfaceCapabilities();
+
+  std::vector<VkSurfaceFormatKHR> getSurfaceFormatList();
+
+  std::vector<std::shared_ptr<Image>> getSwapchainImagePtrList();
+
+  uint32_t getSwapchainImageCount();
 
 private:
   bool isValidationEnabled;
@@ -99,17 +101,9 @@ private:
 
   std::unique_ptr<Swapchain> swapchainPtr;
 
-  std::shared_ptr<RenderPass> renderPassPtr;
-
-  std::vector<VkImage> swapchainImageHandleList;
+  std::vector<std::shared_ptr<Image>> swapchainImagePtrList;
 
   std::vector<std::unique_ptr<ImageView>> swapchainImageViewPtrList;
-
-  std::vector<std::unique_ptr<Image>> depthImagePtrList;
-
-  std::vector<std::unique_ptr<ImageView>> depthImageViewPtrList;
-
-  std::vector<std::shared_ptr<Framebuffer>> framebufferPtrList;
 
   std::vector<std::unique_ptr<Fence>> imageAvailableFencePtrList;
 
