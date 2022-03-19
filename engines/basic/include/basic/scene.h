@@ -6,6 +6,7 @@
 #include "basic/material_raster.h"
 #include "basic/material_ray_trace.h"
 #include "basic/model.h"
+#include "basic/render_queue_entry.h"
 
 #include <vrk/fence.h>
 #include <vrk/semaphore.h>
@@ -35,9 +36,11 @@ public:
   std::shared_ptr<Light> createLight(std::string lightName,
                                      Light::LightType lightType);
 
-  void appendToRenderQueue(std::shared_ptr<Model> modelPtr);
+  std::shared_ptr<RenderQueueEntry>
+  appendToRenderQueue(std::shared_ptr<Model> modelPtr);
 
-  void appendToRenderQueue(std::shared_ptr<Material> materialPtr);
+  std::shared_ptr<RenderQueueEntry>
+  appendToRenderQueue(std::shared_ptr<Material> materialPtr);
 
   void recordCommandBuffer(uint32_t frameIndex);
 
@@ -50,13 +53,6 @@ public:
   std::shared_ptr<VkDescriptorBufferInfo> getSceneDescriptorBufferInfoPtr();
 
 private:
-  enum class RenderQueueEntryType { MODEL, MATERIAL };
-
-  struct RenderQueueEntry {
-    RenderQueueEntryType renderQueueEntryType;
-    std::shared_ptr<void> entryPtr;
-  };
-
   std::string sceneName;
 
   std::shared_ptr<Engine> enginePtr;
@@ -81,5 +77,5 @@ private:
 
   std::shared_ptr<Buffer> modelsBufferPtr;
 
-  std::vector<RenderQueueEntry> renderQueueEntryList;
+  std::vector<std::shared_ptr<RenderQueueEntry>> renderQueueEntryList;
 };

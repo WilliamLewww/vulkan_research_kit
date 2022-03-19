@@ -111,20 +111,20 @@ std::shared_ptr<Light> Scene::createLight(std::string lightName,
   return this->lightPtrList[this->lightPtrList.size() - 1];
 }
 
-void Scene::appendToRenderQueue(std::shared_ptr<Model> modelPtr) {
-  RenderQueueEntry renderQueueEntry = {.renderQueueEntryType =
-                                           RenderQueueEntryType::MODEL,
-                                       .entryPtr = modelPtr};
+std::shared_ptr<RenderQueueEntry>
+Scene::appendToRenderQueue(std::shared_ptr<Model> modelPtr) {
+  this->renderQueueEntryList.push_back(std::shared_ptr<RenderQueueEntry>(
+      new RenderQueueEntry(RenderQueueEntryType::MODEL, modelPtr)));
 
-  this->renderQueueEntryList.push_back(renderQueueEntry);
+  return this->renderQueueEntryList.back();
 }
 
-void Scene::appendToRenderQueue(std::shared_ptr<Material> materialPtr) {
-  RenderQueueEntry renderQueueEntry = {.renderQueueEntryType =
-                                           RenderQueueEntryType::MATERIAL,
-                                       .entryPtr = materialPtr};
+std::shared_ptr<RenderQueueEntry>
+Scene::appendToRenderQueue(std::shared_ptr<Material> materialPtr) {
+  this->renderQueueEntryList.push_back(std::shared_ptr<RenderQueueEntry>(
+      new RenderQueueEntry(RenderQueueEntryType::MATERIAL, materialPtr)));
 
-  this->renderQueueEntryList.push_back(renderQueueEntry);
+  return this->renderQueueEntryList.back();
 }
 
 void Scene::recordCommandBuffer(uint32_t frameIndex) {
@@ -140,11 +140,11 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
 
   std::vector<VkCommandBuffer> commandBufferHandleList;
   for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
-    if (this->renderQueueEntryList[x].renderQueueEntryType ==
+    if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
         RenderQueueEntryType::MODEL) {
 
-      std::shared_ptr<Model> modelPtr = std::static_pointer_cast<Model>(
-          this->renderQueueEntryList[x].entryPtr);
+      std::shared_ptr<Model> modelPtr =
+          this->renderQueueEntryList[x]->getEntryPtr<Model>();
 
       if (modelPtr->getMaterialPtr()->getMaterialType() ==
           Material::MaterialType::RASTER) {
@@ -207,12 +207,11 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
                          (this->enginePtr->getSwapchainImageCount() * x) +
                              frameIndex);
       }
-    } else if (this->renderQueueEntryList[x].renderQueueEntryType ==
+    } else if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
                RenderQueueEntryType::MATERIAL) {
 
       std::shared_ptr<Material> materialPtr =
-          std::static_pointer_cast<Material>(
-              this->renderQueueEntryList[x].entryPtr);
+          this->renderQueueEntryList[x]->getEntryPtr<Material>();
 
       VkDescriptorImageInfo descriptorImageInfo = {
           .sampler = VK_NULL_HANDLE,
@@ -257,17 +256,17 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
   for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
-    if (this->renderQueueEntryList[x].renderQueueEntryType ==
+    if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
         RenderQueueEntryType::MODEL) {
-      if (std::static_pointer_cast<Model>(
-              this->renderQueueEntryList[x].entryPtr)
+      if (this->renderQueueEntryList[x]
+              ->getEntryPtr<Model>()
               ->getMaterialPtr()
               ->getMaterialType() == Material::MaterialType::RASTER) {
 
         std::shared_ptr<MaterialRaster> materialRasterPtr =
             std::static_pointer_cast<MaterialRaster>(
-                std::static_pointer_cast<Model>(
-                    this->renderQueueEntryList[x].entryPtr)
+                this->renderQueueEntryList[x]
+                    ->getEntryPtr<Model>()
                     ->getMaterialPtr());
 
         VkClearValue clearColor = {.color = {0.0, 0.0, 0.0, 1.0}};
@@ -285,10 +284,10 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
             commandBufferHandleList[x]};
 
         for (uint32_t y = x + 1; y < this->renderQueueEntryList.size(); y++) {
-          if (this->renderQueueEntryList[y].renderQueueEntryType ==
+          if (this->renderQueueEntryList[y]->getRenderQueueEntryType() ==
                   RenderQueueEntryType::MODEL &&
-              std::static_pointer_cast<Model>(
-                  this->renderQueueEntryList[y].entryPtr)
+              this->renderQueueEntryList[y]
+                      ->getEntryPtr<Model>()
                       ->getMaterialPtr() == materialRasterPtr) {
 
             combinedCommandBufferHandleList.push_back(
@@ -305,14 +304,14 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
         materialRasterPtr->getRenderPassPtr()->endRenderPassCmd(
             this->enginePtr->getCommandBufferGroupPtr()
                 ->getCommandBufferHandleRef(frameIndex));
-      } else if (std::static_pointer_cast<Model>(
-                     this->renderQueueEntryList[x].entryPtr)
+      } else if (this->renderQueueEntryList[x]
+                     ->getEntryPtr<Model>()
                      ->getMaterialPtr()
                      ->getMaterialType() == Material::MaterialType::RAY_TRACE) {
 
         std::shared_ptr<Image> sourceImagePtr =
-            std::static_pointer_cast<Model>(
-                this->renderQueueEntryList[x].entryPtr)
+            this->renderQueueEntryList[x]
+                ->getEntryPtr<Model>()
                 ->getMaterialPtr()
                 ->getImagePtr("output" + frameIndex);
 
@@ -333,9 +332,8 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       }
     } else {
       std::shared_ptr<Image> sourceImagePtr =
-          std::static_pointer_cast<Material>(
-              this->renderQueueEntryList[x].entryPtr)
-              ->getImagePtr("output" + frameIndex);
+          this->renderQueueEntryList[x]->getEntryPtr<Material>()->getImagePtr(
+              "output" + frameIndex);
 
       this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
           frameIndex, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -359,20 +357,20 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkAccessFlagBits accessFlagBits = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-  if (this->renderQueueEntryList.back().renderQueueEntryType ==
+  if (this->renderQueueEntryList.back()->getRenderQueueEntryType() ==
       RenderQueueEntryType::MODEL) {
 
-    sourceImagePtr = std::static_pointer_cast<Model>(
-                         this->renderQueueEntryList.back().entryPtr)
+    sourceImagePtr = this->renderQueueEntryList.back()
+                         ->getEntryPtr<Model>()
                          ->getMaterialPtr()
                          ->getImagePtr("output" + frameIndex);
 
-  } else if (this->renderQueueEntryList.back().renderQueueEntryType ==
+  } else if (this->renderQueueEntryList.back()->getRenderQueueEntryType() ==
              RenderQueueEntryType::MATERIAL) {
 
-    sourceImagePtr = std::static_pointer_cast<Material>(
-                         this->renderQueueEntryList.back().entryPtr)
-                         ->getImagePtr("output" + frameIndex);
+    sourceImagePtr =
+        this->renderQueueEntryList.back()->getEntryPtr<Material>()->getImagePtr(
+            "output" + frameIndex);
 
     pipelineStageFlagBits = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     accessFlagBits = VK_ACCESS_SHADER_WRITE_BIT;

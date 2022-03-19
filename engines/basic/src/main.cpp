@@ -56,9 +56,12 @@ int main() {
 
   std::shared_ptr<Camera> camera = engine->createCamera("my-camera");
 
-  scene->appendToRenderQueue(model1);
-  scene->appendToRenderQueue(model2);
-  scene->appendToRenderQueue(material3);
+  std::shared_ptr<RenderQueueEntry> entry1 = scene->appendToRenderQueue(model1);
+  std::shared_ptr<RenderQueueEntry> entry2 = scene->appendToRenderQueue(model2);
+  std::shared_ptr<RenderQueueEntry> entry3 =
+      scene->appendToRenderQueue(material3);
+
+  entry3->appendIndexedImageToDescriptor(entry1, "output");
 
   XEvent event;
   while (true) {
