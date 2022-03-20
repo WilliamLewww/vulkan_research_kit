@@ -171,7 +171,7 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         &this->materialPropertiesList[x], sizeof(Properties));
 
     materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
-        {{0,
+        {{1,
           3,
           materialOffsetIndex + x,
           1,
@@ -321,7 +321,7 @@ Model::Model(std::shared_ptr<Engine> enginePtr, std::shared_ptr<Scene> scenePtr,
         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 
     materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
-        {{0,
+        {{1,
           5,
           textureOffsetIndex + x,
           1,

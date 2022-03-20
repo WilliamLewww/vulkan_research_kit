@@ -29,3 +29,8 @@ void RenderQueueEntry::appendIndexedImageToDescriptor(
 RenderQueueEntryType RenderQueueEntry::getRenderQueueEntryType() {
   return this->renderQueueEntryType;
 }
+
+std::vector<std::pair<std::shared_ptr<Material>, std::string>>
+RenderQueueEntry::getMaterialPtrIndexedImageNameList() {
+  return this->materialPtrIndexedImageNameList;
+}

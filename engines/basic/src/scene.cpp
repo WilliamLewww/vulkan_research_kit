@@ -140,6 +140,46 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
 
   std::vector<VkCommandBuffer> commandBufferHandleList;
   for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
+
+    std::vector<std::pair<std::shared_ptr<Material>, std::string>>
+        materialPtrIndexedImageNameList =
+            this->renderQueueEntryList[x]->getMaterialPtrIndexedImageNameList();
+
+    for (uint32_t y = 0; y < materialPtrIndexedImageNameList.size(); y++) {
+      std::string imageName =
+          materialPtrIndexedImageNameList[y].second.c_str() + frameIndex;
+
+      VkDescriptorImageInfo descriptorImageInfo = {
+          .sampler = VK_NULL_HANDLE,
+          .imageView = materialPtrIndexedImageNameList[y]
+                           .first->getImageViewPtr(imageName)
+                           ->getImageViewHandleRef(),
+          .imageLayout = VK_IMAGE_LAYOUT_GENERAL};
+
+      std::shared_ptr<Material> materialPtr;
+
+      if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
+          RenderQueueEntryType::MODEL) {
+        materialPtr = this->renderQueueEntryList[x]
+                          ->getEntryPtr<Model>()
+                          ->getMaterialPtr();
+      } else if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
+                 RenderQueueEntryType::MATERIAL) {
+        materialPtr = this->renderQueueEntryList[x]->getEntryPtr<Material>();
+      }
+
+      materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
+          {{0,
+            0,
+            y,
+            1,
+            VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+            {descriptorImageInfo},
+            {},
+            {}}},
+          {});
+    }
+
     if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
         RenderQueueEntryType::MODEL) {
 
@@ -175,6 +215,7 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
         modelPtr->render(renderPassCommandBufferInheritanceInfoParamPtr,
                          (this->enginePtr->getSwapchainImageCount() * x) +
                              frameIndex);
+
       } else if (modelPtr->getMaterialPtr()->getMaterialType() ==
                  Material::MaterialType::RAY_TRACE) {
 
@@ -187,7 +228,7 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
 
         modelPtr->getMaterialPtr()
             ->getDescriptorSetGroupPtr()
-            ->updateDescriptorSets({{1,
+            ->updateDescriptorSets({{2,
                                      0,
                                      0,
                                      1,
@@ -220,7 +261,7 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
           .imageLayout = VK_IMAGE_LAYOUT_GENERAL};
 
       materialPtr->getDescriptorSetGroupPtr()->updateDescriptorSets(
-          {{1,
+          {{2,
             0,
             0,
             1,

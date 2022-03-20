@@ -96,6 +96,8 @@ protected:
 
   std::unique_ptr<DescriptorPool> descriptorPoolPtr;
 
+  std::unique_ptr<DescriptorSetLayout> sharedDescriptorSetLayoutPtr;
+
   std::unique_ptr<DescriptorSetLayout> descriptorSetLayoutPtr;
 
   std::shared_ptr<DescriptorSetGroup> descriptorSetGroupPtr;
@@ -113,6 +115,14 @@ protected:
   std::map<std::string, std::shared_ptr<ImageView>> imageViewPtrMap;
 
 private:
+  const MaterialDescriptorCounts SHARED_DESCRIPTOR_COUNTS = {
+      .uniformBufferCount = 0,
+      .storageBufferCount = 0,
+      .samplerCount = 0,
+      .sampledImageCount = 0,
+      .storageImageCount = 8,
+      .accelerationStructureCount = 0};
+
   const MaterialDescriptorCounts MATERIAL_DESCRIPTOR_COUNTS = {
       .uniformBufferCount = 50,
       .storageBufferCount = 32,

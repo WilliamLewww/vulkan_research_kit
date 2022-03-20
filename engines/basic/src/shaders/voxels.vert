@@ -6,7 +6,7 @@ layout(location = 2) in vec2 inTextureCoordinate;
 layout(location = 3) in int inMaterialPropertiesIndex;
 layout(location = 4) in int inModelIndex;
 
-layout(set = 0, binding = 6) uniform Model { mat4 modelMatrix; }
+layout(set = 1, binding = 6) uniform Model { mat4 modelMatrix; }
 models[32];
 
 void main() {

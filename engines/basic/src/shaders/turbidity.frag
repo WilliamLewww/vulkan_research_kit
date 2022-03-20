@@ -7,7 +7,7 @@ layout(location = 3) flat in int inMaterialPropertiesIndex;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform Camera {
+layout(set = 1, binding = 0) uniform Camera {
   mat4 viewMatrix;
   mat4 projectionMatrix;
 }

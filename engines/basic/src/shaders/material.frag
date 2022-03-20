@@ -7,23 +7,23 @@ layout(location = 3) flat in int inMaterialPropertiesIndex;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform Camera {
+layout(set = 1, binding = 0) uniform Camera {
   mat4 viewMatrix;
   mat4 projectionMatrix;
 }
 camera;
 
-layout(set = 0, binding = 1) uniform Scene { uint lightCount; }
+layout(set = 1, binding = 1) uniform Scene { uint lightCount; }
 scene;
 
-layout(set = 0, binding = 2) uniform Light {
+layout(set = 1, binding = 2) uniform Light {
   vec4 position;
   vec4 direction;
   int type;
 }
 lights[16];
 
-layout(set = 0, binding = 3) buffer MaterialPropertiesBuffer {
+layout(set = 1, binding = 3) buffer MaterialPropertiesBuffer {
   float ambient[4];
   float diffuse[4];
   float specular[4];
@@ -40,9 +40,9 @@ layout(set = 0, binding = 3) buffer MaterialPropertiesBuffer {
 }
 materialPropertiesBuffer[32];
 
-layout(set = 0, binding = 4) uniform sampler imageSampler;
+layout(set = 1, binding = 4) uniform sampler imageSampler;
 
-layout(set = 0, binding = 5) uniform texture2D textures[32];
+layout(set = 1, binding = 5) uniform texture2D textures[32];
 
 void main() {
   vec3 color = vec3(0.0, 0.0, 0.0);

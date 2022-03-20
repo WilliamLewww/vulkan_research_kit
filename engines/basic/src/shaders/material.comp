@@ -1,5 +1,13 @@
 #version 460
 
-layout(binding = 0, set = 1, rgba32f) uniform image2D image;
+layout(set = 0, binding = 0, rgba32f) uniform image2D images[8];
 
-void main() { imageStore(image, ivec2(0, 0), vec4(1.0)); }
+layout(set = 2, binding = 0, rgba32f) uniform image2D image;
+
+void main() {
+  vec4 color = imageLoad(
+      images[0], ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y));
+
+  imageStore(image, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y),
+             color);
+}

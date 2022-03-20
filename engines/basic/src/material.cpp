@@ -30,6 +30,7 @@ void Material::initializeDescriptors(
   std::vector<VkDescriptorPoolSize> descriptorPoolSizeList = {};
 
   uint32_t uniformBufferCount =
+      this->SHARED_DESCRIPTOR_COUNTS.uniformBufferCount +
       this->MATERIAL_DESCRIPTOR_COUNTS.uniformBufferCount +
       materialDescriptorCounts.uniformBufferCount;
   if (uniformBufferCount > 0) {
@@ -38,6 +39,7 @@ void Material::initializeDescriptors(
   }
 
   uint32_t storageBufferCount =
+      this->SHARED_DESCRIPTOR_COUNTS.storageBufferCount +
       this->MATERIAL_DESCRIPTOR_COUNTS.storageBufferCount +
       materialDescriptorCounts.storageBufferCount;
   if (storageBufferCount > 0) {
@@ -45,7 +47,8 @@ void Material::initializeDescriptors(
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, storageBufferCount});
   }
 
-  uint32_t samplerCount = this->MATERIAL_DESCRIPTOR_COUNTS.samplerCount +
+  uint32_t samplerCount = this->SHARED_DESCRIPTOR_COUNTS.samplerCount +
+                          this->MATERIAL_DESCRIPTOR_COUNTS.samplerCount +
                           materialDescriptorCounts.samplerCount;
   if (samplerCount > 0) {
     descriptorPoolSizeList.push_back(
@@ -53,6 +56,7 @@ void Material::initializeDescriptors(
   }
 
   uint32_t sampledImageCount =
+      this->SHARED_DESCRIPTOR_COUNTS.sampledImageCount +
       this->MATERIAL_DESCRIPTOR_COUNTS.sampledImageCount +
       materialDescriptorCounts.sampledImageCount;
   if (sampledImageCount > 0) {
@@ -61,6 +65,7 @@ void Material::initializeDescriptors(
   }
 
   uint32_t storageImageCount =
+      this->SHARED_DESCRIPTOR_COUNTS.storageImageCount +
       this->MATERIAL_DESCRIPTOR_COUNTS.storageImageCount +
       materialDescriptorCounts.storageImageCount;
   if (storageImageCount > 0) {
@@ -69,6 +74,7 @@ void Material::initializeDescriptors(
   }
 
   uint32_t accelerationStructureCount =
+      this->SHARED_DESCRIPTOR_COUNTS.accelerationStructureCount +
       this->MATERIAL_DESCRIPTOR_COUNTS.accelerationStructureCount +
       materialDescriptorCounts.accelerationStructureCount;
   if (accelerationStructureCount > 0) {
@@ -79,8 +85,15 @@ void Material::initializeDescriptors(
 
   this->descriptorPoolPtr = std::unique_ptr<DescriptorPool>(
       new DescriptorPool(enginePtr->getDevicePtr()->getDeviceHandleRef(),
-                         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 2,
+                         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 3,
                          descriptorPoolSizeList));
+
+  this->sharedDescriptorSetLayoutPtr =
+      std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
+          enginePtr->getDevicePtr()->getDeviceHandleRef(), 0,
+          {{0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 8,
+            VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT,
+            NULL}}));
 
   this->descriptorSetLayoutPtr =
       std::unique_ptr<DescriptorSetLayout>(new DescriptorSetLayout(
@@ -106,12 +119,15 @@ void Material::initializeDescriptors(
       std::shared_ptr<DescriptorSetGroup>(new DescriptorSetGroup(
           enginePtr->getDevicePtr()->getDeviceHandleRef(),
           this->descriptorPoolPtr->getDescriptorPoolHandleRef(),
-          {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef(),
+          {this->sharedDescriptorSetLayoutPtr
+               ->getDescriptorSetLayoutHandleRef(),
+           this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef(),
            descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()}));
 
   this->pipelineLayoutPtr = std::unique_ptr<PipelineLayout>(new PipelineLayout(
       enginePtr->getDevicePtr()->getDeviceHandleRef(),
-      {this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef(),
+      {this->sharedDescriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef(),
+       this->descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef(),
        descriptorSetLayoutPtr->getDescriptorSetLayoutHandleRef()},
       {}));
 
@@ -134,12 +150,30 @@ void Material::initializeDescriptors(
 
   this->textureCount = 0;
 
+  for (uint32_t x = 0; x < 8; x++) {
+    VkDescriptorImageInfo descriptorImageInfo = {.sampler = VK_NULL_HANDLE,
+                                                 .imageView = VK_NULL_HANDLE,
+                                                 .imageLayout =
+                                                     VK_IMAGE_LAYOUT_UNDEFINED};
+
+    this->descriptorSetGroupPtr->updateDescriptorSets(
+        {{0,
+          0,
+          x,
+          1,
+          VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+          {descriptorImageInfo},
+          {},
+          {}}},
+        {});
+  }
+
   for (uint32_t x = 0; x < 16; x++) {
     VkDescriptorBufferInfo lightDescriptorBufferInfo = {
         .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE};
 
     this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
+        {{1,
           2,
           x,
           1,
@@ -155,7 +189,7 @@ void Material::initializeDescriptors(
         .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE};
 
     this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
+        {{1,
           3,
           x,
           1,
@@ -171,7 +205,7 @@ void Material::initializeDescriptors(
       .imageView = VK_NULL_HANDLE,
       .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED};
 
-  descriptorSetGroupPtr->updateDescriptorSets({{0,
+  descriptorSetGroupPtr->updateDescriptorSets({{1,
                                                 4,
                                                 0,
                                                 1,
@@ -188,7 +222,7 @@ void Material::initializeDescriptors(
                                                      VK_IMAGE_LAYOUT_UNDEFINED};
 
     this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
+        {{1,
           5,
           x,
           1,
@@ -204,7 +238,7 @@ void Material::initializeDescriptors(
         .buffer = VK_NULL_HANDLE, .offset = 0, .range = VK_WHOLE_SIZE};
 
     this->descriptorSetGroupPtr->updateDescriptorSets(
-        {{0,
+        {{1,
           6,
           x,
           1,
@@ -254,7 +288,7 @@ std::shared_ptr<DescriptorSetGroup> Material::getDescriptorSetGroupPtr() {
 
 void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{0,
+      {{1,
         0,
         0,
         1,
@@ -267,7 +301,7 @@ void Material::updateCameraDescriptorSet(std::shared_ptr<Camera> cameraPtr) {
 
 void Material::updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{0,
+      {{1,
         1,
         0,
         1,
@@ -280,7 +314,7 @@ void Material::updateSceneDescriptorSet(std::shared_ptr<Scene> scenePtr) {
 
 void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{0,
+      {{1,
         2,
         lightPtr->getLightIndex(),
         1,
@@ -293,7 +327,7 @@ void Material::updateLightDescriptorSet(std::shared_ptr<Light> lightPtr) {
 
 void Material::updateModelDescriptorSet(std::shared_ptr<Model> modelPtr) {
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{0,
+      {{1,
         6,
         modelPtr->getModelIndex(),
         1,

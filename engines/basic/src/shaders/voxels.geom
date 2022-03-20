@@ -5,7 +5,7 @@ layout(triangle_strip, max_vertices = 24) out;
 
 flat layout(location = 0) out vec4 outVoxelCenter;
 
-layout(set = 0, binding = 0) uniform Camera {
+layout(set = 1, binding = 0) uniform Camera {
   mat4 viewMatrix;
   mat4 projectionMatrix;
 }

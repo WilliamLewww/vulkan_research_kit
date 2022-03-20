@@ -14,20 +14,23 @@ public:
 
   ~RenderQueueEntry();
 
+  template <class T> std::shared_ptr<T> getEntryPtr() {
+    return std::static_pointer_cast<T>(this->entryPtr);
+  }
+
   void appendIndexedImageToDescriptor(
       std::shared_ptr<RenderQueueEntry> renderQueueEntryPtr,
       std::string indexImageName);
 
   RenderQueueEntryType getRenderQueueEntryType();
 
-  template <class T> std::shared_ptr<T> getEntryPtr() {
-    return std::static_pointer_cast<T>(this->entryPtr);
-  }
+  std::vector<std::pair<std::shared_ptr<Material>, std::string>>
+  getMaterialPtrIndexedImageNameList();
 
 private:
-  RenderQueueEntryType renderQueueEntryType;
-
   std::shared_ptr<void> entryPtr;
+
+  RenderQueueEntryType renderQueueEntryType;
 
   std::vector<std::pair<std::shared_ptr<Material>, std::string>>
       materialPtrIndexedImageNameList;

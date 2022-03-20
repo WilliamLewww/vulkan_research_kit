@@ -67,7 +67,7 @@ void MaterialCompute::render(VkCommandBuffer commandBufferHandle,
 
   this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
       commandBufferHandle, VK_PIPELINE_BIND_POINT_COMPUTE,
-      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0, 1}, {});
+      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0, 1, 2}, {});
 
   this->computePipelineGroupPtr->dispatchCmd(commandBufferHandle, 800, 600, 1);
 }

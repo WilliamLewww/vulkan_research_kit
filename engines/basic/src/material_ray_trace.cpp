@@ -205,7 +205,7 @@ void MaterialRayTrace::render(VkCommandBuffer commandBufferHandle,
 
   this->descriptorSetGroupPtr->bindDescriptorSetsCmd(
       commandBufferHandle, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0, 1}, {});
+      this->pipelineLayoutPtr->getPipelineLayoutHandleRef(), 0, {0, 1, 2}, {});
 
   this->rayTracingPipelineGroupPtr->traceRaysCmd(
       commandBufferHandle,
@@ -484,7 +484,7 @@ void MaterialRayTrace::createTopLevelAccelerationStructure() {
       };
 
   this->descriptorSetGroupPtr->updateDescriptorSets(
-      {{1,
+      {{2,
         1,
         0,
         1,
