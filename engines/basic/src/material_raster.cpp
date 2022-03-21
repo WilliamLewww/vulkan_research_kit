@@ -60,17 +60,15 @@ MaterialRaster::MaterialRaster(
              VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}));
 
-    this->imagePtrMap["depth" + x] = std::unique_ptr<Image>(
-        new Image(enginePtr->getDevicePtr()->getDeviceHandleRef(),
-                  *enginePtr->getPhysicalDeviceHandlePtr().get(), 0,
-                  VK_IMAGE_TYPE_2D, VK_FORMAT_D32_SFLOAT,
-                  {enginePtr->getSurfaceCapabilities().currentExtent.width,
-                   enginePtr->getSurfaceCapabilities().currentExtent.height, 1},
-                  1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
-                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                      VK_IMAGE_USAGE_STORAGE_BIT,
-                  VK_SHARING_MODE_EXCLUSIVE, {enginePtr->getQueueFamilyIndex()},
-                  VK_IMAGE_LAYOUT_UNDEFINED, 0));
+    this->imagePtrMap["depth" + x] = std::unique_ptr<Image>(new Image(
+        enginePtr->getDevicePtr()->getDeviceHandleRef(),
+        *enginePtr->getPhysicalDeviceHandlePtr().get(), 0, VK_IMAGE_TYPE_2D,
+        VK_FORMAT_D32_SFLOAT,
+        {enginePtr->getSurfaceCapabilities().currentExtent.width,
+         enginePtr->getSurfaceCapabilities().currentExtent.height, 1},
+        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        {enginePtr->getQueueFamilyIndex()}, VK_IMAGE_LAYOUT_UNDEFINED, 0));
 
     this->imageViewPtrMap["depth" + x] =
         std::unique_ptr<ImageView>(new ImageView(

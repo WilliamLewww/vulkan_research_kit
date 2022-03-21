@@ -160,11 +160,13 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
 
       if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
           RenderQueueEntryType::MODEL) {
+
         materialPtr = this->renderQueueEntryList[x]
                           ->getEntryPtr<Model>()
                           ->getMaterialPtr();
       } else if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
                  RenderQueueEntryType::MATERIAL) {
+
         materialPtr = this->renderQueueEntryList[x]->getEntryPtr<Material>();
       }
 
@@ -297,8 +299,33 @@ void Scene::recordCommandBuffer(uint32_t frameIndex) {
       frameIndex, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
 
   for (uint32_t x = 0; x < this->renderQueueEntryList.size(); x++) {
+
+    std::vector<std::pair<std::shared_ptr<Material>, std::string>>
+        materialPtrIndexedImageNameList =
+            this->renderQueueEntryList[x]->getMaterialPtrIndexedImageNameList();
+
+    for (uint32_t y = 0; y < materialPtrIndexedImageNameList.size(); y++) {
+      std::string imageName =
+          materialPtrIndexedImageNameList[y].second.c_str() + frameIndex;
+
+      this->enginePtr->getCommandBufferGroupPtr()->createPipelineBarrierCmd(
+          frameIndex, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, {}, {},
+          {{VK_ACCESS_MEMORY_READ_BIT,
+            VK_ACCESS_MEMORY_READ_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_GENERAL,
+            this->enginePtr->getQueueFamilyIndex(),
+            this->enginePtr->getQueueFamilyIndex(),
+            materialPtrIndexedImageNameList[y]
+                .first->getImagePtr(imageName)
+                ->getImageHandleRef(),
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}});
+    }
+
     if (this->renderQueueEntryList[x]->getRenderQueueEntryType() ==
         RenderQueueEntryType::MODEL) {
+
       if (this->renderQueueEntryList[x]
               ->getEntryPtr<Model>()
               ->getMaterialPtr()
