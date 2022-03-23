@@ -45,11 +45,23 @@ int main() {
                             {{Material::ShaderStage::COMPUTE,
                               "resources/shaders/material.comp.spv"}});
 
+  std::shared_ptr<Material> material4 = scene->createMaterial(
+      "material4", Material::MaterialType::RASTER,
+      {{Material::ShaderStage::VERTEX, "resources/shaders/turbidity.vert.spv"},
+       {Material::ShaderStage::FRAGMENT,
+        "resources/shaders/turbidity.frag.spv"}});
+
   std::shared_ptr<Model> model1 = scene->createModel(
       "model1", "resources/models/color_cube/color_cube.obj", material2);
 
   std::shared_ptr<Model> model2 = scene->createModel(
       "model2", "resources/models/utah_teapot/utah_teapot.obj", material1);
+
+  std::shared_ptr<Model> model3 = scene->createModel(
+      "model3", "resources/models/large_cube/large_cube.obj", material4);
+
+  std::shared_ptr<Model> model4 = scene->createModel(
+      "model4", "resources/models/backscatter/backscatter.obj", material2);
 
   std::shared_ptr<Light> light =
       scene->createLight("my-light", Light::LIGHT_TYPE_POINT);

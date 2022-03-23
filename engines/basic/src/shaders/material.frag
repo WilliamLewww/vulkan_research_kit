@@ -71,5 +71,13 @@ void main() {
     }
   }
 
+  float z =
+      texture(
+          sampler2D(textures[materialPropertiesBuffer[inMaterialPropertiesIndex]
+                                 .diffuseTextureIndex],
+                    imageSampler),
+          inTextureCoordinate)
+          .z;
+
   outColor = vec4(color, 1.0);
 }
